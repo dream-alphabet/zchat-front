@@ -24,7 +24,7 @@ class _MainPageState extends State<MainPage> {
     _Tab(
       icon: 'lib/assets/icon/contact.png',
       activeIcon: 'lib/assets/icon/contact_active.png',
-      text: '联系人',
+      text: '通讯录',
     ),
     _Tab(
       icon: 'lib/assets/icon/share.png',
