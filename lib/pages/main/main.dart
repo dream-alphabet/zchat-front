@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:zchat/pages/chat/chat.dart';
 import 'package:zchat/pages/contact/contact.dart';
 import 'package:zchat/pages/share/share.dart';
+import 'package:zchat/stores/token.dart';
 
 // 主页
 class MainPage extends StatefulWidget {
@@ -52,6 +53,27 @@ class _MainPageState extends State<MainPage> {
         backgroundColor: Colors.white,
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initUser();
+  }
+
+  // 初始化用户信息
+  Future<void> _initUser() async {
+    // 初始化token管理器
+    await tokenManager.init();
+    final token = tokenManager.getToken();
+    print('本地存储的token:$token');
+    // 如果token为空，跳转到登录页面
+    if(token.isEmpty) {
+      // 关闭所有页面并跳转到登录页面
+      Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+      return;
+    }
+    // TODO 获取用户信息并存入store
   }
 
   @override

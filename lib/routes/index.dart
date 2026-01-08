@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:zchat/pages/auth/login.dart';
+import 'package:zchat/pages/auth/register.dart';
 import 'package:zchat/pages/main/main.dart';
 
 // 路由配置
 final Map<String, Widget Function(BuildContext)> routes = {
-  '/': (ctx) => MainPage()
+  '/': (ctx) => MainPage(),
+  '/login': (ctx) => LoginPage(),
+  '/register': (ctx) => RegisterPage()
 };
 
 // 全局Context
