@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:zchat/api/user.dart';
+import 'package:zchat/common/toast.dart';
+import 'package:zchat/common/utils.dart';
+import 'package:zchat/model/user.dart';
+import 'package:zchat/stores/token.dart';
 import 'package:zchat/widgets/base64_image.dart';
 import 'package:zchat/widgets/page_header.dart';
 
@@ -41,11 +45,38 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // 登录
-  void _login() {
+  Future<void> _login() async {
     final email = _emailController.text;
     final password = _passwordController.text;
     final userCaptcha = _captchaController.text;
-    print('邮箱: $email, 密码: $password, 验证码: $userCaptcha, 验证码key: $_captchaKey');
+    // 数据校验
+    if (!isValidEmail(email)) {
+      return ToastUtils.showGlobalToast(msg: '邮箱格式不正确');
+    }
+    if (password.isEmpty) {
+      return ToastUtils.showGlobalToast(msg: '密码不能为空');
+    }
+    if (userCaptcha.isEmpty) {
+      return ToastUtils.showGlobalToast(msg: '验证码不能为空');
+    }
+    try {
+      // 请求接口
+      final res = await loginApi(
+        LoginReq(
+          email: email,
+          password: password,
+          captchaKey: _captchaKey,
+          userCaptcha: userCaptcha,
+        ),
+      );
+      // 存储token
+      tokenManager.setToken(res.token);
+      ToastUtils.showGlobalToast(msg: '登录成功');
+      // 跳转到主页
+      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+    } catch (e) {
+      _getCaptcha();
+    }
   }
 
   // 构建登录按钮
@@ -75,7 +106,6 @@ class _LoginPageState extends State<LoginPage> {
   // 构建图形验证码输入框
   Widget _buildCaptchaInput() {
     return Row(
-      mainAxisSize: MainAxisSize.max,
       children: [
         Expanded(
           flex: 1,
@@ -177,10 +207,26 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     SizedBox(height: 20.w),
                     _buildCaptchaInput(),
-                    Expanded(flex: 1, child: Text('')),
-                    // 登录按钮
-                    _buildLoginBtn(),
+                    SizedBox(height: 10.w),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: GestureDetector(
+                        onTap: () {
+                          // 跳转到注册页面
+                          Navigator.pushNamed(context, '/register');
+                        },
+                        child: Text(
+                          '没有账号?',
+                          style: TextStyle(
+                            color: Color.fromRGBO(0, 95, 255, 1),
+                            fontSize: 16.sp,
+                          ),
+                        ),
+                      ),
+                    ),
                     SizedBox(height: 20.w),
+                    // 登录按钮
+                    _buildLoginBtn()
                   ],
                 ),
               ),

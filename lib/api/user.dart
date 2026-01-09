@@ -6,3 +6,15 @@ import 'package:zchat/model/user.dart';
 Future<CaptchaRes> getCaptchaApi() async {
   return CaptchaRes.fromJson((await request.get('/user/captcha')));
 }
+
+// 登录接口
+Future<LoginRes> loginApi(LoginReq data) async {
+  return LoginRes.fromJson(
+    (await request.post('/user/login', data: data.toJson())),
+  );
+}
+
+// 注册接口
+Future<void> registerApi(RegisterReq data) async {
+  await request.post('/user/register', data: data.toJson());
+}

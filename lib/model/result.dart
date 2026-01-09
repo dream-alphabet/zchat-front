@@ -2,7 +2,7 @@
 class Result {
     int code;
     String msg;
-    Map<String, dynamic> data;
+    dynamic data;
 
     Result({
         required this.code,

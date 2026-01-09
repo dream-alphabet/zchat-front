@@ -31,3 +31,16 @@ String formatTimestamp(int millisecondsTimestamp) {
     return '${dateTime.year}年$month月$day日';
   }
 }
+
+// 邮箱校验
+bool isValidEmail(String? email) {
+  if (email == null) {
+    return false;
+  }
+  final RegExp emailRegex = RegExp(
+    r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    caseSensitive: false,
+    multiLine: false,
+  );
+  return emailRegex.hasMatch(email);
+}

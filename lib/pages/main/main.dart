@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:zchat/common/toast.dart';
 import 'package:zchat/pages/chat/chat.dart';
 import 'package:zchat/pages/contact/contact.dart';
 import 'package:zchat/pages/share/share.dart';
@@ -58,6 +59,8 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+    // 初始化toast
+    ToastUtils.init();
     _initUser();
   }
 

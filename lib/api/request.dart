@@ -1,5 +1,6 @@
 // 请求工具类
 import 'package:dio/dio.dart';
+import 'package:zchat/common/toast.dart';
 import 'package:zchat/constants/global.dart';
 import 'package:zchat/model/result.dart';
 import 'package:zchat/stores/token.dart';
@@ -22,7 +23,6 @@ class DioRequest {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (request, handler) {
-          print('请求之前: ${request.uri}');
           final token = tokenManager.getToken();
           // 往请求头中写入token
           if (token.isNotEmpty) {
@@ -36,7 +36,6 @@ class DioRequest {
             handler.next(response);
             return;
           }
-          print('response: ${response.data}');
           // 响应失败
           handler.reject(
             DioException(
@@ -69,9 +68,11 @@ class DioRequest {
   }
 
   // 处理响应结果
-  Future<Map<String, dynamic>> _handleResponse(Future<Response<dynamic>> task) async {
+  Future<dynamic> _handleResponse(
+    Future<Response<dynamic>> task,
+  ) async {
     try {
-      Response<dynamic> res = await task;
+      final res = await task;
       final result = Result.fromJson(res.data);
       // 判断业务状态吗是否成功
       if (result.code == GlobalConstants.successCode) {
@@ -82,7 +83,12 @@ class DioRequest {
         message: result.msg,
       );
     } catch (e) {
-      // TODO 请求错误提示
+      print('_handleResponse, error: $e');
+      // 请求错误提示
+      ToastUtils.showGlobalToast(
+        msg: (e as DioException).message ?? '请求失败',
+        duration: Duration(seconds: 1),
+      );
       rethrow;
     }
   }
