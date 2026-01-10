@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:zchat/api/user.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/pages/chat/chat.dart';
 import 'package:zchat/pages/contact/contact.dart';
 import 'package:zchat/pages/share/share.dart';
 import 'package:zchat/stores/token.dart';
+import 'package:zchat/stores/user.dart';
 
 // 主页
 class MainPage extends StatefulWidget {
@@ -56,6 +59,9 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
+  // 用户信息store
+  final _userController = Get.put(UserController());
+
   @override
   void initState() {
     super.initState();
@@ -76,7 +82,9 @@ class _MainPageState extends State<MainPage> {
       Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
       return;
     }
-    // TODO 获取用户信息并存入store
+    // 获取用户信息并存入store
+    final userInfo = await getUserInfoApi();
+    _userController.setUserInfo(userInfo);
   }
 
   @override

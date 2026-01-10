@@ -65,3 +65,56 @@ class RegisterReq {
     "userCaptcha": userCaptcha,
   };
 }
+
+// 用户信息
+class UserInfo {
+  String userId;
+  String email;
+  String nickname;
+  String password;
+  int joinType;
+  int? gender;
+  String? personDesc;
+  int createTime;
+  int? lastLoginTime;
+  int? lastOffTime;
+
+  UserInfo({
+    required this.userId,
+    required this.email,
+    required this.nickname,
+    required this.password,
+    required this.joinType,
+    required this.gender,
+    required this.personDesc,
+    required this.createTime,
+    required this.lastLoginTime,
+    required this.lastOffTime,
+  });
+
+  factory UserInfo.fromJson(Map<String, dynamic> json) => UserInfo(
+    userId: json["userId"],
+    email: json["email"],
+    nickname: json["nickname"],
+    password: json["password"],
+    joinType: json["joinType"],
+    gender: json["gender"],
+    personDesc: json["personDesc"],
+    createTime: json["createTime"],
+    lastLoginTime: json["lastLoginTime"],
+    lastOffTime: json["lastOffTime"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "userId": userId,
+    "email": email,
+    "nickname": nickname,
+    "password": password,
+    "joinType": joinType,
+    "gender": gender,
+    "personDesc": personDesc,
+    "createTime": createTime,
+    "lastLoginTime": lastLoginTime,
+    "lastOffTime": lastOffTime,
+  };
+}
