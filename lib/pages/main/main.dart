@@ -92,17 +92,17 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: Color.fromRGBO(237, 237, 237, 1),
         foregroundColor: Colors.black,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Colors.white,
+          statusBarColor: Color.fromRGBO(237, 237, 237, 1),
           statusBarBrightness: Brightness.light,
           statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: Colors.white, // 底部导航栏背景
+          systemNavigationBarColor: Color.fromRGBO(237, 237, 237, 1), // 底部导航栏背景
           systemNavigationBarIconBrightness: Brightness.dark, // 底部导航栏图标颜色
         ),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: Color.fromRGBO(237, 237, 237, 1),
       // 使用IndexedStack保持页面状态
       body: SafeArea(
         child: IndexedStack(index: _currentTabIndex, children: _pages),
@@ -137,7 +137,7 @@ class _MainPageState extends State<MainPage> {
             unselectedFontSize: 12.sp,
             selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
             unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
-            backgroundColor: Colors.white,
+            backgroundColor: Color.fromRGBO(237, 237, 237, 1),
           ),
         ),
       ),

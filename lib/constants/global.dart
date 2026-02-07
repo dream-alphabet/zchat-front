@@ -1,7 +1,7 @@
 // 全局常量类
 class GlobalConstants {
   // 请求基础地址
-  static const String baseUrl = 'http://192.168.0.107:8080';
+  static const String baseUrl = 'http://192.168.10.3:8080';
   // 超时时间
   static const int timeout = 5;
   // 业务状态

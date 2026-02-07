@@ -62,6 +62,7 @@ class _ChatPageState extends State<ChatPage> {
             width: 1.w,
           ),
         ),
+        color: Colors.white
       ),
       child: Row(
         spacing: 10.w,

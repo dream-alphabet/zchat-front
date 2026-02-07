@@ -3,13 +3,21 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:zchat/pages/auth/login.dart';
 import 'package:zchat/pages/auth/register.dart';
+import 'package:zchat/pages/contact/group_chat.dart';
+import 'package:zchat/pages/contact/new_friend.dart';
+import 'package:zchat/pages/contact/only_chat_friend.dart';
+import 'package:zchat/pages/contact/user_info.dart';
 import 'package:zchat/pages/main/main.dart';
 
 // 路由配置
-final Map<String, Widget Function(BuildContext)> routes = {
+final Map<String, WidgetBuilder> routes = {
   '/': (ctx) => MainPage(),
   '/login': (ctx) => LoginPage(),
-  '/register': (ctx) => RegisterPage()
+  '/register': (ctx) => RegisterPage(),
+  '/newFriend': (ctx) => NewFriendPage(),
+  '/onlyChatFriend': (ctx) => OnlyChatFriendPage(),
+  '/groupChat': (ctx) => GroupChatPage(),
+  '/userInfo': (ctx) => UserInfoPage()
 };
 
 // 全局Context

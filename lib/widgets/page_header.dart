@@ -51,6 +51,7 @@ class _PageHeaderState extends State<PageHeader> {
                 width: 1.w,
               ),
             ),
+            color: Color.fromRGBO(237, 237, 237, 1)
           ),
           alignment: Alignment.center,
           child: Text(
