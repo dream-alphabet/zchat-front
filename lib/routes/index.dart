@@ -7,6 +7,8 @@ import 'package:zchat/pages/contact/group_chat.dart';
 import 'package:zchat/pages/contact/new_friend.dart';
 import 'package:zchat/pages/contact/only_chat_friend.dart';
 import 'package:zchat/pages/contact/user_info.dart';
+import 'package:zchat/pages/discover/moments.dart';
+import 'package:zchat/pages/discover/scan.dart';
 import 'package:zchat/pages/main/main.dart';
 
 // 路由配置
@@ -17,7 +19,9 @@ final Map<String, WidgetBuilder> routes = {
   '/newFriend': (ctx) => NewFriendPage(),
   '/onlyChatFriend': (ctx) => OnlyChatFriendPage(),
   '/groupChat': (ctx) => GroupChatPage(),
-  '/userInfo': (ctx) => UserInfoPage()
+  '/userInfo': (ctx) => UserInfoPage(),
+  '/moments': (ctx) => MomentsPage(),
+  '/scan': (ctx) => ScanPage()
 };
 
 // 全局Context

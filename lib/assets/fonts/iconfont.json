@@ -6,6 +6,48 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "10255817",
+      "name": "右箭头",
+      "font_class": "youjiantou1",
+      "unicode": "e622",
+      "unicode_decimal": 58914
+    },
+    {
+      "icon_id": "21232756",
+      "name": "搜索",
+      "font_class": "sousuo1",
+      "unicode": "e63b",
+      "unicode_decimal": 58939
+    },
+    {
+      "icon_id": "8721199",
+      "name": "扫一扫",
+      "font_class": "saoyisao1",
+      "unicode": "e602",
+      "unicode_decimal": 58882
+    },
+    {
+      "icon_id": "9234825",
+      "name": "添 加",
+      "font_class": "tianjia",
+      "unicode": "e62b",
+      "unicode_decimal": 58923
+    },
+    {
+      "icon_id": "1236933",
+      "name": "朋友圈",
+      "font_class": "iconfontzhizuobiaozhunbduan36",
+      "unicode": "e6e9",
+      "unicode_decimal": 59113
+    },
+    {
+      "icon_id": "6762247",
+      "name": "发现",
+      "font_class": "faxian",
+      "unicode": "e6b8",
+      "unicode_decimal": 59064
+    },
+    {
       "icon_id": "6261205",
       "name": "群聊",
       "font_class": "qunliao",
@@ -25,20 +67,6 @@
       "font_class": "xiaoxi",
       "unicode": "e61a",
       "unicode_decimal": 58906
-    },
-    {
-      "icon_id": "2718736",
-      "name": "添加",
-      "font_class": "tianjia1",
-      "unicode": "e611",
-      "unicode_decimal": 58897
-    },
-    {
-      "icon_id": "12440504",
-      "name": "搜索",
-      "font_class": "sousuo",
-      "unicode": "e605",
-      "unicode_decimal": 58885
     },
     {
       "icon_id": "1964734",

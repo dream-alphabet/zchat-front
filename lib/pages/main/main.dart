@@ -6,7 +6,7 @@ import 'package:zchat/api/user.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/pages/chat/chat.dart';
 import 'package:zchat/pages/contact/contact.dart';
-import 'package:zchat/pages/share/share.dart';
+import 'package:zchat/pages/discover/discover.dart';
 import 'package:zchat/stores/token.dart';
 import 'package:zchat/stores/user.dart';
 
@@ -32,13 +32,13 @@ class _MainPageState extends State<MainPage> {
       text: '通讯录',
     ),
     _Tab(
-      icon: 'lib/assets/icon/share.png',
-      activeIcon: 'lib/assets/icon/share_active.png',
-      text: '分享',
+      icon: 'lib/assets/icon/discover.png',
+      activeIcon: 'lib/assets/icon/discover_active.png',
+      text: '发现',
     ),
   ];
   // 要展示的页面列表
-  final List<Widget> _pages = [ChatPage(), ContactPage(), SharePage()];
+  final List<Widget> _pages = [ChatPage(), ContactPage(), DiscoverPage()];
   // 当前激活的tab栏索引
   int _currentTabIndex = 0;
 
@@ -77,7 +77,7 @@ class _MainPageState extends State<MainPage> {
     final token = tokenManager.getToken();
     print('本地存储的token:$token');
     // 如果token为空，跳转到登录页面
-    if(token.isEmpty) {
+    if (token.isEmpty) {
       // 关闭所有页面并跳转到登录页面
       Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
       return;
@@ -92,17 +92,17 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 0,
-        backgroundColor: Color.fromRGBO(237, 237, 237, 1),
+        backgroundColor: Color.fromRGBO(247, 247, 247, 1),
         foregroundColor: Colors.black,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Color.fromRGBO(237, 237, 237, 1),
+          statusBarColor: Color.fromRGBO(247, 247, 247, 1),
           statusBarBrightness: Brightness.light,
           statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: Color.fromRGBO(237, 237, 237, 1), // 底部导航栏背景
+          systemNavigationBarColor: Color.fromRGBO(247, 247, 247, 1), // 底部导航栏背景
           systemNavigationBarIconBrightness: Brightness.dark, // 底部导航栏图标颜色
         ),
       ),
-      backgroundColor: Color.fromRGBO(237, 237, 237, 1),
+      backgroundColor: Color.fromRGBO(247, 247, 247, 1),
       // 使用IndexedStack保持页面状态
       body: SafeArea(
         child: IndexedStack(index: _currentTabIndex, children: _pages),
@@ -111,8 +111,11 @@ class _MainPageState extends State<MainPage> {
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           border: Border(
-            top: BorderSide(color: Color.fromRGBO(232, 232, 232, 1), width: 1.w),
-          )
+            top: BorderSide(
+              color: Color.fromRGBO(232, 232, 232, 1),
+              width: 1.w,
+            ),
+          ),
         ),
         child: Theme(
           // 禁用涟漪效果
@@ -137,7 +140,7 @@ class _MainPageState extends State<MainPage> {
             unselectedFontSize: 12.sp,
             selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
             unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
-            backgroundColor: Color.fromRGBO(237, 237, 237, 1),
+            backgroundColor: Color.fromRGBO(247, 247, 247, 1),
           ),
         ),
       ),

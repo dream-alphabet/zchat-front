@@ -149,7 +149,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color.fromRGBO(237, 237, 237, 1),
       body: Column(
         children: [
           PageHeader(title: '聊天'),

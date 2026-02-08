@@ -9,7 +9,13 @@ class PageHeader extends StatefulWidget {
   final bool showLeftBackIcon;
   final void Function()? onBack;
 
-  const PageHeader({required this.title, this.showRightIcon = true, this.showLeftBackIcon = false, this.onBack, super.key});
+  const PageHeader({
+    required this.title,
+    this.showRightIcon = true,
+    this.showLeftBackIcon = false,
+    this.onBack,
+    super.key,
+  });
 
   @override
   State<PageHeader> createState() => _PageHeaderState();
@@ -18,7 +24,13 @@ class PageHeader extends StatefulWidget {
 class _PageHeaderState extends State<PageHeader> {
   // 构建右侧图标列表
   Widget _buildIconList() {
-    return Row(spacing: 20.w, children: [Icon(MyIcon.search, size: 20.sp), Icon(MyIcon.add, size: 20.sp)]);
+    return Row(
+      spacing: 20.w,
+      children: [
+        Icon(MyIcon.search, size: 22.w),
+        Icon(MyIcon.add, size: 22.w),
+      ],
+    );
   }
 
   // 构建左侧返回图标
@@ -27,7 +39,7 @@ class _PageHeaderState extends State<PageHeader> {
       onTap: () {
         // 如果没有传递onBack，默认回退上一页
         final onBack = widget.onBack;
-        if(onBack != null) {
+        if (onBack != null) {
           onBack();
           return;
         }
@@ -51,7 +63,7 @@ class _PageHeaderState extends State<PageHeader> {
                 width: 1.w,
               ),
             ),
-            color: Color.fromRGBO(237, 237, 237, 1)
+            color: Color.fromRGBO(247, 247, 247, 1),
           ),
           alignment: Alignment.center,
           child: Text(
@@ -63,18 +75,20 @@ class _PageHeaderState extends State<PageHeader> {
             ),
           ),
         ),
-        if(widget.showLeftBackIcon) Positioned(
-          top: 0,
-          bottom: 0,
-          left: 15.w,
-          child: Center(child: _buildLeftBackIcon())
-        ),
-        if(widget.showRightIcon) Positioned(
-          top: 0,
-          bottom: 0,
-          right: 15.w,
-          child: Center(child: _buildIconList()),
-        ),
+        if (widget.showLeftBackIcon)
+          Positioned(
+            top: 0,
+            bottom: 0,
+            left: 15.w,
+            child: Center(child: _buildLeftBackIcon()),
+          ),
+        if (widget.showRightIcon)
+          Positioned(
+            top: 0,
+            bottom: 0,
+            right: 15.w,
+            child: Center(child: _buildIconList()),
+          ),
       ],
     );
   }
