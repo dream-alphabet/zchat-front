@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:zchat/common/icon.dart';
+import 'package:zchat/widgets/ink_click.dart';
 import 'package:zchat/widgets/page_header.dart';
 
 // 联系人
@@ -70,7 +71,8 @@ class _ContactPageState extends State<ContactPage> {
 
   // 列表项
   Widget _buildListItem(ListItemData data, bool showBorder) {
-    return GestureDetector(
+    return InkClick(
+      backgroundColor: Colors.white,
       onTap: () {
         Navigator.pushNamed(
           context,
@@ -79,7 +81,6 @@ class _ContactPageState extends State<ContactPage> {
         );
       },
       child: Container(
-        color: Colors.white,
         padding: EdgeInsets.only(left: 15.w),
         child: Row(
           spacing: 15.w,

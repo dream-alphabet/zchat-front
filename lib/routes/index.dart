@@ -49,6 +49,13 @@ Widget getRootWidget() {
           ),
           appBarTheme: AppBarTheme(
             surfaceTintColor: Colors.transparent,
+          ),
+          // 配置页面过渡主题
+          pageTransitionsTheme: PageTransitionsTheme(
+            builders: {
+              TargetPlatform.android: CupertinoPageTransitionsBuilder(), 
+              TargetPlatform.iOS: CupertinoPageTransitionsBuilder()
+            }
           )
         ),
         navigatorKey: globalNavigatorKey,

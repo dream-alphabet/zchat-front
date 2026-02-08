@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:zchat/common/icon.dart';
+import 'package:zchat/widgets/ink_click.dart';
 import 'package:zchat/widgets/page_header.dart';
 
 // 发现
@@ -14,14 +15,14 @@ class DiscoverPage extends StatefulWidget {
 class _DiscoverPageState extends State<DiscoverPage> {
   // 朋友圈
   Widget _buildMoments() {
-    return GestureDetector(
+    return InkClick(
+      backgroundColor: Colors.white,
       onTap: () {
         Navigator.pushNamed(context, '/moments');
       },
       child: Container(
         height: 60.w,
         padding: EdgeInsets.symmetric(horizontal: 15.w),
-        color: Colors.white,
         child: Row(
           children: [
             Image.asset(
@@ -53,14 +54,14 @@ class _DiscoverPageState extends State<DiscoverPage> {
 
   // 扫一扫
   Widget _buildScan() {
-    return GestureDetector(
+    return InkClick(
+      backgroundColor: Colors.white,
       onTap: () {
         Navigator.pushNamed(context, '/scan');
       },
       child: Container(
         height: 60.w,
         padding: EdgeInsets.symmetric(horizontal: 15.w),
-        color: Colors.white,
         child: Row(
           children: [
             Icon(
