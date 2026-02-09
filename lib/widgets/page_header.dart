@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:zchat/common/icon.dart';
+import 'package:zchat/constants/global.dart';
 
 // 页面头部组件
 class PageHeader extends StatefulWidget {
@@ -28,7 +29,56 @@ class _PageHeaderState extends State<PageHeader> {
       spacing: 20.w,
       children: [
         Icon(MyIcon.search, size: 22.w),
-        Icon(MyIcon.add, size: 22.w),
+        // Icon(MyIcon.add, size: 22.w),
+        PopupMenuButton<String>(
+          // 自定义图标
+          icon: Icon(MyIcon.add, size: 22.w),
+          // 弹出位置
+          offset: Offset(0, 40.w),
+          // 圆角
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(0),
+          ),
+          // 颜色
+          color: Colors.white,
+          menuPadding: EdgeInsets.all(0),
+          // 菜单项
+          itemBuilder: (BuildContext context) => [
+            PopupMenuItem<String>(
+              value: RoutePath.createGroup,
+              child: Row(
+                children: [
+                  Icon(MyIcon.groupChat, color: Color.fromRGBO(0, 95, 255, 1)),
+                  SizedBox(width: 12.w),
+                  Text('发起群聊'),
+                ],
+              ),
+            ),
+            PopupMenuItem<String>(
+              value: RoutePath.addFriend,
+              child: Row(
+                children: [
+                  Icon(MyIcon.newFriend, color: Color.fromRGBO(0, 95, 255, 1)),
+                  SizedBox(width: 12.w),
+                  Text('添加朋友'),
+                ],
+              ),
+            ),
+            PopupMenuItem<String>(
+              value: RoutePath.scan,
+              child: Row(
+                children: [
+                  Icon(MyIcon.scan, color: Color.fromRGBO(0, 95, 255, 1)),
+                  SizedBox(width: 12.w),
+                  Text('扫一扫'),
+                ],
+              ),
+            ),
+          ],
+          onSelected: (String value) {
+            Navigator.pushNamed(context, value);
+          },
+        ),
       ],
     );
   }

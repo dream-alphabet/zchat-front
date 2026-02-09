@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:zchat/api/user.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/common/utils.dart';
+import 'package:zchat/constants/global.dart';
 import 'package:zchat/model/user.dart';
 import 'package:zchat/stores/token.dart';
 import 'package:zchat/widgets/base64_image.dart';
@@ -73,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
       tokenManager.setToken(res.token);
       ToastUtils.showGlobalToast(msg: '登录成功');
       // 跳转到主页
-      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+      Navigator.pushNamedAndRemoveUntil(context, RoutePath.main, (route) => false);
     } catch (e) {
       _getCaptcha();
     }
@@ -213,7 +214,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: GestureDetector(
                         onTap: () {
                           // 跳转到注册页面
-                          Navigator.pushNamed(context, '/register');
+                          Navigator.pushNamed(context, RoutePath.register);
                         },
                         child: Text(
                           '没有账号?',

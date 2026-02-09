@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:zchat/pages/auth/login.dart';
 import 'package:zchat/pages/auth/register.dart';
+import 'package:zchat/pages/contact/add_friend.dart';
+import 'package:zchat/pages/contact/create_group.dart';
 import 'package:zchat/pages/contact/group_chat.dart';
 import 'package:zchat/pages/contact/new_friend.dart';
 import 'package:zchat/pages/contact/only_chat_friend.dart';
@@ -10,18 +12,21 @@ import 'package:zchat/pages/contact/user_info.dart';
 import 'package:zchat/pages/discover/moments.dart';
 import 'package:zchat/pages/discover/scan.dart';
 import 'package:zchat/pages/main/main.dart';
+import 'package:zchat/constants/global.dart';
 
 // 路由配置
 final Map<String, WidgetBuilder> routes = {
-  '/': (ctx) => MainPage(),
-  '/login': (ctx) => LoginPage(),
-  '/register': (ctx) => RegisterPage(),
-  '/newFriend': (ctx) => NewFriendPage(),
-  '/onlyChatFriend': (ctx) => OnlyChatFriendPage(),
-  '/groupChat': (ctx) => GroupChatPage(),
-  '/userInfo': (ctx) => UserInfoPage(),
-  '/moments': (ctx) => MomentsPage(),
-  '/scan': (ctx) => ScanPage()
+  RoutePath.main: (ctx) => MainPage(),
+  RoutePath.login: (ctx) => LoginPage(),
+  RoutePath.register: (ctx) => RegisterPage(),
+  RoutePath.newFriend: (ctx) => NewFriendPage(),
+  RoutePath.onlyChatFriend: (ctx) => OnlyChatFriendPage(),
+  RoutePath.groupChat: (ctx) => GroupChatPage(),
+  RoutePath.userInfo: (ctx) => UserInfoPage(),
+  RoutePath.moments: (ctx) => MomentsPage(),
+  RoutePath.scan: (ctx) => ScanPage(),
+  RoutePath.addFriend: (ctx) => AddFriendPage(),
+  RoutePath.createGroup: (ctx) => CreateGroupPage()
 };
 
 // 全局Context
@@ -47,19 +52,19 @@ Widget getRootWidget() {
             // 设置默认文本样式能自动响应字体缩放
             bodyMedium: TextStyle(fontSize: 16.sp),
           ),
-          appBarTheme: AppBarTheme(
-            surfaceTintColor: Colors.transparent,
-          ),
+          appBarTheme: AppBarTheme(surfaceTintColor: Colors.transparent),
           // 配置页面过渡主题
           pageTransitionsTheme: PageTransitionsTheme(
             builders: {
-              TargetPlatform.android: CupertinoPageTransitionsBuilder(), 
-              TargetPlatform.iOS: CupertinoPageTransitionsBuilder()
-            }
-          )
+              // Android 缩放效果
+              TargetPlatform.android: ZoomPageTransitionsBuilder(),
+              // iOS 滑动效果
+              TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+            },
+          ),
         ),
         navigatorKey: globalNavigatorKey,
-        builder: FToastBuilder(),  // FToast轻提示构建器
+        builder: FToastBuilder(), // FToast轻提示构建器
         routes: routes,
         initialRoute: '/',
       );

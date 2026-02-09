@@ -53,7 +53,7 @@ class DioRequest {
             // 关闭所有页面并跳转到登录页面
             Navigator.pushNamedAndRemoveUntil(
               globalNavigatorKey.currentContext!,
-              '/login',
+              RoutePath.login,
               (route) => false,
             );
             // 删除本地token

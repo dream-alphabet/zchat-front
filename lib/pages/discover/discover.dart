@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:zchat/common/icon.dart';
+import 'package:zchat/constants/global.dart';
 import 'package:zchat/widgets/ink_click.dart';
 import 'package:zchat/widgets/page_header.dart';
 
@@ -18,7 +19,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
     return InkClick(
       backgroundColor: Colors.white,
       onTap: () {
-        Navigator.pushNamed(context, '/moments');
+        Navigator.pushNamed(context, RoutePath.moments);
       },
       child: Container(
         height: 60.w,
@@ -57,7 +58,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
     return InkClick(
       backgroundColor: Colors.white,
       onTap: () {
-        Navigator.pushNamed(context, '/scan');
+        Navigator.pushNamed(context, RoutePath.scan);
       },
       child: Container(
         height: 60.w,

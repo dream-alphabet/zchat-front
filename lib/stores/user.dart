@@ -4,7 +4,7 @@ import 'package:zchat/model/user.dart';
 // 用户信息store
 class UserController extends GetxController {
   // 用户信息
-  var userInfo = (null as UserInfo?).obs;
+  final userInfo = (null as UserInfo?).obs;
 
   // 更新用户信息
   void setUserInfo(UserInfo newUserInfo) {

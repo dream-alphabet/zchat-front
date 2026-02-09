@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:zchat/common/icon.dart';
+import 'package:zchat/constants/global.dart';
 import 'package:zchat/widgets/ink_click.dart';
 import 'package:zchat/widgets/page_header.dart';
 
@@ -18,17 +19,17 @@ class _ContactPageState extends State<ContactPage> {
     ListItemData(
       leftIcon: MyIcon.newFriend,
       rightName: '新的朋友',
-      path: '/newFriend',
+      path: RoutePath.newFriend,
     ),
     ListItemData(
       leftIcon: MyIcon.message,
       rightName: '仅聊天的朋友',
-      path: '/onlyChatFriend',
+      path: RoutePath.onlyChatFriend,
     ),
     ListItemData(
       leftIcon: MyIcon.groupChat,
       rightName: '群聊',
-      path: '/groupChat',
+      path: RoutePath.groupChat,
     ),
   ];
   // 联系人列表数据
@@ -38,14 +39,14 @@ class _ContactPageState extends State<ContactPage> {
       isFunction: false,
       leftAvatar: 'lib/assets/test/01.png',
       rightName: '用户A',
-      path: '/userInfo',
+      path: RoutePath.userInfo,
     ),
     ListItemData(
       userId: '456',
       isFunction: false,
       leftAvatar: 'lib/assets/test/01.png',
       rightName: '用户B',
-      path: '/userInfo',
+      path: RoutePath.userInfo,
     ),
   ];
 

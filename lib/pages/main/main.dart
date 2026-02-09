@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:zchat/api/user.dart';
 import 'package:zchat/common/toast.dart';
+import 'package:zchat/constants/global.dart';
 import 'package:zchat/pages/chat/chat.dart';
 import 'package:zchat/pages/contact/contact.dart';
 import 'package:zchat/pages/discover/discover.dart';
@@ -79,7 +80,7 @@ class _MainPageState extends State<MainPage> {
     // 如果token为空，跳转到登录页面
     if (token.isEmpty) {
       // 关闭所有页面并跳转到登录页面
-      Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+      Navigator.pushNamedAndRemoveUntil(context, RoutePath.login, (route) => false);
       return;
     }
     // 获取用户信息并存入store
