@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:zchat/api/user.dart';
 import 'package:zchat/common/toast.dart';
-import 'package:zchat/constants/global.dart';
+import 'package:zchat/common/constants.dart';
 import 'package:zchat/pages/chat/chat.dart';
 import 'package:zchat/pages/contact/contact.dart';
 import 'package:zchat/pages/discover/discover.dart';

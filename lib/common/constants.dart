@@ -41,4 +41,6 @@ class RoutePath {
   static const addFriend = '/addFriend';
   // 发起群聊
   static const createGroup = '/createGroup';
+  // 搜索好友(用户/群聊)
+  static const searchFriend = '/searchFriend';
 }

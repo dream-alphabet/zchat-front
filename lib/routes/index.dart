@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:zchat/pages/auth/login.dart';
@@ -8,11 +9,12 @@ import 'package:zchat/pages/contact/create_group.dart';
 import 'package:zchat/pages/contact/group_chat.dart';
 import 'package:zchat/pages/contact/new_friend.dart';
 import 'package:zchat/pages/contact/only_chat_friend.dart';
+import 'package:zchat/pages/contact/search_friend.dart';
 import 'package:zchat/pages/contact/user_info.dart';
 import 'package:zchat/pages/discover/moments.dart';
 import 'package:zchat/pages/discover/scan.dart';
 import 'package:zchat/pages/main/main.dart';
-import 'package:zchat/constants/global.dart';
+import 'package:zchat/common/constants.dart';
 
 // 路由配置
 final Map<String, WidgetBuilder> routes = {
@@ -26,7 +28,8 @@ final Map<String, WidgetBuilder> routes = {
   RoutePath.moments: (ctx) => MomentsPage(),
   RoutePath.scan: (ctx) => ScanPage(),
   RoutePath.addFriend: (ctx) => AddFriendPage(),
-  RoutePath.createGroup: (ctx) => CreateGroupPage()
+  RoutePath.createGroup: (ctx) => CreateGroupPage(),
+  RoutePath.searchFriend: (ctx) => SearchFriendPage(),
 };
 
 // 全局Context
@@ -48,6 +51,11 @@ Widget getRootWidget() {
         // 设置主题中的文本样式也支持适配
         theme: ThemeData(
           fontFamily: 'Inter',
+          textSelectionTheme: TextSelectionThemeData(
+            selectionColor: Color.fromRGBO(20, 134, 237, 1),
+            selectionHandleColor: Color.fromRGBO(20, 134, 237, 1),
+            cursorColor: Color.fromRGBO(20, 134, 237, 1),
+          ),
           textTheme: TextTheme(
             // 设置默认文本样式能自动响应字体缩放
             bodyMedium: TextStyle(fontSize: 16.sp),
@@ -67,6 +75,17 @@ Widget getRootWidget() {
         builder: FToastBuilder(), // FToast轻提示构建器
         routes: routes,
         initialRoute: '/',
+        locale: Locale('zh'),
+        localizationsDelegates: [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: [
+          //此处设置
+          Locale('zh', 'CH'),
+          Locale('en', 'US'),
+        ],
       );
     },
   );

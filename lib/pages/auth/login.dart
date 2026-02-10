@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:zchat/api/user.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/common/utils.dart';
-import 'package:zchat/constants/global.dart';
+import 'package:zchat/common/constants.dart';
 import 'package:zchat/model/user.dart';
 import 'package:zchat/stores/token.dart';
 import 'package:zchat/widgets/base64_image.dart';

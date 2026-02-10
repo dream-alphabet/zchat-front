@@ -1,4 +1,7 @@
 // 转换时间戳为字符串
+import 'package:flutter/services.dart';
+import 'package:zchat/common/toast.dart';
+
 String formatTimestamp(int millisecondsTimestamp) {
   // 将毫秒时间戳转换为 DateTime 对象
   DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(
@@ -43,4 +46,10 @@ bool isValidEmail(String? email) {
     multiLine: false,
   );
   return emailRegex.hasMatch(email);
+}
+
+// 复制文本到剪切板
+Future<void> copyText(String text) async {
+  await Clipboard.setData(ClipboardData(text: text));
+  ToastUtils.showGlobalToast(msg: '已复制');
 }

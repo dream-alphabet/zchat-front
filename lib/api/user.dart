@@ -1,6 +1,6 @@
 // 图形验证码接口
 import 'package:zchat/api/request.dart';
-import 'package:zchat/constants/global.dart';
+import 'package:zchat/common/constants.dart';
 import 'package:zchat/model/user.dart';
 
 // 获取图形验证码

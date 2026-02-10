@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:zchat/common/icon.dart';
-import 'package:zchat/constants/global.dart';
+import 'package:zchat/common/constants.dart';
 
 // 页面头部组件
 class PageHeader extends StatefulWidget {
   final String title;
   final bool showRightIcon;
   final bool showLeftBackIcon;
+  final bool showBorder;
+  final Color backgroundColor;
   final void Function()? onBack;
 
   const PageHeader({
     required this.title,
     this.showRightIcon = true,
     this.showLeftBackIcon = false,
+    this.showBorder = true,
+    this.backgroundColor = const Color.fromRGBO(247, 247, 247, 1),
     this.onBack,
     super.key,
   });
@@ -37,7 +41,7 @@ class _PageHeaderState extends State<PageHeader> {
           offset: Offset(0, 40.w),
           // 圆角
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(0),
+            borderRadius: BorderRadius.zero,
           ),
           // 颜色
           color: Colors.white,
@@ -45,32 +49,35 @@ class _PageHeaderState extends State<PageHeader> {
           // 菜单项
           itemBuilder: (BuildContext context) => [
             PopupMenuItem<String>(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.w),
               value: RoutePath.createGroup,
               child: Row(
                 children: [
-                  Icon(MyIcon.groupChat, color: Color.fromRGBO(0, 95, 255, 1)),
+                  Icon(MyIcon.groupChat, color: Color.fromRGBO(0, 95, 255, 1), size: 26.w),
                   SizedBox(width: 12.w),
-                  Text('发起群聊'),
+                  Text('发起群聊', style: TextStyle(color: Colors.black, fontSize: 15.w)),
                 ],
               ),
             ),
             PopupMenuItem<String>(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.w),
               value: RoutePath.addFriend,
               child: Row(
                 children: [
-                  Icon(MyIcon.newFriend, color: Color.fromRGBO(0, 95, 255, 1)),
+                  Icon(MyIcon.newFriend, color: Color.fromRGBO(0, 95, 255, 1), size: 26.w),
                   SizedBox(width: 12.w),
-                  Text('添加朋友'),
+                  Text('添加朋友', style: TextStyle(color: Colors.black, fontSize: 15.w)),
                 ],
               ),
             ),
             PopupMenuItem<String>(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.w),
               value: RoutePath.scan,
               child: Row(
                 children: [
-                  Icon(MyIcon.scan, color: Color.fromRGBO(0, 95, 255, 1)),
+                  Icon(MyIcon.scan, color: Color.fromRGBO(0, 95, 255, 1), size: 26.w),
                   SizedBox(width: 12.w),
-                  Text('扫一扫'),
+                  Text('扫一扫', style: TextStyle(color: Colors.black, fontSize: 15.w)),
                 ],
               ),
             ),
@@ -108,12 +115,12 @@ class _PageHeaderState extends State<PageHeader> {
           height: 56.w,
           decoration: BoxDecoration(
             border: Border(
-              bottom: BorderSide(
+              bottom: widget.showBorder ? BorderSide(
                 color: Color.fromRGBO(232, 232, 232, 1),
                 width: 1.w,
-              ),
+              ) : BorderSide.none,
             ),
-            color: Color.fromRGBO(247, 247, 247, 1),
+            color: widget.backgroundColor,
           ),
           alignment: Alignment.center,
           child: Text(
@@ -121,7 +128,6 @@ class _PageHeaderState extends State<PageHeader> {
             style: TextStyle(
               color: Colors.black,
               fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
             ),
           ),
         ),
