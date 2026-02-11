@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-// 用户信息
-class UserInfoPage extends StatefulWidget {
-  const UserInfoPage({super.key});
+// 联系人信息(用户/群聊)
+class ContactInfoPage extends StatefulWidget {
+  const ContactInfoPage({super.key});
 
   @override
-  State<UserInfoPage> createState() => _UserInfoPageState();
+  State<ContactInfoPage> createState() => _ContactInfoPageState();
 }
 
-class _UserInfoPageState extends State<UserInfoPage> {
+class _ContactInfoPageState extends State<ContactInfoPage> {
   String _userId = '';
 
   @override
@@ -18,7 +18,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
     Future.microtask(() {
       if (ModalRoute.of(context) != null) {
         final params = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-        _userId = params['userId'];
+        _userId = params['contactId'];
         setState(() {});
       }
     });
@@ -27,8 +27,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Center(child: Text('用户信息'))),
-      body: Center(child: Text('用户信息, 用户id:$_userId')),
+      appBar: AppBar(title: Center(child: Text('联系人信息(用户/群聊)'))),
+      body: Center(child: Text('联系人信息(用户/群聊), 用户id:$_userId')),
     );
   }
 }

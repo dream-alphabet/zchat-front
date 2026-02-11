@@ -32,7 +32,13 @@ class _PageHeaderState extends State<PageHeader> {
     return Row(
       spacing: 20.w,
       children: [
-        Icon(MyIcon.search, size: 22.w),
+        GestureDetector(
+          onTap: () {
+            // 跳转到搜索联系人页面
+            Navigator.pushNamed(context, RoutePath.searchContact);
+          },
+          child: Icon(MyIcon.search, size: 22.w),
+        ),
         // Icon(MyIcon.add, size: 22.w),
         PopupMenuButton<String>(
           // 自定义图标

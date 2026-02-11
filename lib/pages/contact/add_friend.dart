@@ -93,7 +93,7 @@ class _AddFriendPageState extends State<AddFriendPage> {
         children: [
           GestureDetector(
             onTap: () {
-              Navigator.pushNamed(context, RoutePath.searchFriend);
+              Navigator.pushNamed(context, RoutePath.searchContact);
             },
             child: _buildSearch(),
           ),

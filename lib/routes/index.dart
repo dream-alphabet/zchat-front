@@ -9,8 +9,8 @@ import 'package:zchat/pages/contact/create_group.dart';
 import 'package:zchat/pages/contact/group_chat.dart';
 import 'package:zchat/pages/contact/new_friend.dart';
 import 'package:zchat/pages/contact/only_chat_friend.dart';
-import 'package:zchat/pages/contact/search_friend.dart';
-import 'package:zchat/pages/contact/user_info.dart';
+import 'package:zchat/pages/contact/search_contact.dart';
+import 'package:zchat/pages/contact/contact_info.dart';
 import 'package:zchat/pages/discover/moments.dart';
 import 'package:zchat/pages/discover/scan.dart';
 import 'package:zchat/pages/main/main.dart';
@@ -25,12 +25,12 @@ final Map<String, WidgetBuilder> routes = {
   RoutePath.newFriend: (ctx) => NewFriendPage(),
   RoutePath.onlyChatFriend: (ctx) => OnlyChatFriendPage(),
   RoutePath.groupChat: (ctx) => GroupChatPage(),
-  RoutePath.userInfo: (ctx) => UserInfoPage(),
+  RoutePath.contactInfo: (ctx) => ContactInfoPage(),
   RoutePath.moments: (ctx) => MomentsPage(),
   RoutePath.scan: (ctx) => ScanPage(),
   RoutePath.addFriend: (ctx) => AddFriendPage(),
   RoutePath.createGroup: (ctx) => CreateGroupPage(),
-  RoutePath.searchFriend: (ctx) => SearchFriendPage(),
+  RoutePath.searchContact: (ctx) => SearchContactPage(),
   RoutePath.myQRCode: (ctx) => MyQrcodePage()
 };
 

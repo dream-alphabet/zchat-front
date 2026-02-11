@@ -15,6 +15,7 @@ class Api {
   static const login = '/user/login';
   static const register = '/user/register';
   static const getUserInfo = '/user/userInfo';
+  static const searchContactExist = '/contact/searchExist';
 }
 
 // 路由路径常量
@@ -31,8 +32,8 @@ class RoutePath {
   static const onlyChatFriend = 'onlyChatFriend';
   // 群聊(查看加入的群聊)
   static const groupChat = 'groupChat';
-  // 用户信息
-  static const userInfo = 'userInfo';
+  // 联系人信息(用户/群聊)
+  static const contactInfo = 'contactInfo';
   // 朋友圈
   static const moments = 'moments';
   // 扫一扫
@@ -42,7 +43,7 @@ class RoutePath {
   // 发起群聊
   static const createGroup = 'createGroup';
   // 搜索好友(用户/群聊)
-  static const searchFriend = 'searchFriend';
+  static const searchContact = 'searchContact';
   // 我的二维码
   static const myQRCode = 'myQRCode';
 }

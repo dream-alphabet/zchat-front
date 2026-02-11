@@ -1,23 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:zchat/api/contact.dart';
+import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/widgets/ink_click.dart';
 
 // 搜索好友(用户/群聊)
-class SearchFriendPage extends StatefulWidget {
-  const SearchFriendPage({super.key});
+class SearchContactPage extends StatefulWidget {
+  const SearchContactPage({super.key});
 
   @override
-  State<SearchFriendPage> createState() => _SearchFriendPageState();
+  State<SearchContactPage> createState() => _SearchContactPageState();
 }
 
-class _SearchFriendPageState extends State<SearchFriendPage> {
+class _SearchContactPageState extends State<SearchContactPage> {
   // 要搜索的内容
   String _searchText = '';
   // 搜索框控制器
   final _searchController = TextEditingController();
+
+  // 搜索
+  Future<void> _search() async {
+    // 搜索内容不能为空
+    if (_searchText.isEmpty) {
+      return ToastUtils.showGlobalToast(msg: '搜索内容不能为空');
+    }
+    // 搜索
+    final exists = await searchContactExistApi(_searchText);
+    if (!exists) {
+      return ToastUtils.showGlobalToast(msg: '用户/群组不存在');
+    }
+    Navigator.pushNamed(
+      context,
+      RoutePath.contactInfo,
+      arguments: {'contactId': _searchText},
+    );
+  }
 
   // 搜索框
   Widget _buildSearch() {
@@ -32,6 +52,9 @@ class _SearchFriendPageState extends State<SearchFriendPage> {
                 setState(() {
                   _searchText = value;
                 });
+              },
+              onSubmitted: (value) {
+                _search();
               },
               autofocus: true,
               controller: _searchController,
@@ -170,12 +193,7 @@ class _SearchFriendPageState extends State<SearchFriendPage> {
           _buildSearch(),
           if (_searchText.isNotEmpty)
             InkClick(
-              onTap: () {
-                // 搜索内容不能为空
-                if (_searchText.isEmpty) {
-                  return ToastUtils.showGlobalToast(msg: '搜索内容不能为空');
-                }
-              },
+              onTap: _search,
               backgroundColor: Colors.white,
               child: _buildSearchContent(),
             ),

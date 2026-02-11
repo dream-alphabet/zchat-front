@@ -39,14 +39,14 @@ class _ContactPageState extends State<ContactPage> {
       isFunction: false,
       leftAvatar: 'lib/assets/test/01.png',
       rightName: '用户A',
-      path: RoutePath.userInfo,
+      path: RoutePath.contactInfo,
     ),
     ListItemData(
       userId: '456',
       isFunction: false,
       leftAvatar: 'lib/assets/test/01.png',
       rightName: '用户B',
-      path: RoutePath.userInfo,
+      path: RoutePath.contactInfo,
     ),
   ];
 
@@ -78,7 +78,7 @@ class _ContactPageState extends State<ContactPage> {
         Navigator.pushNamed(
           context,
           data.path,
-          arguments: {'userId': data.userId},
+          arguments: {'contactId': data.userId},
         );
       },
       child: Container(
