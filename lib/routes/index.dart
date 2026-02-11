@@ -15,6 +15,7 @@ import 'package:zchat/pages/discover/moments.dart';
 import 'package:zchat/pages/discover/scan.dart';
 import 'package:zchat/pages/main/main.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/pages/my/my_qrcode.dart';
 
 // 路由配置
 final Map<String, WidgetBuilder> routes = {
@@ -30,6 +31,7 @@ final Map<String, WidgetBuilder> routes = {
   RoutePath.addFriend: (ctx) => AddFriendPage(),
   RoutePath.createGroup: (ctx) => CreateGroupPage(),
   RoutePath.searchFriend: (ctx) => SearchFriendPage(),
+  RoutePath.myQRCode: (ctx) => MyQrcodePage()
 };
 
 // 全局Context
@@ -74,7 +76,8 @@ Widget getRootWidget() {
         navigatorKey: globalNavigatorKey,
         builder: FToastBuilder(), // FToast轻提示构建器
         routes: routes,
-        initialRoute: '/',
+        initialRoute: RoutePath.main,
+        // 语言设置
         locale: Locale('zh'),
         localizationsDelegates: [
           GlobalMaterialLocalizations.delegate,

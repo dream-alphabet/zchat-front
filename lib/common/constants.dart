@@ -20,27 +20,29 @@ class Api {
 // 路由路径常量
 class RoutePath {
   // 主页面
-  static const main = '/';
+  static const main = 'main';
   // 登录
-  static const login = '/login';
+  static const login = 'login';
   // 注册
-  static const register = '/register';
+  static const register = 'register';
   // 新的朋友(查看好友申请)
-  static const newFriend = '/newFriend';
+  static const newFriend = 'newFriend';
   // 仅聊天的朋友
-  static const onlyChatFriend = '/onlyChatFriend';
+  static const onlyChatFriend = 'onlyChatFriend';
   // 群聊(查看加入的群聊)
-  static const groupChat = '/groupChat';
+  static const groupChat = 'groupChat';
   // 用户信息
-  static const userInfo = '/userInfo';
+  static const userInfo = 'userInfo';
   // 朋友圈
-  static const moments = '/moments';
+  static const moments = 'moments';
   // 扫一扫
-  static const scan = '/scan';
+  static const scan = 'scan';
   // 添加朋友
-  static const addFriend = '/addFriend';
+  static const addFriend = 'addFriend';
   // 发起群聊
-  static const createGroup = '/createGroup';
+  static const createGroup = 'createGroup';
   // 搜索好友(用户/群聊)
-  static const searchFriend = '/searchFriend';
+  static const searchFriend = 'searchFriend';
+  // 我的二维码
+  static const myQRCode = 'myQRCode';
 }
