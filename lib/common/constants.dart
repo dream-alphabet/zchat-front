@@ -16,6 +16,7 @@ class Api {
   static const register = '/user/register';
   static const getUserInfo = '/user/userInfo';
   static const searchContactExist = '/contact/searchExist';
+  static const getContactInfo = '/contact/contactInfo';
 }
 
 // 路由路径常量
@@ -46,4 +47,8 @@ class RoutePath {
   static const searchContact = 'searchContact';
   // 我的二维码
   static const myQRCode = 'myQRCode';
+  // 好友设置
+  static const friendSetting = 'friendSetting';
+  // 添加到通讯录
+  static const addContact = 'addContact';
 }

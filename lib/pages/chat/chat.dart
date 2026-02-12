@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/chat.dart';
+import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/ink_click.dart';
 import 'package:zchat/widgets/page_header.dart';
 
@@ -73,14 +74,7 @@ class _ChatPageState extends State<ChatPage> {
           spacing: 10.w,
           children: [
             // 头像
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20.w),
-              child: Image.asset(
-                'lib/assets/test/01.png',
-                width: 40.w,
-                height: 40.w,
-              ),
-            ),
+            ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

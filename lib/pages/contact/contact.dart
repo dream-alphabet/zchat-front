@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/ink_click.dart';
 import 'package:zchat/widgets/page_header.dart';
 
@@ -98,15 +99,7 @@ class _ContactPageState extends State<ContactPage> {
                     ),
                     child: Icon(data.leftIcon, color: Colors.white, size: 26.w),
                   )
-                : ClipRRect(
-                    borderRadius: BorderRadius.circular(8.w),
-                    clipBehavior: Clip.antiAlias,
-                    child: Image.asset(
-                      data.leftAvatar ?? '',
-                      width: 40.w,
-                      height: 40.w,
-                    ),
-                  ),
+                : ContactAvatar(imageUrl: data.leftAvatar ?? ''),
             Expanded(
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 8.w),
