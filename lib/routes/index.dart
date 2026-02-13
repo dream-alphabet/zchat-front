@@ -56,7 +56,7 @@ Widget getRootWidget() {
         title: 'zchat',
         // 设置主题中的文本样式也支持适配
         theme: ThemeData(
-          fontFamily: 'Inter',
+          fontFamily: 'MyFamily',
           textSelectionTheme: TextSelectionThemeData(
             selectionColor: Color.fromRGBO(20, 134, 237, 1),
             selectionHandleColor: Color.fromRGBO(20, 134, 237, 1),

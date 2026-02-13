@@ -17,6 +17,7 @@ class Api {
   static const getUserInfo = '/user/userInfo';
   static const searchContactExist = '/contact/searchExist';
   static const getContactInfo = '/contact/contactInfo';
+  static const sendContactApply = '/contact/sendApply';
 }
 
 // 路由路径常量

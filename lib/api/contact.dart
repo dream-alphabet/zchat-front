@@ -15,3 +15,8 @@ Future<ContactInfoRes?> getContactInfoApi(String contactId) async {
   }
   return ContactInfoRes.fromJson(result);
 }
+
+// 发送添加朋友申请
+Future<void> sendContactApplyApi(SendApplyReq data) async {
+  await request.post(Api.sendContactApply, data: data.toJson());
+}

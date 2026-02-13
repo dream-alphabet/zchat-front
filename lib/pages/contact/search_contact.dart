@@ -58,7 +58,6 @@ class _SearchContactPageState extends State<SearchContactPage> {
               },
               autofocus: true,
               controller: _searchController,
-              cursorColor: Color.fromRGBO(20, 134, 237, 1),
               textInputAction: TextInputAction.search,
               style: TextStyle(color: Colors.black, fontSize: 16.sp),
               decoration: InputDecoration(

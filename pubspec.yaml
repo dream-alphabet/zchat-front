@@ -87,6 +87,11 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
+    # 字体图标
     - family: MyIcon
       fonts:
         - asset: lib/assets/fonts/iconfont.ttf
+    # 自定义文本字体
+    - family: MyFamily
+      fonts:
+        - asset: lib/assets/fonts/SmileySans-Oblique.ttf

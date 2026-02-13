@@ -30,7 +30,7 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
   @override
   void initState() {
     super.initState();
-    // 接收用户id参数
+    // 接收联系人id参数
     Future.microtask(() {
       if (ModalRoute.of(context) != null) {
         final params =
@@ -129,7 +129,11 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
     return Column(
       children: [
         _buildBottomBtn('添加到通讯录', () {
-          Navigator.pushNamed(context, RoutePath.addContact);
+          Navigator.pushNamed(
+            context,
+            RoutePath.addContact,
+            arguments: {'contactId': _contactId},
+          );
         }),
       ],
     );
