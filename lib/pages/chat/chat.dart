@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/chat.dart';
+import 'package:zchat/widgets/chat_blank.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/ink_click.dart';
 import 'package:zchat/widgets/page_header.dart';
@@ -34,25 +35,6 @@ class _ChatPageState extends State<ChatPage> {
       noReadCount: 2,
     ),
   ];
-
-  // 构建空白内容
-  Widget _buildBlank() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      spacing: 30.w,
-      children: [
-        Image.asset(
-          'lib/assets/images/chat-blank.png',
-          width: 113.w,
-          height: 107.w,
-        ),
-        Text(
-          '请开始聊天吧!',
-          style: TextStyle(fontSize: 16.sp, color: Colors.black),
-        ),
-      ],
-    );
-  }
 
   Widget _buildSessionItem(ChatSession session) {
     return InkClick(
@@ -156,7 +138,9 @@ class _ChatPageState extends State<ChatPage> {
         children: [
           PageHeader(title: '聊天'),
           Expanded(
-            child: _sessionList.isEmpty ? _buildBlank() : _buildSessionList(),
+            child: _sessionList.isEmpty
+                ? ChatBlank(msg: '请开始聊天吧!')
+                : _buildSessionList(),
           ),
         ],
       ),

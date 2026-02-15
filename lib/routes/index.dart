@@ -13,6 +13,7 @@ import 'package:zchat/pages/contact/new_friend.dart';
 import 'package:zchat/pages/contact/only_chat_friend.dart';
 import 'package:zchat/pages/contact/search_contact.dart';
 import 'package:zchat/pages/contact/contact_info.dart';
+import 'package:zchat/pages/contact/verify_apply.dart';
 import 'package:zchat/pages/discover/moments.dart';
 import 'package:zchat/pages/discover/scan.dart';
 import 'package:zchat/pages/main/main.dart';
@@ -35,7 +36,8 @@ final Map<String, WidgetBuilder> routes = {
   RoutePath.searchContact: (ctx) => SearchContactPage(),
   RoutePath.myQRCode: (ctx) => MyQrcodePage(),
   RoutePath.friendSetting: (ctx) => FriendSettingPage(),
-  RoutePath.addContact: (ctx) => AddContactPage()
+  RoutePath.addContact: (ctx) => AddContactPage(),
+  RoutePath.verifyApply: (ctx) => VerifyApplyPage()
 };
 
 // 全局Context

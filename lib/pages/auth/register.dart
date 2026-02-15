@@ -167,6 +167,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 title: '注册',
                 showRightIcon: false,
                 showLeftBackIcon: true,
+                backgroundColor: Colors.white,
               ),
               Padding(
                 padding: EdgeInsetsGeometry.symmetric(

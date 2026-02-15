@@ -16,3 +16,22 @@ class Result {
         data: json["data"],
     );
 }
+
+// 分页响应结果
+class PageRes {
+  int pages;
+  int total;
+  List<dynamic> list;
+
+  PageRes({
+    required this.pages,
+    required this.total,
+    required this.list
+  });
+
+  factory PageRes.fromJson(Map<String, dynamic> json) => PageRes(
+    pages: json['pages'], 
+    total: json['total'], 
+    list: json['list']
+  );
+}

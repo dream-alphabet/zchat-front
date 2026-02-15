@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/common/constants.dart';
-import 'package:zchat/model/result.dart';
+import 'package:zchat/model/common.dart';
 import 'package:zchat/routes/index.dart';
 import 'package:zchat/stores/token.dart';
 

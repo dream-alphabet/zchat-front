@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/widgets/chat_blank.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/ink_click.dart';
 import 'package:zchat/widgets/page_header.dart';
@@ -50,26 +51,6 @@ class _ContactPageState extends State<ContactPage> {
       path: RoutePath.contactInfo,
     ),
   ];
-
-  // 构建空白内容
-  Widget _buildBlank() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      spacing: 30.w,
-      children: [
-        SizedBox(height: 50.w),
-        Image.asset(
-          'lib/assets/images/chat-blank.png',
-          width: 113.w,
-          height: 107.w,
-        ),
-        Text(
-          '快去寻找好友吧!',
-          style: TextStyle(fontSize: 16.sp, color: Colors.black),
-        ),
-      ],
-    );
-  }
 
   // 列表项
   Widget _buildListItem(ListItemData data, bool showBorder) {
@@ -178,7 +159,9 @@ class _ContactPageState extends State<ContactPage> {
               ),
             ),
           ),
-          _contactList.isEmpty ? _buildBlank() : _buildContactList(),
+          _contactList.isEmpty
+              ? ChatBlank(msg: '快去寻找好友吧!')
+              : _buildContactList(),
         ],
       ),
     );

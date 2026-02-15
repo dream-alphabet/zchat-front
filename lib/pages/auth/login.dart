@@ -157,6 +157,7 @@ class _LoginPageState extends State<LoginPage> {
               title: '登录',
               showRightIcon: false,
               showLeftBackIcon: false,
+              backgroundColor: Colors.white,
             ),
             Expanded(
               flex: 1,

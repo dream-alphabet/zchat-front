@@ -39,3 +39,76 @@ class SendApplyReq {
     "applyInfo": applyInfo,
   };
 }
+
+// 联系人申请响应
+class ContactApplyRes {
+  int applyId;
+  String applyUserId;
+  String receiveUserId;
+  int contactType;
+  String contactId;
+  String contactName;
+  int status;
+  String applyInfo;
+  int applyTime;
+  int? handleTime;
+
+  ContactApplyRes({
+    required this.applyId,
+    required this.applyUserId,
+    required this.receiveUserId,
+    required this.contactType,
+    required this.contactId,
+    required this.contactName,
+    required this.status,
+    required this.applyInfo,
+    required this.applyTime,
+    required this.handleTime,
+  });
+
+  factory ContactApplyRes.fromJson(Map<String, dynamic> json) =>
+      ContactApplyRes(
+        applyId: json["applyId"],
+        applyUserId: json["applyUserId"],
+        receiveUserId: json["receiveUserId"],
+        contactType: json["contactType"],
+        contactId: json["contactId"],
+        contactName: json["contactName"],
+        status: json["status"],
+        applyInfo: json["applyInfo"],
+        applyTime: json["applyTime"],
+        handleTime: json["handleTime"],
+      );
+
+  Map<String, dynamic> toJson() => {
+    "applyId": applyId,
+    "applyUserId": applyUserId,
+    "receiveUserId": receiveUserId,
+    "contactType": contactType,
+    "contactId": contactId,
+    "contactName": contactName,
+    "status": status,
+    "applyInfo": applyInfo,
+    "applyTime": applyTime,
+    "handleTime": handleTime,
+  };
+}
+
+// 获取申请列表请求参数
+class ApplyListReq {
+  int page;
+  int pageSize;
+  int contactType;
+
+  ApplyListReq({
+    required this.page,
+    required this.pageSize,
+    required this.contactType,
+  });
+
+  Map<String, dynamic> toMap() => {
+    "page": page,
+    "pageSize": pageSize,
+    "contactType": contactType,
+  };
+}
