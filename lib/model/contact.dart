@@ -112,3 +112,19 @@ class ApplyListReq {
     "contactType": contactType,
   };
 }
+
+// 处理联系人申请请求参数
+class HandleApplyReq {
+  int applyId;
+  int status;
+
+  HandleApplyReq({
+    required this.applyId,
+    required this.status
+  });
+
+  Map<String, dynamic> toMap() => {
+    "applyId": applyId,
+    "status": status,
+  };
+}

@@ -34,3 +34,8 @@ Future<PageRes> getContactApplyListApi(ApplyListReq req) async {
     (await request.get(Api.getContactApplyList, params: req.toMap())),
   );
 }
+
+// 处理联系人申请
+Future<void> handleApplyApi(HandleApplyReq req) {
+  return request.get(Api.handleApply, params: req.toMap());
+}

@@ -19,6 +19,7 @@ class Api {
   static const getContactInfo = '/contact/contactInfo';
   static const sendContactApply = '/contact/sendApply';
   static const getContactApplyList = '/contact/apply';
+  static const handleApply = '/contact/apply/handle';
 }
 
 // 路由路径常量

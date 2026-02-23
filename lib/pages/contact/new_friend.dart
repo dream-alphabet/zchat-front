@@ -59,21 +59,37 @@ class _NewFriendPageState extends State<NewFriendPage> {
   }
 
   // 申请列表项右侧处理按钮或状态文本
-  Widget _buildItemRight(int status) {
-    return status == ContactApplyStatusEnum.waitHandle
-        ? Container(
-            decoration: BoxDecoration(
-              color: Color.fromRGBO(242, 242, 242, 1),
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 8.w),
-            child: Text(
-              '验证',
-              style: TextStyle(fontSize: 15.sp, color: Colors.black),
+  Widget _buildItemRight(ContactApplyRes apply) {
+    return apply.status == ContactApplyStatusEnum.waitHandle
+        ? GestureDetector(
+            onTap: () async {
+              // 跳转到验证好友申请页面, 并等待结果
+              final status = await Navigator.pushNamed(
+                context,
+                RoutePath.verifyApply,
+                arguments: {"applyId": apply.applyId},
+              );
+              // 如果处理了申请
+              if (status != null && status is int) {
+                setState(() {
+                  apply.status = status;
+                });
+              }
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: Color.fromRGBO(242, 242, 242, 1),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 8.w),
+              child: Text(
+                '验证',
+                style: TextStyle(fontSize: 15.sp, color: Colors.black),
+              ),
             ),
           )
         : Text(
-            ContactApplyStatusEnum.getStatusText(status),
+            ContactApplyStatusEnum.getStatusText(apply.status),
             style: TextStyle(
               fontSize: 16.sp,
               color: Color.fromRGBO(119, 119, 119, 1),
@@ -131,13 +147,7 @@ class _NewFriendPageState extends State<NewFriendPage> {
                   ),
                   Padding(
                     padding: EdgeInsetsGeometry.only(right: 15.w),
-                    child: GestureDetector(
-                      onTap: () {
-                        // 跳转到验证好友申请页面
-                        Navigator.pushNamed(context, RoutePath.verifyApply);
-                      },
-                      child: _buildItemRight(apply.status),
-                    ),
+                    child: _buildItemRight(apply),
                   ),
                 ],
               ),
