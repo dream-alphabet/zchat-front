@@ -105,6 +105,7 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
     );
   }
 
+  // 底部操作按钮
   Widget _buildBottomBtn(String name, GestureTapCallback onTap) {
     return InkClick(
       onTap: onTap,
@@ -124,17 +125,62 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
     );
   }
 
+  // 底部提示
+  Widget _buildWarn(String info) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 12.w),
+      alignment: Alignment.center,
+      color: Colors.white,
+      child: Text(
+        info,
+        style: TextStyle(fontSize: 18.sp, color: Color.fromRGBO(97, 97, 97, 1)),
+      ),
+    );
+  }
+
+  // 是否可以添加到通讯录
+  bool _canAdd() {
+    // 已经是好友或者处于拉黑状态不能添加
+    return ![
+      UserContactStatusEnum.friend,
+      UserContactStatusEnum.block,
+      UserContactStatusEnum.beBlocked,
+    ].contains(_contactInfo?.contactStatus);
+  }
+
+  // 是否处于拉黑状态
+  bool _isBlocked() {
+    return [
+      UserContactStatusEnum.block,
+      UserContactStatusEnum.beBlocked,
+    ].contains(_contactInfo?.contactStatus);
+  }
+
   // 构建底部操作区域
   Widget _buildBottom() {
     return Column(
       children: [
-        _buildBottomBtn('添加到通讯录', () {
-          Navigator.pushNamed(
-            context,
-            RoutePath.addContact,
-            arguments: {'contactId': _contactId},
-          );
-        }),
+        if (_canAdd())
+          _buildBottomBtn('添加到通讯录', () {
+            Navigator.pushNamed(
+              context,
+              RoutePath.addContact,
+              arguments: {'contactId': _contactId},
+            );
+          }),
+        if (_contactInfo?.contactStatus == UserContactStatusEnum.friend)
+          _buildBottomBtn('发消息', () {
+            Navigator.pushNamed(
+              context,
+              RoutePath.chatMessage,
+              arguments: {
+                'contactId': _contactInfo?.contactId,
+                'contactType': _contactInfo?.contactType,
+              },
+            );
+          }),
+        if (_isBlocked()) _buildWarn('已拉黑'),
       ],
     );
   }
@@ -162,8 +208,9 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
             _buildTop(),
             _buildCenter(),
             SizedBox(height: 20.w),
-            if (_contactId != _userController.getUserInfo()?.userId)
-              _buildBottom(),
+            _contactId != _userController.getUserInfo()?.userId
+                ? _buildBottom()
+                : _buildWarn('不能和自己添加好友'),
           ],
         ),
       ),

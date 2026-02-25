@@ -39,3 +39,9 @@ Future<PageRes> getContactApplyListApi(ApplyListReq req) async {
 Future<void> handleApplyApi(HandleApplyReq req) {
   return request.get(Api.handleApply, params: req.toMap());
 }
+
+// 获取联系人列表
+Future<List<UserContactRes>> getContactListApi(int contactType) async {
+  final list = List.from(await request.get(Api.getContactList, params: {'contactType': contactType}));
+  return List.generate(list.length, (index) => UserContactRes.fromJson(list[index]));
+}

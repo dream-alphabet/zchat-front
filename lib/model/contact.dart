@@ -128,3 +128,24 @@ class HandleApplyReq {
     "status": status,
   };
 }
+
+// 联系人响应对象
+class UserContactRes {
+    String contactId;
+    String contactName;
+
+    UserContactRes({
+        required this.contactId,
+        required this.contactName,
+    });
+
+    factory UserContactRes.fromJson(Map<String, dynamic> json) => UserContactRes(
+        contactId: json["contactId"],
+        contactName: json["contactName"],
+    );
+
+    Map<String, dynamic> toJson() => {
+        "contactId": contactId,
+        "contactName": contactName,
+    };
+}

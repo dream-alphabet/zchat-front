@@ -20,6 +20,7 @@ class Api {
   static const sendContactApply = '/contact/sendApply';
   static const getContactApplyList = '/contact/apply';
   static const handleApply = '/contact/apply/handle';
+  static const getContactList = '/contact/list';
 }
 
 // 路由路径常量
@@ -56,4 +57,6 @@ class RoutePath {
   static const addContact = 'addContact';
   // 验证联系人申请
   static const verifyApply = 'verifyApply';
+  // 聊天消息
+  static const chatMessage = 'chatMessage';
 }

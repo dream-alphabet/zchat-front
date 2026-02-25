@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:zchat/api/contact.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/widgets/chat_blank.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/ink_click.dart';
@@ -35,28 +37,36 @@ class _ContactPageState extends State<ContactPage> {
     ),
   ];
   // 联系人列表数据
-  final _contactList = [
-    ListItemData(
-      userId: '123',
-      isFunction: false,
-      leftAvatar: 'lib/assets/test/01.png',
-      rightName: '用户A',
-      path: RoutePath.contactInfo,
-    ),
-    ListItemData(
-      userId: '456',
-      isFunction: false,
-      leftAvatar: 'lib/assets/test/01.png',
-      rightName: '用户B',
-      path: RoutePath.contactInfo,
-    ),
-  ];
+  List<ListItemData> _contactList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _getContactList();
+  }
+
+  // 获取联系人列表
+  Future<void> _getContactList() async {
+    final list = await getContactListApi(UserContactTypeEnum.user);
+    _contactList = List.generate(
+      list.length,
+      (index) => ListItemData(
+        userId: list[index].contactId,
+        isFunction: false,
+        leftAvatar: 'lib/assets/test/01.png',
+        rightName: list[index].contactName,
+        path: RoutePath.contactInfo,
+      ),
+    );
+    setState(() {});
+  }
 
   // 列表项
   Widget _buildListItem(ListItemData data, bool showBorder) {
     return InkClick(
       backgroundColor: Colors.white,
       onTap: () {
+        print('contactId:${data.userId}');
         Navigator.pushNamed(
           context,
           data.path,

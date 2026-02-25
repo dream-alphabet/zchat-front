@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:zchat/pages/auth/login.dart';
 import 'package:zchat/pages/auth/register.dart';
+import 'package:zchat/pages/chat/message.dart';
 import 'package:zchat/pages/contact/add_contact.dart';
 import 'package:zchat/pages/contact/add_friend.dart';
 import 'package:zchat/pages/contact/create_group.dart';
@@ -37,7 +38,8 @@ final Map<String, WidgetBuilder> routes = {
   RoutePath.myQRCode: (ctx) => MyQrcodePage(),
   RoutePath.friendSetting: (ctx) => FriendSettingPage(),
   RoutePath.addContact: (ctx) => AddContactPage(),
-  RoutePath.verifyApply: (ctx) => VerifyApplyPage()
+  RoutePath.verifyApply: (ctx) => VerifyApplyPage(),
+  RoutePath.chatMessage: (ctx) => ChatMessagePage()
 };
 
 // 全局Context
