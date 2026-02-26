@@ -24,8 +24,8 @@ Future<ContactInfoRes?> getContactInfoApi(String contactId) async {
 }
 
 // 发送添加朋友申请
-Future<void> sendContactApplyApi(SendApplyReq data) async {
-  await request.post(Api.sendContactApply, data: data.toJson());
+Future<int> sendContactApplyApi(SendApplyReq data) async {
+  return (await request.post(Api.sendContactApply, data: data.toJson()));
 }
 
 // 获取联系人申请列表
@@ -42,6 +42,11 @@ Future<void> handleApplyApi(HandleApplyReq req) {
 
 // 获取联系人列表
 Future<List<UserContactRes>> getContactListApi(int contactType) async {
-  final list = List.from(await request.get(Api.getContactList, params: {'contactType': contactType}));
-  return List.generate(list.length, (index) => UserContactRes.fromJson(list[index]));
+  final list = List.from(
+    await request.get(Api.getContactList, params: {'contactType': contactType}),
+  );
+  return List.generate(
+    list.length,
+    (index) => UserContactRes.fromJson(list[index]),
+  );
 }

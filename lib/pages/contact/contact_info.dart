@@ -162,12 +162,16 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
     return Column(
       children: [
         if (_canAdd())
-          _buildBottomBtn('添加到通讯录', () {
-            Navigator.pushNamed(
+          _buildBottomBtn('添加到通讯录', () async {
+            final joinType = await Navigator.pushNamed(
               context,
               RoutePath.addContact,
               arguments: {'contactId': _contactId},
             );
+            // 如果联系人添加类型是直接添加，重新获取联系人信息
+            if (joinType == JoinTypeEnum.directAdd) {
+              _getContactInfo();
+            }
           }),
         if (_contactInfo?.contactStatus == UserContactStatusEnum.friend)
           _buildBottomBtn('发消息', () {

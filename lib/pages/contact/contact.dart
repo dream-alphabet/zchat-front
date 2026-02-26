@@ -4,6 +4,7 @@ import 'package:zchat/api/contact.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/model/enums/contact.dart';
+import 'package:zchat/routes/index.dart';
 import 'package:zchat/widgets/chat_blank.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/ink_click.dart';
@@ -17,7 +18,7 @@ class ContactPage extends StatefulWidget {
   State<ContactPage> createState() => _ContactPageState();
 }
 
-class _ContactPageState extends State<ContactPage> {
+class _ContactPageState extends State<ContactPage> with RouteAware {
   // 功能列表数据
   final _functionList = [
     ListItemData(
@@ -45,6 +46,25 @@ class _ContactPageState extends State<ContactPage> {
     _getContactList();
   }
 
+  @override
+  void didChangeDependencies() {
+    routeObserver.subscribe(this, ModalRoute.of(context)!); //订阅
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this); //取消订阅
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // 当上一个页面回退到当前页面时调用
+    super.didPopNext();
+    _getContactList();
+  }
+
   // 获取联系人列表
   Future<void> _getContactList() async {
     final list = await getContactListApi(UserContactTypeEnum.user);
@@ -66,7 +86,6 @@ class _ContactPageState extends State<ContactPage> {
     return InkClick(
       backgroundColor: Colors.white,
       onTap: () {
-        print('contactId:${data.userId}');
         Navigator.pushNamed(
           context,
           data.path,

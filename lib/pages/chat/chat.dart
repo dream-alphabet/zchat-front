@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:zchat/api/chat.dart';
+import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/chat.dart';
 import 'package:zchat/widgets/chat_blank.dart';
@@ -17,30 +19,35 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   // 会话列表
-  final List<ChatSession> _sessionList = [
-    ChatSession(
-      sessionId: '1',
-      contactName: 'dream',
-      contactId: 'U1',
-      lastMessage: '你好的回调函数豆瓣萨哈帝国萨城西北角爱词霸',
-      lastReceiveTime: 1767600153280,
-      noReadCount: 0,
-    ),
-    ChatSession(
-      sessionId: '1',
-      contactName: 'dream',
-      contactId: 'U1',
-      lastMessage: '你好',
-      lastReceiveTime: 1767600153280,
-      noReadCount: 2,
-    ),
-  ];
+  List<ChatSessionRes> _sessionList = [];
 
-  Widget _buildSessionItem(ChatSession session) {
+  @override
+  void initState() {
+    super.initState();
+    _getChatSessionList();
+  }
+
+  // 获取会话列表
+  Future<void> _getChatSessionList() async {
+    final list = await getChatSessionListApi();
+    setState(() {
+      _sessionList = list;
+    });
+  }
+
+  Widget _buildSessionItem(ChatSessionRes session) {
+    const noReadCount = 0;
     return InkClick(
       backgroundColor: Colors.white,
       onTap: () {
-        print('跳转');
+        Navigator.pushNamed(
+          context,
+          RoutePath.chatMessage,
+          arguments: {
+            'contactId': session.contactId,
+            'contactType': session.contactType,
+          },
+        );
       },
       child: Container(
         padding: EdgeInsetsGeometry.symmetric(vertical: 12.w, horizontal: 10.w),
@@ -70,7 +77,7 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                   ),
                   Text(
-                    session.lastMessage,
+                    session.lastMessage ?? '',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -85,7 +92,7 @@ class _ChatPageState extends State<ChatPage> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 // 徽标
-                session.noReadCount > 0
+                noReadCount > 0
                     ? Container(
                         width: 16.w,
                         height: 16.w,
@@ -95,7 +102,7 @@ class _ChatPageState extends State<ChatPage> {
                           shape: BoxShape.circle,
                         ),
                         child: Text(
-                          '${session.noReadCount}',
+                          '${noReadCount > 99 ? '99+' : noReadCount}',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 11.sp,

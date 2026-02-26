@@ -1,18 +1,27 @@
-// 会话列表项
-class ChatSession {
-  final String sessionId;
-  final String contactName;
-  final String contactId;
-  final String lastMessage;
-  final int lastReceiveTime;
-  final int noReadCount;
+// 会话响应结果
+class ChatSessionRes {
+  String sessionId;
+  String contactId;
+  int contactType;
+  String contactName;
+  String? lastMessage;
+  int? lastReceiveTime;
 
-  ChatSession({
+  ChatSessionRes({
     required this.sessionId,
-    required this.contactName,
     required this.contactId,
+    required this.contactType,
+    required this.contactName,
     required this.lastMessage,
     required this.lastReceiveTime,
-    required this.noReadCount
   });
+
+  factory ChatSessionRes.fromJson(Map<String, dynamic> json) => ChatSessionRes(
+    sessionId: json["sessionId"],
+    contactId: json["contactId"],
+    contactType: json["contactType"],
+    contactName: json["contactName"],
+    lastMessage: json["lastMessage"],
+    lastReceiveTime: json["lastReceiveTime"],
+  );
 }

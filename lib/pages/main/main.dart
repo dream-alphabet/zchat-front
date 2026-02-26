@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:zchat/api/user.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/common/websocket.dart';
 import 'package:zchat/pages/chat/chat.dart';
 import 'package:zchat/pages/contact/contact.dart';
 import 'package:zchat/pages/discover/discover.dart';
@@ -86,6 +87,7 @@ class _MainPageState extends State<MainPage> {
     // 获取用户信息并存入store
     final userInfo = await getUserInfoApi();
     _userController.setUserInfo(userInfo);
+    await initWebsocket();
   }
 
   @override

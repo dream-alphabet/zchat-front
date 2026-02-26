@@ -2,7 +2,10 @@ import 'package:flutter/services.dart';
 import 'package:zchat/common/toast.dart';
 
 // 转换时间戳为字符串
-String formatTimestamp(int millisecondsTimestamp) {
+String formatTimestamp(int? millisecondsTimestamp) {
+  if (millisecondsTimestamp == null) {
+    return '';
+  }
   // 将毫秒时间戳转换为 DateTime 对象
   DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(
     millisecondsTimestamp,

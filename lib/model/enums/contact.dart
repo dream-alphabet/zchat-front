@@ -45,3 +45,11 @@ class ContactApplyStatusEnum {
     }
   }
 }
+
+// 添加类型枚举
+class JoinTypeEnum {
+  // 直接添加，无需审核
+  static const directAdd = 0;
+  // 需要审核
+  static const needCheck = 1;
+}

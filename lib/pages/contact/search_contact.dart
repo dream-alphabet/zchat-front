@@ -189,6 +189,7 @@ class _SearchContactPageState extends State<SearchContactPage> {
         spacing: 10.w,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          SizedBox(height: 8.w),
           _buildSearch(),
           if (_searchText.isNotEmpty)
             InkClick(

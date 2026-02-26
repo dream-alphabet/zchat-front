@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:zchat/api/contact.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/model/contact.dart';
+import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/stores/user.dart';
 import 'package:zchat/widgets/page_header.dart';
 
@@ -47,11 +48,16 @@ class _AddContactPageState extends State<AddContactPage> {
       ToastUtils.showGlobalToast(msg: '打招呼内容不能为空');
       return;
     }
-    await sendContactApplyApi(
+    // 请求接口，返回联系人加入类型
+    int joinType = await sendContactApplyApi(
       SendApplyReq(contactId: _contactId, applyInfo: applyInfo),
     );
-    ToastUtils.showGlobalToast(msg: '发送成功');
-    Navigator.pop(context);
+    if (joinType == JoinTypeEnum.directAdd) {
+      ToastUtils.showGlobalToast(msg: '添加成功');
+    } else {
+      ToastUtils.showGlobalToast(msg: '发送成功');
+    }
+    Navigator.pop(context, joinType);
   }
 
   // 打招呼内容
