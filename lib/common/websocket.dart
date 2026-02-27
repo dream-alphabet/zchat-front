@@ -2,6 +2,7 @@ import 'package:flutter_websocket_plus/flutter_websocket_plus.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/stores/token.dart';
 
+// websocket管理器
 WebSocketManager? manager;
 
 // 初始化websocket连接

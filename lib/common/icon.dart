@@ -56,4 +56,28 @@ class MyIcon {
     fontFamily: 'MyIcon',
     matchTextDirection: true,
   );
+  // 表情
+  static const emotion = IconData(
+    0xe600,
+    fontFamily: 'MyIcon',
+    matchTextDirection: true,
+  );
+  // 语音
+  static const voice = IconData(
+    0xe68d,
+    fontFamily: 'MyIcon',
+    matchTextDirection: true,
+  );
+  // 键盘
+  static const keyboard = IconData(
+    0xe66c,
+    fontFamily: 'MyIcon',
+    matchTextDirection: true,
+  );
+  // 消息页面添加
+  static const messageAdd = IconData(
+    0xe628,
+    fontFamily: 'MyIcon',
+    matchTextDirection: true,
+  );
 }

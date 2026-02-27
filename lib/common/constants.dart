@@ -56,6 +56,8 @@ class RoutePath {
   static const myQRCode = 'myQRCode';
   // 好友设置
   static const friendSetting = 'friendSetting';
+  // 群聊设置
+  static const groupSetting = 'groupSetting';
   // 添加到通讯录
   static const addContact = 'addContact';
   // 验证联系人申请

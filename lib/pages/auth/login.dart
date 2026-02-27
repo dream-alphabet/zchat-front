@@ -112,7 +112,6 @@ class _LoginPageState extends State<LoginPage> {
           flex: 1,
           child: TextField(
             controller: _captchaController,
-            cursorColor: Colors.black,
             decoration: InputDecoration(
               filled: true,
               fillColor: Color.fromRGBO(242, 242, 242, 1),
@@ -172,7 +171,6 @@ class _LoginPageState extends State<LoginPage> {
                     // 邮箱
                     TextField(
                       controller: _emailController,
-                      cursorColor: Colors.black,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Color.fromRGBO(242, 242, 242, 1),
@@ -191,7 +189,6 @@ class _LoginPageState extends State<LoginPage> {
                     // 密码
                     TextField(
                       controller: _passwordController,
-                      cursorColor: Colors.black,
                       obscureText: true,
                       decoration: InputDecoration(
                         filled: true,

@@ -55,7 +55,6 @@ class _RegisterPageState extends State<RegisterPage> {
           flex: 1,
           child: TextField(
             controller: _captchaController,
-            cursorColor: Colors.black,
             decoration: InputDecoration(
               filled: true,
               fillColor: Color.fromRGBO(242, 242, 242, 1),
@@ -178,7 +177,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   children: [
                     TextField(
                       controller: _nicknameController,
-                      cursorColor: Colors.black,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Color.fromRGBO(242, 242, 242, 1),
@@ -197,7 +195,6 @@ class _RegisterPageState extends State<RegisterPage> {
                     // 邮箱
                     TextField(
                       controller: _emailController,
-                      cursorColor: Colors.black,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Color.fromRGBO(242, 242, 242, 1),
@@ -216,7 +213,6 @@ class _RegisterPageState extends State<RegisterPage> {
                     // 密码
                     TextField(
                       controller: _passwordController,
-                      cursorColor: Colors.black,
                       obscureText: true,
                       decoration: InputDecoration(
                         filled: true,
@@ -235,7 +231,6 @@ class _RegisterPageState extends State<RegisterPage> {
                     SizedBox(height: 20.w),
                     TextField(
                       controller: _rePasswordController,
-                      cursorColor: Colors.black,
                       obscureText: true,
                       decoration: InputDecoration(
                         filled: true,

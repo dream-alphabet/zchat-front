@@ -10,6 +10,7 @@ import 'package:zchat/pages/contact/add_friend.dart';
 import 'package:zchat/pages/contact/create_group.dart';
 import 'package:zchat/pages/contact/friend_setting.dart';
 import 'package:zchat/pages/contact/group_chat.dart';
+import 'package:zchat/pages/contact/group_setting.dart';
 import 'package:zchat/pages/contact/new_friend.dart';
 import 'package:zchat/pages/contact/only_chat_friend.dart';
 import 'package:zchat/pages/contact/search_contact.dart';
@@ -42,7 +43,8 @@ final Map<String, WidgetBuilder> routes = {
   RoutePath.friendSetting: (ctx) => FriendSettingPage(),
   RoutePath.addContact: (ctx) => AddContactPage(),
   RoutePath.verifyApply: (ctx) => VerifyApplyPage(),
-  RoutePath.chatMessage: (ctx) => ChatMessagePage()
+  RoutePath.chatMessage: (ctx) => ChatMessagePage(),
+  RoutePath.groupSetting: (ctx) => GroupSettingPage()
 };
 
 // 全局Context

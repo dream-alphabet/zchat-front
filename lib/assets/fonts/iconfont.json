@@ -6,6 +6,34 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "12842701",
+      "name": "w_键盘",
+      "font_class": "w_jianpan",
+      "unicode": "e66c",
+      "unicode_decimal": 58988
+    },
+    {
+      "icon_id": "8353891",
+      "name": "添加",
+      "font_class": "tianjia1",
+      "unicode": "e628",
+      "unicode_decimal": 58920
+    },
+    {
+      "icon_id": "201555",
+      "name": "表情",
+      "font_class": "biaoqing",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "12097776",
+      "name": "语音",
+      "font_class": "yuyin",
+      "unicode": "e68d",
+      "unicode_decimal": 59021
+    },
+    {
       "icon_id": "10255817",
       "name": "右箭头",
       "font_class": "youjiantou1",
