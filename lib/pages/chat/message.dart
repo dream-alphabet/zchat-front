@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:zchat/api/contact.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/common/emoji.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/model/contact.dart';
@@ -86,7 +87,18 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
 
   // 语音录入区域
   Widget _buildVoice() {
-    return Text('语音录入区域');
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8.r),
+        color: Colors.white,
+      ),
+      padding: EdgeInsets.all(6.w),
+      alignment: Alignment.center,
+      child: Text(
+        '按住 说话',
+        style: TextStyle(color: Colors.black, fontSize: 16.sp),
+      ),
+    );
   }
 
   // 输入框
@@ -154,23 +166,75 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     );
   }
 
-  // 功能区域
-  Widget _buildFunction() {
-    if (_showEmotion) {
-      return GestureDetector(
-        onTap: () {
-          setState(() {
-            _messageController.text += '1';
-            _msg += '1';
-          });
-        },
-        child: Text('表情'),
-      );
-    } else if (_showMore) {
-      return Text('更多');
-    } else {
-      return SizedBox();
-    }
+  // emoji表情区域
+  Widget _buildEmoji() {
+    return Stack(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 200.w,
+          child: GridView.builder(
+            itemCount: emojiList.length,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 8,
+              crossAxisSpacing: 5.w,
+              mainAxisSpacing: 5.w,
+            ),
+            itemBuilder: (context, index) => GestureDetector(
+              onTap: () {
+                setState(() {
+                  _messageController.text += emojiList[index];
+                  _msg += emojiList[index];
+                });
+              },
+              child: Text(
+                emojiList[index],
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16.sp),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          right: 0,
+          bottom: 0,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.w),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: GestureDetector(
+              onTap: () {
+                // 消息为空
+                if (_msg.isEmpty) {
+                  return;
+                }
+                // 删除最后一个字符
+                setState(() {
+                  _messageController.text = _messageController.text.characters
+                      .skipLast(1)
+                      .toString();
+                  _msg = _msg.characters.skipLast(1).toString();
+                });
+              },
+              child: Icon(
+                MyIcon.backspace,
+                color: _msg.isNotEmpty
+                    ? Colors.black
+                    : Color.fromRGBO(237, 237, 237, 1),
+                size: 25.w,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 更多区域
+  Widget _buildMore() {
+    return Text('更多');
   }
 
   // 键盘图标
@@ -200,7 +264,6 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.w),
       color: Color.fromRGBO(247, 247, 247, 1),
       child: Column(
-        spacing: 10.w,
         children: [
           Row(
             spacing: 6.w,
@@ -254,7 +317,11 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                   : _buildSendBtn(),
             ],
           ),
-          if (_showEmotion || _showMore) _buildFunction(),
+          if (_showEmotion || _showMore) SizedBox(height: 10.w),
+          // emoji
+          Offstage(offstage: !_showEmotion, child: _buildEmoji()),
+          // 更多
+          Offstage(offstage: !_showMore, child: _buildMore()),
         ],
       ),
     );
@@ -263,7 +330,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,  // 拦截所有返回上一页，自定义处理
+      canPop: false, // 拦截所有返回上一页，自定义处理
       onPopInvokedWithResult: (didPop, _) {
         // 如果已经返回，则无需处理
         if (didPop) {

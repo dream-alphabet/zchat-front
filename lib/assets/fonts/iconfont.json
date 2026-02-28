@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "1351577",
+      "name": "backspace",
+      "font_class": "backspace",
+      "unicode": "e7a9",
+      "unicode_decimal": 59305
+    },
+    {
       "icon_id": "12842701",
       "name": "w_键盘",
       "font_class": "w_jianpan",

@@ -80,4 +80,10 @@ class MyIcon {
     fontFamily: 'MyIcon',
     matchTextDirection: true,
   );
+  // backspace
+  static const backspace = IconData(
+    0xe7a9,
+    fontFamily: 'MyIcon',
+    matchTextDirection: true,
+  );
 }

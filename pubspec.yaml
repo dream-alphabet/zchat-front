@@ -92,7 +92,3 @@ flutter:
     - family: MyIcon
       fonts:
         - asset: lib/assets/fonts/iconfont.ttf
-    # 自定义文本字体
-    - family: MyFamily
-      fonts:
-        - asset: lib/assets/fonts/SmileySans-Oblique.ttf
