@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:zchat/api/contact.dart';
+import 'package:get/get.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/constants.dart';
-import 'package:zchat/model/enums/contact.dart';
-import 'package:zchat/routes/index.dart';
+import 'package:zchat/stores/contact.dart';
 import 'package:zchat/widgets/chat_blank.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/ink_click.dart';
@@ -18,7 +17,9 @@ class ContactPage extends StatefulWidget {
   State<ContactPage> createState() => _ContactPageState();
 }
 
-class _ContactPageState extends State<ContactPage> with RouteAware {
+class _ContactPageState extends State<ContactPage> {
+  // 联系人store
+  final _userContactController = Get.find<UserContactController>();
   // 功能列表数据
   final _functionList = [
     ListItemData(
@@ -37,49 +38,6 @@ class _ContactPageState extends State<ContactPage> with RouteAware {
       path: RoutePath.groupChat,
     ),
   ];
-  // 联系人列表数据
-  List<ListItemData> _contactList = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _getContactList();
-  }
-
-  @override
-  void didChangeDependencies() {
-    routeObserver.subscribe(this, ModalRoute.of(context)!); //订阅
-    super.didChangeDependencies();
-  }
-
-  @override
-  void dispose() {
-    routeObserver.unsubscribe(this); //取消订阅
-    super.dispose();
-  }
-
-  @override
-  void didPopNext() {
-    // 当上一个页面回退到当前页面时调用
-    super.didPopNext();
-    _getContactList();
-  }
-
-  // 获取联系人列表
-  Future<void> _getContactList() async {
-    final list = await getContactListApi(UserContactTypeEnum.user);
-    _contactList = List.generate(
-      list.length,
-      (index) => ListItemData(
-        userId: list[index].contactId,
-        isFunction: false,
-        leftAvatar: 'lib/assets/test/01.png',
-        rightName: list[index].contactName,
-        path: RoutePath.contactInfo,
-      ),
-    );
-    setState(() {});
-  }
 
   // 列表项
   Widget _buildListItem(ListItemData data, bool showBorder) {
@@ -158,10 +116,16 @@ class _ContactPageState extends State<ContactPage> with RouteAware {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(
-        _contactList.length,
+        _userContactController.contactList.length,
         (index) => _buildListItem(
-          _contactList[index],
-          index < _contactList.length - 1,
+          ListItemData(
+            userId: _userContactController.contactList[index].contactId,
+            isFunction: false,
+            leftAvatar: 'lib/assets/test/01.png',
+            rightName: _userContactController.contactList[index].contactName,
+            path: RoutePath.contactInfo,
+          ),
+          index < _userContactController.contactList.length - 1,
         ),
       ),
     );
@@ -188,9 +152,11 @@ class _ContactPageState extends State<ContactPage> with RouteAware {
               ),
             ),
           ),
-          _contactList.isEmpty
-              ? ChatBlank(msg: '快去寻找好友吧!')
-              : _buildContactList(),
+          Obx(() {
+            return _userContactController.contactList.isEmpty
+                ? ChatBlank(msg: '快去寻找好友吧!')
+                : _buildContactList();
+          }),
         ],
       ),
     );

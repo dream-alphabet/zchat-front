@@ -71,6 +71,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
       // 存储token
+      print('存储token:${res.token}');
       tokenManager.setToken(res.token);
       ToastUtils.showGlobalToast(msg: '登录成功');
       // 跳转到主页

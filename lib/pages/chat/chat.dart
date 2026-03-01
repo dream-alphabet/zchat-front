@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:zchat/api/chat.dart';
+import 'package:get/get.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/chat.dart';
+import 'package:zchat/stores/session.dart';
 import 'package:zchat/widgets/chat_blank.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/ink_click.dart';
@@ -18,21 +19,12 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  // 会话列表
-  List<ChatSessionRes> _sessionList = [];
+  // 会话store
+  final _chatSessionStore = Get.find<ChatSessionStore>();
 
   @override
   void initState() {
     super.initState();
-    _getChatSessionList();
-  }
-
-  // 获取会话列表
-  Future<void> _getChatSessionList() async {
-    final list = await getChatSessionListApi();
-    setState(() {
-      _sessionList = list;
-    });
   }
 
   Widget _buildSessionItem(ChatSessionRes session) {
@@ -132,8 +124,9 @@ class _ChatPageState extends State<ChatPage> {
   Widget _buildSessionList() {
     return ListView.builder(
       shrinkWrap: true,
-      itemCount: _sessionList.length,
-      itemBuilder: (context, index) => _buildSessionItem(_sessionList[index]),
+      itemCount: _chatSessionStore.sessionList.length,
+      itemBuilder: (context, index) =>
+          _buildSessionItem(_chatSessionStore.sessionList[index]),
     );
   }
 
@@ -145,9 +138,11 @@ class _ChatPageState extends State<ChatPage> {
         children: [
           PageHeader(title: '聊天'),
           Expanded(
-            child: _sessionList.isEmpty
-                ? ChatBlank(msg: '请开始聊天吧!')
-                : _buildSessionList(),
+            child: Obx(() {
+              return _chatSessionStore.sessionList.isEmpty
+                  ? ChatBlank(msg: '请开始聊天吧!')
+                  : _buildSessionList();
+            }),
           ),
         ],
       ),

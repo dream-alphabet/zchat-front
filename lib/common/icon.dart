@@ -87,7 +87,7 @@ class MyIcon {
     matchTextDirection: true,
   );
   // 相册
-  static const galley = IconData(
+  static const gallery = IconData(
     0xe691,
     fontFamily: 'MyIcon',
     matchTextDirection: true,

@@ -1,6 +1,8 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:zchat/api/contact.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/emoji.dart';
@@ -25,44 +27,6 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   int _contactType = UserContactTypeEnum.user;
   // 联系人信息
   ContactInfoRes? _contactInfo;
-  // 更多功能列表
-  final _moreItems = [
-    MoreItem(
-      name: '相册',
-      icon: MyIcon.galley,
-      onTap: () {
-        print('相册');
-      },
-    ),
-    MoreItem(
-      name: '摄像头',
-      icon: MyIcon.camera,
-      onTap: () {
-        print('摄像头');
-      },
-    ),
-    MoreItem(
-      name: '视频通话',
-      icon: MyIcon.videoCall,
-      onTap: () {
-        print('视频通话');
-      },
-    ),
-    MoreItem(
-      name: '个人名片',
-      icon: MyIcon.personCard,
-      onTap: () {
-        print('个人名片');
-      },
-    ),
-    MoreItem(
-      name: '文件',
-      icon: MyIcon.file,
-      onTap: () {
-        print('文件');
-      },
-    ),
-  ];
   // 是否显示表情区域
   bool _showEmotion = false;
   // 是否显示更多区域
@@ -75,6 +39,36 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   final _messageFocusNode = FocusNode();
   // 文本消息
   String _msg = '';
+
+  // 发送文件消息
+  void _sendFile() async {
+    // 选择文件(可以选择多个)
+    final result = await FilePicker.platform.pickFiles(allowMultiple: true);
+    // 用户选择了文件
+    if (result != null) {
+      print('选择的文件: ${result.files}');
+    }
+  }
+
+  // 发送图片消息
+  void _sendImage(ImageSource source) async {
+    // 从相册中获取图片
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: source);
+    if (image != null) {
+      print('image path:${image.path}');
+    }
+  }
+
+  // 发送个人名片
+  void _sendPersonCard() {
+    print('发送个人名片');
+  }
+
+  // 视频通话
+  void _videoCall() {
+    print('视频通话');
+  }
 
   @override
   void initState() {
@@ -221,8 +215,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
             itemBuilder: (context, index) => GestureDetector(
               onTap: () {
                 setState(() {
-                  _messageController.text += emojiList[index];
-                  _msg += emojiList[index];
+                  _messageController.text += supportEmojiList[index];
+                  _msg += supportEmojiList[index];
                 });
               },
               child: Text(
@@ -303,6 +297,27 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
 
   // 更多区域
   Widget _buildMore() {
+    // 更多功能列表
+    final moreItems = [
+      MoreItem(
+        name: '相册',
+        icon: MyIcon.gallery,
+        onTap: () {
+          _sendImage(ImageSource.gallery);
+        },
+      ),
+      MoreItem(
+        name: '摄像头',
+        icon: MyIcon.camera,
+        onTap: () {
+          _sendImage(ImageSource.camera);
+        },
+      ),
+      MoreItem(name: '视频通话', icon: MyIcon.videoCall, onTap: _videoCall),
+      MoreItem(name: '个人名片', icon: MyIcon.personCard, onTap: _sendPersonCard),
+      MoreItem(name: '文件', icon: MyIcon.file, onTap: _sendFile),
+    ];
+
     return SizedBox(
       width: double.infinity,
       height: 200.w,
@@ -313,8 +328,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
           crossAxisCount: 4,
           mainAxisSpacing: 10.w,
           children: List.generate(
-            _moreItems.length,
-            (index) => _buildMoreItem(_moreItems[index]),
+            moreItems.length,
+            (index) => _buildMoreItem(moreItems[index]),
           ),
         ),
       ),

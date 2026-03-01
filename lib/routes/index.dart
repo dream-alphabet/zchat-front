@@ -22,9 +22,6 @@ import 'package:zchat/pages/main/main.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/pages/my/my_qrcode.dart';
 
-// 路由观察者
-final RouteObserver<Route<dynamic>> routeObserver = RouteObserver();
-
 // 路由配置
 final Map<String, WidgetBuilder> routes = {
   RoutePath.main: (ctx) => MainPage(),
@@ -89,7 +86,6 @@ Widget getRootWidget() {
         navigatorKey: globalNavigatorKey,
         builder: FToastBuilder(), // FToast轻提示构建器
         routes: routes,
-        navigatorObservers: [routeObserver],
         initialRoute: RoutePath.main,
         // 语言设置
         locale: Locale('zh'),

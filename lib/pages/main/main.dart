@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:zchat/api/user.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/websocket.dart';
 import 'package:zchat/pages/chat/chat.dart';
 import 'package:zchat/pages/contact/contact.dart';
 import 'package:zchat/pages/discover/discover.dart';
+import 'package:zchat/stores/contact.dart';
+import 'package:zchat/stores/session.dart';
 import 'package:zchat/stores/token.dart';
 import 'package:zchat/stores/user.dart';
 
@@ -63,6 +64,10 @@ class _MainPageState extends State<MainPage> {
 
   // 用户信息store
   final _userController = Get.put(UserController());
+  // 联系人store
+  final _userContactController = Get.put(UserContactController());
+  // 聊天会话store
+  final _chatSessionStore = Get.put(ChatSessionStore());
 
   @override
   void initState() {
@@ -85,8 +90,11 @@ class _MainPageState extends State<MainPage> {
       return;
     }
     // 获取用户信息并存入store
-    final userInfo = await getUserInfoApi();
-    _userController.setUserInfo(userInfo);
+    _userController.getUserInfo();
+    // 获取联系人信息
+    _userContactController.getContactList();
+    // 获取会话列表
+    _chatSessionStore.getSessionList();
     await initWebsocket();
   }
 

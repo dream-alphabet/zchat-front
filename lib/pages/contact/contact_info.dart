@@ -212,7 +212,7 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
             _buildTop(),
             _buildCenter(),
             SizedBox(height: 20.w),
-            _contactId != _userController.getUserInfo()?.userId
+            _contactId != _userController.userInfo.value?.userId
                 ? _buildBottom()
                 : _buildWarn('不能和自己添加好友'),
           ],

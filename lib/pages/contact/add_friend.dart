@@ -126,14 +126,14 @@ class _AddFriendPageState extends State<AddFriendPage> {
         GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () {
-            copyText(_userController.getUserInfo()?.userId ?? '');
+            copyText(_userController.userInfo.value?.userId ?? '');
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             spacing: 10.w,
             children: [
               Text(
-                '用户id: ${_userController.getUserInfo()?.userId ?? ''}',
+                '用户id: ${_userController.userInfo.value?.userId ?? ''}',
                 style: TextStyle(color: Colors.black, fontSize: 18.sp),
               ),
               Icon(Icons.copy, size: 18.sp),

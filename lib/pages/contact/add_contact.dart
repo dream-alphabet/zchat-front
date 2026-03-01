@@ -37,7 +37,7 @@ class _AddContactPageState extends State<AddContactPage> {
       }
     });
     // 设置默认文本
-    _applyInfoController.text = '我是${_userController.getUserInfo()!.nickname}';
+    _applyInfoController.text = '我是${_userController.userInfo.value!.nickname}';
   }
 
   // 发送添加朋友申请

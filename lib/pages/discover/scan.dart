@@ -388,7 +388,7 @@ class _ScanPageState extends State<ScanPage>
     final picker = ImagePicker();
     // 等待用户从相册中选择图片
     final image = await picker.pickImage(source: ImageSource.gallery);
-    // 用户没有选择图片
+    // 用户选择了图片
     if (image != null) {
       // 解析图片
       final capture = await cameraController.analyzeImage(image.path);
