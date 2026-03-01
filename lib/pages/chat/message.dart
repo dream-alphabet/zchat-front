@@ -25,6 +25,44 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   int _contactType = UserContactTypeEnum.user;
   // 联系人信息
   ContactInfoRes? _contactInfo;
+  // 更多功能列表
+  final _moreItems = [
+    MoreItem(
+      name: '相册',
+      icon: MyIcon.galley,
+      onTap: () {
+        print('相册');
+      },
+    ),
+    MoreItem(
+      name: '摄像头',
+      icon: MyIcon.camera,
+      onTap: () {
+        print('摄像头');
+      },
+    ),
+    MoreItem(
+      name: '视频通话',
+      icon: MyIcon.videoCall,
+      onTap: () {
+        print('视频通话');
+      },
+    ),
+    MoreItem(
+      name: '个人名片',
+      icon: MyIcon.personCard,
+      onTap: () {
+        print('个人名片');
+      },
+    ),
+    MoreItem(
+      name: '文件',
+      icon: MyIcon.file,
+      onTap: () {
+        print('文件');
+      },
+    ),
+  ];
   // 是否显示表情区域
   bool _showEmotion = false;
   // 是否显示更多区域
@@ -174,7 +212,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
           width: double.infinity,
           height: 200.w,
           child: GridView.builder(
-            itemCount: emojiList.length,
+            itemCount: supportEmojiList.length,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 8,
               crossAxisSpacing: 5.w,
@@ -188,7 +226,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                 });
               },
               child: Text(
-                emojiList[index],
+                supportEmojiList[index],
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16.sp),
               ),
@@ -232,9 +270,55 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     );
   }
 
+  // 构建更多功能项
+  Widget _buildMoreItem(MoreItem item) {
+    return GestureDetector(
+      onTap: item.onTap,
+      child: Column(
+        spacing: 5.w,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 52.w,
+            height: 52.w,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            alignment: Alignment.center,
+            child: Icon(item.icon, size: 25.w, color: Colors.black),
+          ),
+          Text(
+            item.name,
+            style: TextStyle(
+              fontSize: 10.sp,
+              color: Color.fromRGBO(144, 144, 144, 1),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // 更多区域
   Widget _buildMore() {
-    return Text('更多');
+    return SizedBox(
+      width: double.infinity,
+      height: 200.w,
+      child: Center(
+        child: GridView.count(
+          shrinkWrap: true, // 让GridView根据内容调整高度
+          physics: NeverScrollableScrollPhysics(), // 禁止滚动
+          crossAxisCount: 4,
+          mainAxisSpacing: 10.w,
+          children: List.generate(
+            _moreItems.length,
+            (index) => _buildMoreItem(_moreItems[index]),
+          ),
+        ),
+      ),
+    );
   }
 
   // 键盘图标
@@ -404,4 +488,13 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     _messageFocusNode.dispose();
     super.dispose();
   }
+}
+
+// 更多功能项
+class MoreItem {
+  final String name;
+  final IconData icon;
+  final void Function() onTap;
+
+  MoreItem({required this.name, required this.icon, required this.onTap});
 }

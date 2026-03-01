@@ -8,6 +8,10 @@ WebSocketManager? manager;
 // 初始化websocket连接
 Future<void> initWebsocket() async {
   final token = tokenManager.getToken();
+  // 如果token为空，返回
+  if (token.isEmpty) {
+    return;
+  }
   // websocket连接地址
   final url = '${GlobalConstants.wsUrl}?token=$token';
   // websocket连接配置

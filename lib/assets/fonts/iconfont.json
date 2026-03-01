@@ -6,6 +6,41 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "12315645",
+      "name": "个人名片",
+      "font_class": "gerenmingpian",
+      "unicode": "e686",
+      "unicode_decimal": 59014
+    },
+    {
+      "icon_id": "837677",
+      "name": "视频通话",
+      "font_class": "shipintonghua",
+      "unicode": "e66b",
+      "unicode_decimal": 58987
+    },
+    {
+      "icon_id": "1008561",
+      "name": "文件",
+      "font_class": "wenjian",
+      "unicode": "e68f",
+      "unicode_decimal": 59023
+    },
+    {
+      "icon_id": "1008563",
+      "name": "拍照",
+      "font_class": "paizhao",
+      "unicode": "e690",
+      "unicode_decimal": 59024
+    },
+    {
+      "icon_id": "1008575",
+      "name": "图片",
+      "font_class": "tupian",
+      "unicode": "e691",
+      "unicode_decimal": 59025
+    },
+    {
       "icon_id": "1351577",
       "name": "backspace",
       "font_class": "backspace",

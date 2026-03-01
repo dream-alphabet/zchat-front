@@ -86,4 +86,34 @@ class MyIcon {
     fontFamily: 'MyIcon',
     matchTextDirection: true,
   );
+  // 相册
+  static const galley = IconData(
+    0xe691,
+    fontFamily: 'MyIcon',
+    matchTextDirection: true,
+  );
+  // 摄像头
+  static const camera = IconData(
+    0xe690,
+    fontFamily: 'MyIcon',
+    matchTextDirection: true,
+  );
+  // 视频通话
+  static const videoCall = IconData(
+    0xe66b,
+    fontFamily: 'MyIcon',
+    matchTextDirection: true,
+  );
+  // 个人名片
+  static const personCard = IconData(
+    0xe686,
+    fontFamily: 'MyIcon',
+    matchTextDirection: true,
+  );
+  // 文件
+  static const file = IconData(
+    0xe68f,
+    fontFamily: 'MyIcon',
+    matchTextDirection: true,
+  );
 }
