@@ -10,3 +10,8 @@ Future<List<ChatSessionRes>> getChatSessionListApi() async {
     (index) => ChatSessionRes.fromJson(list[index]),
   );
 }
+
+// 发送消息
+Future<void> sendMessageApi(SendMsgReq data) {
+  return request.post(Api.sendMessage, data: data.toJson(), isFormData: true);
+}

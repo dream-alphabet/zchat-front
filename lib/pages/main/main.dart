@@ -95,7 +95,7 @@ class _MainPageState extends State<MainPage> {
     _userContactController.getContactList();
     // 获取会话列表
     _chatSessionStore.getSessionList();
-    await initWebsocket();
+    initWebSocket();
   }
 
   @override

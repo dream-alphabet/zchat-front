@@ -1,3 +1,5 @@
+import 'dart:io';
+
 // 会话响应结果
 class ChatSessionRes {
   String sessionId;
@@ -24,4 +26,42 @@ class ChatSessionRes {
     lastMessage: json["lastMessage"],
     lastReceiveTime: json["lastReceiveTime"],
   );
+}
+
+// 发送消息请求参数
+class SendMsgReq {
+  String contactId;
+  int contactType;
+  int messageType;
+  String messageContent;
+  File? file;
+
+  SendMsgReq({
+    required this.contactId,
+    required this.contactType,
+    required this.messageType,
+    required this.messageContent,
+    this.file,
+  });
+
+  factory SendMsgReq.fromJson(Map<String, dynamic> json) => SendMsgReq(
+    contactId: json["contactId"],
+    contactType: json["contactType"],
+    messageType: json["messageType"],
+    messageContent: json["messageContent"],
+    file: json["file"],
+  );
+
+  Map<String, dynamic> toJson() {
+    final map = {
+      "contactId": contactId,
+      "contactType": contactType,
+      "messageType": messageType,
+      "messageContent": messageContent,
+    };
+    if (file != null) {
+      map['file'] = file ?? '';
+    }
+    return map;
+  }
 }

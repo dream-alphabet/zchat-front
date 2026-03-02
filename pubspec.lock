@@ -205,14 +205,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_websocket_plus:
-    dependency: "direct main"
-    description:
-      name: flutter_websocket_plus
-      sha256: "3c41fd093ffbd335e5cf60457ce5fab7d9cca7418e94ed5fe1cc0f732b7c7ba0"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.1.0"
   fluttertoast:
     dependency: "direct main"
     description:
@@ -659,7 +651,7 @@ packages:
     source: hosted
     version: "1.0.1"
   web_socket_channel:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: web_socket_channel
       sha256: d645757fb0f4773d602444000a8131ff5d48c9e47adfe9772652dd1a4f2d45c8

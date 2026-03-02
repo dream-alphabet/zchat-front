@@ -24,6 +24,7 @@ class Api {
   static const handleApply = '/contact/apply/handle';
   static const getContactList = '/contact/list';
   static const getChatSessionList = '/chat/session/list';
+  static const sendMessage = '/chat/send';
 }
 
 // 路由路径常量

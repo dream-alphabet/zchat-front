@@ -79,8 +79,14 @@ class DioRequest {
   }
 
   // post请求
-  Future<dynamic> post(String url, {Map<String, dynamic>? data}) {
-    return _handleResponse(_dio.post(url, data: data));
+  Future<dynamic> post(
+    String url, {
+    Map<String, dynamic>? data,
+    bool isFormData = false,
+  }) {
+    return _handleResponse(
+      _dio.post(url, data: isFormData ? FormData.fromMap(data ?? {}) : data),
+    );
   }
 
   // 处理响应结果

@@ -2,13 +2,17 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get_utils/get_utils.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:zchat/api/chat.dart';
 import 'package:zchat/api/contact.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/emoji.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/toast.dart';
+import 'package:zchat/model/chat.dart';
 import 'package:zchat/model/contact.dart';
+import 'package:zchat/model/enums/chat.dart';
 import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/widgets/page_header.dart';
 
@@ -99,8 +103,26 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   }
 
   // 发送文本消息
-  void _sendText() {
-    print('消息: ${_messageController.text}');
+  void _sendText() async {
+    // 如果消息为空
+    if (_msg.isBlank == true) {
+      ToastUtils.showGlobalToast(msg: '消息不能为空');
+      return;
+    }
+    // 发送消息
+    await sendMessageApi(
+      SendMsgReq(
+        contactId: _contactId,
+        contactType: _contactType,
+        messageType: MessageTypeEnum.text.type,
+        messageContent: _msg,
+      ),
+    );
+    // 清空输入框
+    setState(() {
+      _messageController.clear();
+      _msg = '';
+    });
   }
 
   // 消息列表
