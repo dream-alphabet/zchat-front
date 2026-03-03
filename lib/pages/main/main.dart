@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/common/utils.dart';
 import 'package:zchat/common/websocket.dart';
 import 'package:zchat/pages/chat/chat.dart';
 import 'package:zchat/pages/contact/contact.dart';
@@ -86,7 +87,11 @@ class _MainPageState extends State<MainPage> {
     // 如果token为空，跳转到登录页面
     if (token.isEmpty) {
       // 关闭所有页面并跳转到登录页面
-      Navigator.pushNamedAndRemoveUntil(context, RoutePath.login, (route) => false);
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        RoutePath.login,
+        (route) => false,
+      );
       return;
     }
     // 获取用户信息并存入store
@@ -96,6 +101,7 @@ class _MainPageState extends State<MainPage> {
     // 获取会话列表
     _chatSessionStore.getSessionList();
     initWebSocket();
+    await requestNotificationPermission();
   }
 
   @override

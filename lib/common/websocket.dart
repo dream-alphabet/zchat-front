@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:zchat/common/toast.dart';
+import 'package:zchat/common/event_bus.dart';
 import 'package:zchat/stores/token.dart';
 
 /// WebSocket状态
@@ -227,22 +227,19 @@ class WebSocketUtility {
 // 工具类实例
 final _utility = WebSocketUtility();
 
+// 处理服务器推送的消息
+void _handleServerMsg(dynamic msg) {
+  print('服务器推送的消息: $msg');
+  eventBus.fire(ServerMsgEvent(msg: msg));
+}
+
 // 初始化websocket
 void initWebSocket() {
   _utility.initWebSocket(
     onOpen: () {
       print('WebSocket已开启');
     },
-    onMessage: (data) {
-      print('服务器推送的消息: $data');
-
-      // 处理心跳响应，避免显示心跳消息
-      if (data == 'heartbeat' || data == 'pong') {
-        return;
-      }
-
-      ToastUtils.showGlobalToast(msg: '收到消息: $data');
-    },
+    onMessage: _handleServerMsg,
     onError: (e) {
       print('WebSocket错误: $e');
     },

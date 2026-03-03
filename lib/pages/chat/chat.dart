@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/common/event_bus.dart';
 import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/chat.dart';
 import 'package:zchat/stores/session.dart';
@@ -21,10 +24,22 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   // 会话store
   final _chatSessionStore = Get.find<ChatSessionStore>();
+  late StreamSubscription<ServerMsgEvent> _streamSubscription;
 
   @override
   void initState() {
     super.initState();
+    // 监听服务器推送消息事件
+    _streamSubscription = eventBus.on<ServerMsgEvent>().listen((event) {
+      print('chat页面收到服务器推送的消息:${event.msg}');
+    });
+  }
+
+  @override
+  void dispose() { 
+    // 取消事件监听
+    _streamSubscription.cancel();
+    super.dispose();
   }
 
   Widget _buildSessionItem(ChatSessionRes session) {
