@@ -65,3 +65,68 @@ class SendMsgReq {
     return map;
   }
 }
+
+// 获取消息列表请求参数
+class GetMsgListReq {
+  int page;
+  int pageSize;
+  String contactId;
+
+  GetMsgListReq({
+    required this.page,
+    required this.pageSize,
+    required this.contactId,
+  });
+
+  Map<String, dynamic> toMap() => {
+    "page": page,
+    "pageSize": pageSize,
+    "contactId": contactId,
+  };
+}
+
+// 消息响应结果
+class ChatMessageRes {
+  int messageId;
+  String sessionId;
+  int messageType;
+  String messageContent;
+  String? sendUserId;
+  String? sendUserNickname;
+  int sendTime;
+  String contactId;
+  int contactType;
+  String? fileId;
+  String? fileName;
+  int status;
+
+  ChatMessageRes({
+    required this.messageId,
+    required this.sessionId,
+    required this.messageType,
+    required this.messageContent,
+    required this.sendUserId,
+    required this.sendUserNickname,
+    required this.sendTime,
+    required this.contactId,
+    required this.contactType,
+    required this.fileId,
+    required this.fileName,
+    required this.status,
+  });
+
+  factory ChatMessageRes.fromJson(Map<String, dynamic> json) => ChatMessageRes(
+    messageId: json["messageId"],
+    sessionId: json["sessionId"],
+    messageType: json["messageType"],
+    messageContent: json["messageContent"],
+    sendUserId: json["sendUserId"],
+    sendUserNickname: json["sendUserNickname"],
+    sendTime: json["sendTime"],
+    contactId: json["contactId"],
+    contactType: json["contactType"],
+    fileId: json["fileId"],
+    fileName: json["fileName"],
+    status: json["status"],
+  );
+}

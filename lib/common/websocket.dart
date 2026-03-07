@@ -12,7 +12,7 @@ enum SocketStatus {
 }
 
 // websocket连接地址
-const websocketUrl = 'ws://192.168.10.3:8081/ws';
+const websocketUrl = 'ws://192.168.10.4:8081/ws';
 
 class WebSocketUtility {
   /// 单例对象

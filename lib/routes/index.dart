@@ -59,6 +59,8 @@ Widget getRootWidget() {
     splitScreenMode: false,
     builder: (context, child) {
       return MaterialApp(
+        // 隐藏调试时右上角显示的debug banner
+        debugShowCheckedModeBanner: false,
         title: 'zchat',
         // 设置主题中的文本样式也支持适配
         theme: ThemeData(

@@ -14,6 +14,7 @@ import 'package:zchat/model/chat.dart';
 import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/chat.dart';
 import 'package:zchat/model/enums/contact.dart';
+import 'package:zchat/pages/chat/widgets/chat_message.dart';
 import 'package:zchat/widgets/page_header.dart';
 
 // 聊天消息页面
@@ -43,6 +44,14 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   final _messageFocusNode = FocusNode();
   // 文本消息
   String _msg = '';
+  // 页码
+  int _page = 1;
+  // 每页条数
+  final _pageSize = 15;
+  // 消息列表
+  List<ChatMessageRes> _msgList = [];
+  // 消息列表滚动控制器
+  final _msgListController = ScrollController();
 
   // 发送文件消息
   void _sendFile() async {
@@ -85,8 +94,24 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         _contactId = params['contactId'];
         _contactType = params['contactType'];
         _getContactInfo();
+        _getMsgList();
+        _msgListController.addListener(() {
+          if (_msgListController.offset >= 70.w) {
+            print('获取下一页数据');
+          }
+        });
       }
     });
+  }
+
+  // 获取消息列表
+  Future<void> _getMsgList() async {
+    final res = await getMessageListApi(
+      GetMsgListReq(page: _page, pageSize: _pageSize, contactId: _contactId),
+    );
+    _msgList = res.list.map((msg) => ChatMessageRes.fromJson(msg)).toList();
+    setState(() {});
+    _scrollToBottom();
   }
 
   // 获取联系人信息
@@ -100,6 +125,14 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     }
     _contactInfo = contactInfo;
     setState(() {});
+  }
+
+  // 滚动到底部
+  void _scrollToBottom() {
+    // 等待当前帧绘制完成后再滚动到底部
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _msgListController.jumpTo(0);
+    });
   }
 
   // 发送文本消息
@@ -128,14 +161,10 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   // 消息列表
   Widget _buildMessageList() {
     return ListView.builder(
-      itemCount: 10000,
-      itemBuilder: (ctx, index) => Container(
-        width: double.infinity,
-        height: 40.w,
-        color: Colors.blue,
-        alignment: Alignment.center,
-        child: Text('消息${index + 1}', style: TextStyle(color: Colors.white)),
-      ),
+      controller: _msgListController,
+      itemCount: _msgList.length,
+      reverse: true,
+      itemBuilder: (ctx, index) => ChatMessage(message: _msgList[index]),
     );
   }
 

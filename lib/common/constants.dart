@@ -1,7 +1,7 @@
 // 全局常量类
 class GlobalConstants {
   // api请求基础地址
-  static const baseUrl = 'http://192.168.10.3:8080';
+  static const baseUrl = 'http://192.168.10.4:8080';
   // ws连接地址
   static const wsUrl = 'ws://192.168.10.3:8081/ws';
   // 超时时间
@@ -25,6 +25,7 @@ class Api {
   static const getContactList = '/contact/list';
   static const getChatSessionList = '/chat/session/list';
   static const sendMessage = '/chat/send';
+  static const getMsgList = '/chat/message/list';
 }
 
 // 路由路径常量
