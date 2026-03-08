@@ -68,13 +68,13 @@ class ChatMessage extends StatelessWidget {
         spacing: 5.w,
         children: _isSelf
             ? [
-                // 头像
-                ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
                 Container(
                   constraints: BoxConstraints(maxWidth: 240.w),
                   child: _buildMsgContent(),
                 ),
-              ].reversed.toList()
+                // 头像
+                ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
+              ]
             : [
                 // 头像
                 ContactAvatar(imageUrl: 'lib/assets/test/01.png'),

@@ -71,17 +71,20 @@ class GetMsgListReq {
   int page;
   int pageSize;
   String contactId;
+  int? maxMessageId;
 
   GetMsgListReq({
     required this.page,
     required this.pageSize,
     required this.contactId,
+    required this.maxMessageId
   });
 
   Map<String, dynamic> toMap() => {
     "page": page,
     "pageSize": pageSize,
     "contactId": contactId,
+    "maxMessageId": maxMessageId
   };
 }
 

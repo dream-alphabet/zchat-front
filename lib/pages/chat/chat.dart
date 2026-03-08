@@ -24,6 +24,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   // 会话store
   final _chatSessionStore = Get.find<ChatSessionStore>();
+  // 监听websocket服务器推送的消息
   late StreamSubscription<ServerMsgEvent> _streamSubscription;
 
   @override

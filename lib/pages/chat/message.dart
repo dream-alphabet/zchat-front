@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +11,7 @@ import 'package:zchat/api/chat.dart';
 import 'package:zchat/api/contact.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/emoji.dart';
+import 'package:zchat/common/event_bus.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/model/chat.dart';
@@ -45,13 +49,21 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   // 文本消息
   String _msg = '';
   // 页码
-  int _page = 1;
+  final _page = 1;
   // 每页条数
   final _pageSize = 15;
+  // 最大消息id
+  int? _maxMessageId;
+  // 是否正在请求
+  bool _isLoading = false;
+  // 是否还有更多数据
+  bool _hasMore = true;
   // 消息列表
   List<ChatMessageRes> _msgList = [];
   // 消息列表滚动控制器
   final _msgListController = ScrollController();
+  // 监听websocket服务器推送的消息
+  late StreamSubscription<ServerMsgEvent> _streamSubscription;
 
   // 发送文件消息
   void _sendFile() async {
@@ -94,24 +106,61 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         _contactId = params['contactId'];
         _contactType = params['contactType'];
         _getContactInfo();
-        _getMsgList();
+        _getMsgList().then((_) {
+          _scrollToBottom();
+        });
         _msgListController.addListener(() {
           if (_msgListController.offset >= 70.w) {
-            print('获取下一页数据');
+            _getMsgList();
           }
         });
+      }
+    });
+    // 监听服务器推送消息事件
+    _streamSubscription = eventBus.on<ServerMsgEvent>().listen((event) {
+      // json解析
+      final msg = ChatMessageRes.fromJson(jsonDecode(event.msg));
+      setState(() {
+        _msgList.insert(0, msg);
+      });
+      print('msg offset:${_msgListController.offset}');
+      // 如果滚动offset大于50，说明当前用户正在浏览历史消息，不应滚动到底部
+      if (_msgListController.offset < 200.w) {
+        _scrollToBottom();
       }
     });
   }
 
   // 获取消息列表
   Future<void> _getMsgList() async {
+    // 如果正在请求或者没有更多数据了
+    if (_isLoading || !_hasMore) {
+      return;
+    }
+    _isLoading = true;
+    // 如果已经存在消息
+    if (_msgList.isNotEmpty) {
+      _maxMessageId = _msgList[_msgList.length - 1].messageId;
+    }
     final res = await getMessageListApi(
-      GetMsgListReq(page: _page, pageSize: _pageSize, contactId: _contactId),
+      GetMsgListReq(
+        page: _page,
+        pageSize: _pageSize,
+        contactId: _contactId,
+        maxMessageId: _maxMessageId,
+      ),
     );
-    _msgList = res.list.map((msg) => ChatMessageRes.fromJson(msg)).toList();
+    final list = res.list.map((msg) => ChatMessageRes.fromJson(msg)).toList();
+    if (list.isEmpty) {
+      print('没有更多数据了');
+      _hasMore = false;
+      return;
+    }
+    // 根据messageId从大到小排序
+    list.sort((a, b) => b.messageId - a.messageId);
+    _msgList = [..._msgList, ...list];
+    _isLoading = false;
     setState(() {});
-    _scrollToBottom();
   }
 
   // 获取联系人信息
@@ -143,7 +192,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       return;
     }
     // 发送消息
-    await sendMessageApi(
+    final msg = await sendMessageApi(
       SendMsgReq(
         contactId: _contactId,
         contactType: _contactType,
@@ -153,9 +202,13 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     );
     // 清空输入框
     setState(() {
+      // 添加到发送后的消息到列表
+      _msgList.insert(0, msg);
       _messageController.clear();
       _msg = '';
     });
+    // 滚动到底部
+    _scrollToBottom();
   }
 
   // 消息列表
@@ -550,6 +603,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
 
   @override
   void dispose() {
+    // 取消监听
+    _streamSubscription.cancel();
     _messageController.dispose();
     _messageFocusNode.dispose();
     super.dispose();

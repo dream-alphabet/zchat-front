@@ -13,8 +13,10 @@ Future<List<ChatSessionRes>> getChatSessionListApi() async {
 }
 
 // 发送消息
-Future<void> sendMessageApi(SendMsgReq data) {
-  return request.post(Api.sendMessage, data: data.toJson(), isFormData: true);
+Future<ChatMessageRes> sendMessageApi(SendMsgReq data) async {
+  return ChatMessageRes.fromJson(
+    await request.post(Api.sendMessage, data: data.toJson(), isFormData: true)
+  );
 }
 
 // 获取消息列表
