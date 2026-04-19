@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -65,6 +66,54 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   // 监听websocket服务器推送的消息
   late StreamSubscription<ServerMsgEvent> _streamSubscription;
 
+  // 根据文件后缀获取文件类型
+  FileTypeEnum _getFileType(String filePath) {
+    final index = filePath.lastIndexOf('.');
+    // 没有后缀名，默认其他文件
+    if (index == -1) {
+      return FileTypeEnum.file;
+    }
+    // 后缀名
+    final ext = filePath.substring(index + 1);
+    print('文件后缀:$ext');
+    if (GlobalConstants.imageFormats.contains(ext)) {
+      return FileTypeEnum.image;
+    } else if (GlobalConstants.videoFormats.contains(ext)) {
+      return FileTypeEnum.video;
+    }
+    return FileTypeEnum.file;
+  }
+
+  // 校验文件大小
+  bool _validateFileSize(FileTypeEnum fileType, int fileSize) {
+    switch (fileType) {
+      case FileTypeEnum.image:
+        if (fileSize > GlobalConstants.imageMaxSize) {
+          ToastUtils.showGlobalToast(
+            msg: '图片不能大于${GlobalConstants.imageMaxMB}MB',
+          );
+          return false;
+        }
+        return true;
+      case FileTypeEnum.video:
+        if (fileSize > GlobalConstants.videoMaxSize) {
+          ToastUtils.showGlobalToast(
+            msg: '视频不能大于${GlobalConstants.videoMaxMB}MB',
+          );
+          return false;
+        }
+        return true;
+      case FileTypeEnum.file:
+        if (fileSize > GlobalConstants.fileMaxSize) {
+          ToastUtils.showGlobalToast(
+            msg: '文件不能大于${GlobalConstants.fileMaxMB}MB',
+          );
+          return false;
+        }
+        return true;
+    }
+  }
+
   // 发送文件消息
   void _sendFile() async {
     // 选择文件(可以选择多个)
@@ -75,13 +124,95 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     }
   }
 
-  // 发送图片消息
-  void _sendImage(ImageSource source) async {
-    // 从相册中获取图片
+  // 发送图片或视频消息(相册)
+  void _sendMediaFromGallery() async {
+    // 从相册中获取图片或视频
     final picker = ImagePicker();
-    final image = await picker.pickImage(source: source);
-    if (image != null) {
-      print('image path:${image.path}');
+    final media = await picker.pickMedia(maxWidth: 240.w, maxHeight: 500.w);
+    if (media != null) {
+      // 文件路径
+      final filePath = media.path;
+      // 文件大小
+      final fileSize = await media.length();
+      // 文件名
+      final filename = media.name;
+      // 文件类型
+      final fileType = _getFileType(filePath);
+      print(
+        '文件名:$filename, 文件路径:$filePath, 文件大小:$fileSize, 文件类型:${fileType.type}',
+      );
+      // 校验文件大小
+      if (!_validateFileSize(fileType, fileSize)) {
+        return;
+      }
+      // 发送消息
+      final msg = await sendMessageApi(
+        SendMsgReq(
+          contactId: _contactId,
+          contactType: _contactType,
+          messageType: MessageTypeEnum.file.type,
+          messageContent: fileType.messageContent,
+          file: await MultipartFile.fromFile(filePath),
+        ),
+      );
+      // 清空输入框
+      setState(() {
+        // 添加到发送后的消息到列表
+        _msgList.insert(0, msg);
+      });
+      // 滚动到底部
+      _scrollToBottom();
+    }
+  }
+
+  // 发送图片或视频消息(摄像头)
+  void _sendMediaFromCamera(String mediaType) async {
+    // 从摄像头拍摄图片或视频
+    final picker = ImagePicker();
+    XFile? media;
+    if (mediaType == 'image') {
+      media = await picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 240.w,
+        maxHeight: 500.w,
+      );
+    } else if (mediaType == 'video') {
+      media = await picker.pickVideo(
+        source: ImageSource.camera,
+        maxDuration: Duration(minutes: 5),
+      );
+    }
+    if (media != null) {
+      // 文件路径
+      final filePath = media.path;
+      // 文件大小
+      final fileSize = await media.length();
+      // 文件名
+      final filename = media.name;
+      // 文件类型
+      final fileType = _getFileType(filePath);
+      print('文件名:$filename, 文件路径:$filePath, 文件大小:$fileSize, 文件类型:$fileType');
+      // 校验文件大小
+      if (!_validateFileSize(fileType, fileSize)) {
+        return;
+      }
+      // 发送消息
+      final msg = await sendMessageApi(
+        SendMsgReq(
+          contactId: _contactId,
+          contactType: _contactType,
+          messageType: MessageTypeEnum.file.type,
+          messageContent: fileType.messageContent,
+          file: await MultipartFile.fromFile(filePath, filename: filename),
+        ),
+      );
+      // 清空输入框
+      setState(() {
+        // 添加到发送后的消息到列表
+        _msgList.insert(0, msg);
+      });
+      // 滚动到底部
+      _scrollToBottom();
     }
   }
 
@@ -123,7 +254,6 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       setState(() {
         _msgList.insert(0, msg);
       });
-      print('msg offset:${_msgListController.offset}');
       // 如果滚动offset大于50，说明当前用户正在浏览历史消息，不应滚动到底部
       if (_msgListController.offset < 200.w) {
         _scrollToBottom();
@@ -403,18 +533,19 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   Widget _buildMore() {
     // 更多功能列表
     final moreItems = [
+      MoreItem(name: '相册', icon: MyIcon.gallery, onTap: _sendMediaFromGallery),
       MoreItem(
-        name: '相册',
-        icon: MyIcon.gallery,
+        name: '拍照',
+        icon: MyIcon.camera,
         onTap: () {
-          _sendImage(ImageSource.gallery);
+          _sendMediaFromCamera('image');
         },
       ),
       MoreItem(
-        name: '摄像头',
+        name: '录像',
         icon: MyIcon.camera,
         onTap: () {
-          _sendImage(ImageSource.camera);
+          _sendMediaFromCamera('video');
         },
       ),
       MoreItem(name: '视频通话', icon: MyIcon.videoCall, onTap: _videoCall),

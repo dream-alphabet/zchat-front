@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:dio/dio.dart';
 
 // 会话响应结果
 class ChatSessionRes {
@@ -34,7 +34,7 @@ class SendMsgReq {
   int contactType;
   int messageType;
   String messageContent;
-  File? file;
+  MultipartFile? file;
 
   SendMsgReq({
     required this.contactId,
@@ -99,8 +99,9 @@ class ChatMessageRes {
   int sendTime;
   String contactId;
   int contactType;
-  String? fileId;
+  int? fileId;
   String? fileName;
+  int? fileType;
   int status;
 
   ChatMessageRes({
@@ -115,6 +116,7 @@ class ChatMessageRes {
     required this.contactType,
     required this.fileId,
     required this.fileName,
+    required this.fileType,
     required this.status,
   });
 
@@ -130,6 +132,7 @@ class ChatMessageRes {
     contactType: json["contactType"],
     fileId: json["fileId"],
     fileName: json["fileName"],
+    fileType: json["fileType"],
     status: json["status"],
   );
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/event_bus.dart';
 import 'package:zchat/stores/token.dart';
 
@@ -12,7 +13,7 @@ enum SocketStatus {
 }
 
 // websocket连接地址
-const websocketUrl = 'ws://192.168.10.4:8081/ws';
+const websocketUrl = GlobalConstants.wsUrl;
 
 class WebSocketUtility {
   /// 单例对象

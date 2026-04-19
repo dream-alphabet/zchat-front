@@ -1,14 +1,37 @@
 // 全局常量类
 class GlobalConstants {
+  // 主机地址
+  static const host = '10.31.71.77';
   // api请求基础地址
-  static const baseUrl = 'http://192.168.10.4:8080';
+  static const baseUrl = 'http://$host/api';
   // ws连接地址
-  static const wsUrl = 'ws://192.168.10.3:8081/ws';
+  static const wsUrl = 'ws://$host/ws';
+  // 文件访问基础地址
+  static const fileUrl = 'http://$host/files';
+  // 头像文件访问地址
+  static const avatarUrl = '$fileUrl/avatar';
+  // 消息文件访问地址
+  static const msgFileUrl = '$fileUrl/messages';
   // 超时时间
   static const timeout = 5;
   // 业务状态
   // 成功状态
   static const successCode = 200;
+  // 文件大小限制(单位: 字节)
+  // 图片不能大于50MB
+  static const imageMaxMB = 50;
+  static const imageMaxSize = imageMaxMB * 1000 * 1000;
+  // 视频不能大于100MB
+  static const videoMaxMB = 100;
+  static const videoMaxSize = videoMaxMB * 1000 * 1000;
+  // 其余文件不能大于100MB
+  static const fileMaxMB = 100;
+  static const fileMaxSize = fileMaxMB * 1000 * 1000;
+  // 支持的媒体格式
+  // 图片格式
+  static const imageFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+  // 视频格式
+  static const videoFormats = ['mp4'];
 }
 
 // api请求路径常量

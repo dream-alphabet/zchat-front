@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:zchat/common/constants.dart';
 import 'package:zchat/stores/user.dart';
 import 'package:zchat/model/chat.dart';
 import 'package:zchat/model/enums/chat.dart';
@@ -10,6 +12,7 @@ import 'package:zchat/widgets/contact_avatar.dart';
 class ChatMessage extends StatelessWidget {
   // 消息对象
   final ChatMessageRes message;
+
   // 用户信息store
   final _userController = Get.find<UserController>();
 
@@ -41,13 +44,77 @@ class ChatMessage extends StatelessWidget {
     );
   }
 
+  // 构建文件消息
+  Widget _buildFileMsg(BuildContext context) {
+    final fileId = message.fileId ?? -1;
+    final fileName = message.fileName ?? '';
+    final fileType = message.fileType ?? -1;
+    // 校验参数
+    if (fileId == -1 || fileName.isEmpty || fileType == -1) {
+      return _buildTextMsg('文件不存在');
+    }
+    // 文件访问url
+    var fileUrl = '${GlobalConstants.msgFileUrl}/$fileId';
+    // 如果有后缀名
+    final index = fileName.lastIndexOf(".");
+    if (index != -1) {
+      fileUrl += fileName.substring(index);
+    }
+    // 图片
+    if (fileType == FileTypeEnum.image.type) {
+      return _buildImageMsg(context, fileUrl);
+    }
+    return _buildTextMsg('未知文件类型');
+  }
+
+  // 构建图片消息
+  Widget _buildImageMsg(BuildContext context, String imageUrl) {
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: 200.w, maxHeight: 400.w),
+      child: GestureDetector(
+        onTap: () {
+          _previewImage(context, imageUrl);
+        },
+        child: ClipRRect(
+          borderRadius: .circular(8.r),
+          child: Image.network(imageUrl, fit: BoxFit.fitWidth),
+        ),
+      ),
+    );
+  }
+
+  // 预览图片
+  void _previewImage(BuildContext context, String imageUrl) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (ctx) => Scaffold(
+          backgroundColor: Colors.black,
+          body: GestureDetector(
+            onTap: () {
+              Navigator.pop(ctx);
+            },
+            child: PhotoView(
+              imageProvider: NetworkImage(imageUrl),
+              minScale: PhotoViewComputedScale.contained,
+              maxScale: PhotoViewComputedScale.covered * 2,
+              heroAttributes: PhotoViewHeroAttributes(tag: imageUrl),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   // 构建消息内容
-  Widget _buildMsgContent() {
+  Widget _buildMsgContent(BuildContext context) {
     // 消息类型
     final messageType = message.messageType;
     // 文本消息
     if (messageType == MessageTypeEnum.text.type) {
       return _buildTextMsg(message.messageContent);
+    } else if (messageType == MessageTypeEnum.file.type) {
+      return _buildFileMsg(context);
     }
     return _buildTextMsg('未知消息类型');
   }
@@ -70,7 +137,7 @@ class ChatMessage extends StatelessWidget {
             ? [
                 Container(
                   constraints: BoxConstraints(maxWidth: 240.w),
-                  child: _buildMsgContent(),
+                  child: _buildMsgContent(context),
                 ),
                 // 头像
                 ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
@@ -80,7 +147,7 @@ class ChatMessage extends StatelessWidget {
                 ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
                 Container(
                   constraints: BoxConstraints(maxWidth: 240.w),
-                  child: _buildMsgContent(),
+                  child: _buildMsgContent(context),
                 ),
               ],
       ),
