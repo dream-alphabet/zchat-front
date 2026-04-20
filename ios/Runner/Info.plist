@@ -54,9 +54,12 @@
 	<!-- 相机权限 -->
 	<key>NSCameraUsageDescription</key>
 	<string>需要访问相机用于二维码扫描</string>
-	<!-- 相册权限 -->
+	<!-- 相册保存权限 -->
+	<key>NSPhotoLibraryAddUsageDescription</key>
+    <string>需要访问相册以保存图片和视频</string>
+	<!-- 相册读取权限 -->
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>需要访问相册选择图片</string>
+	<string>需要访问相册选择图片或视频</string>
 	<!-- 通知栏权限 -->
 	<key>UNNotificationUsageDescription</key>
 	<string>我们需要向您发送消息通知</string>

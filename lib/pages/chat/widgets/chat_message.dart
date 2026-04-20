@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/pages/chat/widgets/video_preview.dart';
 import 'package:zchat/stores/user.dart';
 import 'package:zchat/model/chat.dart';
 import 'package:zchat/model/enums/chat.dart';
@@ -53,22 +54,83 @@ class ChatMessage extends StatelessWidget {
     if (fileId == -1 || fileName.isEmpty || fileType == -1) {
       return _buildTextMsg('文件不存在');
     }
-    // 文件访问url
-    var fileUrl = '${GlobalConstants.msgFileUrl}/$fileId';
-    // 如果有后缀名
-    final index = fileName.lastIndexOf(".");
-    if (index != -1) {
-      fileUrl += fileName.substring(index);
-    }
     // 图片
     if (fileType == FileTypeEnum.image.type) {
-      return _buildImageMsg(context, fileUrl);
+      return _buildImageMsg(context, fileId, fileName);
+    } else if (fileType == FileTypeEnum.video.type) {
+      return _buildVideoMsg(context, fileId, fileName);
     }
     return _buildTextMsg('未知文件类型');
   }
 
+  // 构建视频消息
+  Widget _buildVideoMsg(BuildContext context, int fileId, String fileName) {
+    // 视频url
+    final videoUrl = _getFileUrl(fileId, fileName);
+    // 封面url
+    final coverUrl = _getFileUrl(fileId, fileName, isCover: true);
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: 200.w, maxHeight: 400.w),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (ctx) => VideoPreview(videoUrl: videoUrl),
+            ),
+          );
+        },
+        child: Hero(
+          tag: videoUrl,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: .circular(8.r),
+                child: Image.network(
+                  coverUrl,
+                  fit: BoxFit.fitWidth,
+                  errorBuilder: (ctx, _, _) => Container(
+                    width: 200.w,
+                    height: 200.w,
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: .circular(8.r),
+                    ),
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.play_circle_outline_rounded,
+                color: Colors.white,
+                size: 50.w,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 获取文件访问url
+  String _getFileUrl(int fileId, String fileName, {bool isCover = false}) {
+    // 文件访问url
+    var fileUrl = '${GlobalConstants.msgFileUrl}/$fileId';
+    if (isCover) {
+      fileUrl += "_cover.jpg";
+    } else {
+      // 如果有后缀名
+      final index = fileName.lastIndexOf(".");
+      if (index != -1) {
+        fileUrl += fileName.substring(index);
+      }
+    }
+    return fileUrl;
+  }
+
   // 构建图片消息
-  Widget _buildImageMsg(BuildContext context, String imageUrl) {
+  Widget _buildImageMsg(BuildContext context, int fileId, String fileName) {
+    final imageUrl = _getFileUrl(fileId, fileName);
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: 200.w, maxHeight: 400.w),
       child: GestureDetector(
