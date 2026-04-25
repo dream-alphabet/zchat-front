@@ -1,12 +1,18 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gal/gal.dart';
 import 'package:get/get.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/common/toast.dart';
 import 'package:zchat/pages/chat/widgets/video_preview.dart';
 import 'package:zchat/stores/user.dart';
 import 'package:zchat/model/chat.dart';
 import 'package:zchat/model/enums/chat.dart';
+import 'package:zchat/widgets/bottom_sheet.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 
 // 聊天消息组件
@@ -131,18 +137,31 @@ class ChatMessage extends StatelessWidget {
   // 构建图片消息
   Widget _buildImageMsg(BuildContext context, int fileId, String fileName) {
     final imageUrl = _getFileUrl(fileId, fileName);
-    return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: 200.w, maxHeight: 400.w),
-      child: GestureDetector(
-        onTap: () {
-          _previewImage(context, imageUrl);
-        },
-        child: ClipRRect(
-          borderRadius: .circular(8.r),
-          child: Image.network(imageUrl, fit: BoxFit.fitWidth),
+    return Hero(
+      tag: imageUrl,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 200.w, maxHeight: 400.w),
+        child: GestureDetector(
+          onTap: () {
+            _previewImage(context, imageUrl);
+          },
+          child: ClipRRect(
+            borderRadius: .circular(8.r),
+            child: Image.network(imageUrl, fit: BoxFit.fitWidth),
+          ),
         ),
       ),
     );
+  }
+
+  // 保存到相册
+  void _saveImageToGallery(BuildContext context, String imageUrl) async {
+    final imagePath = '${Directory.systemTemp.path}/image.jpg';
+    await Dio().download(imageUrl, imagePath);
+    await Gal.putImage(imagePath);
+    ToastUtils.showGlobalToastAsync(msg: '已保存到系统相册').then((_) {
+      Navigator.pop(context);
+    });
   }
 
   // 预览图片
@@ -155,6 +174,14 @@ class ChatMessage extends StatelessWidget {
           body: GestureDetector(
             onTap: () {
               Navigator.pop(ctx);
+            },
+            onLongPress: () {
+              // 显示ActionSheet
+              showMyBottomSheet(context, [
+                SheetItem('保存到相册', () {
+                  _saveImageToGallery(context, imageUrl);
+                }),
+              ]);
             },
             child: PhotoView(
               imageProvider: NetworkImage(imageUrl),

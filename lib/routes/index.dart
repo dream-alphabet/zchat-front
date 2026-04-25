@@ -5,6 +5,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:zchat/pages/auth/login.dart';
 import 'package:zchat/pages/auth/register.dart';
 import 'package:zchat/pages/chat/message.dart';
+import 'package:zchat/pages/chat/video_call.dart';
+import 'package:zchat/pages/chat/voice_call.dart';
 import 'package:zchat/pages/contact/add_contact.dart';
 import 'package:zchat/pages/contact/add_friend.dart';
 import 'package:zchat/pages/contact/create_group.dart';
@@ -41,7 +43,9 @@ final Map<String, WidgetBuilder> routes = {
   RoutePath.addContact: (ctx) => AddContactPage(),
   RoutePath.verifyApply: (ctx) => VerifyApplyPage(),
   RoutePath.chatMessage: (ctx) => ChatMessagePage(),
-  RoutePath.groupSetting: (ctx) => GroupSettingPage()
+  RoutePath.groupSetting: (ctx) => GroupSettingPage(),
+  RoutePath.videoCall: (ctx) => VideoCallPage(),
+  RoutePath.voiceCall: (ctx) => VoiceCallPage()
 };
 
 // 全局Context

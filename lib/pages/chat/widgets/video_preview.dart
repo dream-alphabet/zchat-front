@@ -1,10 +1,11 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:gal/gal.dart';
 import 'package:video_player/video_player.dart';
-import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:zchat/common/toast.dart';
 
 // 视频预览组件
@@ -45,7 +46,6 @@ class _VideoPreviewState extends State<VideoPreview> {
             // 确保视频在初始化之后可以显示第一帧
             setState(() {});
           });
-    _videoController.setPlaybackSpeed(0.5);
     _videoController.play();
     _videoController.addListener(() {
       // 如果不在拖动进度条，正常更新视频进度
@@ -169,14 +169,9 @@ class _VideoPreviewState extends State<VideoPreview> {
 
   // 保存视频到相册
   void _saveVideoToGallery() async {
-    final appDocDir = await getTemporaryDirectory();
-    String savePath = "${appDocDir.path}/temp.mp4";
-    // 下载视频到临时文件路径
-    await Dio().download(widget.videoUrl, savePath, onReceiveProgress: (count, total) {
-      print("${(count / total * 100).toStringAsFixed(0)}%");
-    });
-    final result = await ImageGallerySaverPlus.saveFile(savePath);
-    print('result: $result');
+    final videoPath = '${Directory.systemTemp.path}/video.mp4';
+    await Dio().download(widget.videoUrl,videoPath);
+    await Gal.putVideo(videoPath);
     ToastUtils.showGlobalToast(msg: '已保存到系统相册');
   }
 

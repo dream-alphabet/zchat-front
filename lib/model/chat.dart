@@ -121,7 +121,7 @@ class ChatMessageRes {
   });
 
   factory ChatMessageRes.fromJson(Map<String, dynamic> json) => ChatMessageRes(
-    messageId: json["messageId"],
+    messageId: json["messageId"] ?? -1,
     sessionId: json["sessionId"],
     messageType: json["messageType"],
     messageContent: json["messageContent"],

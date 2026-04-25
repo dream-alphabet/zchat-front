@@ -20,6 +20,7 @@ import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/chat.dart';
 import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/pages/chat/widgets/chat_message.dart';
+import 'package:zchat/widgets/bottom_sheet.dart';
 import 'package:zchat/widgets/page_header.dart';
 
 // 聊天消息页面
@@ -33,36 +34,52 @@ class ChatMessagePage extends StatefulWidget {
 class _ChatMessagePageState extends State<ChatMessagePage> {
   // 联系人id(用户/群聊)
   String _contactId = '';
+
   // 联系人类型
   int _contactType = UserContactTypeEnum.user;
+
   // 联系人信息
   ContactInfoRes? _contactInfo;
+
   // 是否显示表情区域
   bool _showEmotion = false;
+
   // 是否显示更多区域
   bool _showMore = false;
+
   // 是否显示语音
   bool _showVoice = false;
+
   // 消息输入框控制器
   final _messageController = TextEditingController();
+
   // 消息输入框焦点控制器
   final _messageFocusNode = FocusNode();
+
   // 文本消息
   String _msg = '';
+
   // 页码
   final _page = 1;
+
   // 每页条数
   final _pageSize = 15;
+
   // 最大消息id
   int? _maxMessageId;
+
   // 是否正在请求
   bool _isLoading = false;
+
   // 是否还有更多数据
   bool _hasMore = true;
+
   // 消息列表
   List<ChatMessageRes> _msgList = [];
+
   // 消息列表滚动控制器
   final _msgListController = ScrollController();
+
   // 监听websocket服务器推送的消息
   late StreamSubscription<ServerMsgEvent> _streamSubscription;
 
@@ -125,10 +142,15 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   }
 
   // 发送图片或视频消息(相册)
-  void _sendMediaFromGallery() async {
+  void _sendMediaFromGallery(String mediaType) async {
     // 从相册中获取图片或视频
     final picker = ImagePicker();
-    final media = await picker.pickMedia(maxWidth: 240.w, maxHeight: 500.w);
+    XFile? media;
+    if (mediaType == 'image') {
+      media = await picker.pickImage(source: ImageSource.gallery);
+    } else if (mediaType == 'video') {
+      media = await picker.pickVideo(source: ImageSource.gallery);
+    }
     if (media != null) {
       // 文件路径
       final filePath = media.path;
@@ -145,6 +167,11 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       if (!_validateFileSize(fileType, fileSize)) {
         return;
       }
+      final multipart = await MultipartFile.fromFile(
+        filePath,
+        filename: filename,
+      );
+      print('Multipart 长度: ${multipart.length}');
       // 发送消息
       final msg = await sendMessageApi(
         SendMsgReq(
@@ -152,10 +179,9 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
           contactType: _contactType,
           messageType: MessageTypeEnum.file.type,
           messageContent: fileType.messageContent,
-          file: await MultipartFile.fromFile(filePath),
+          file: multipart,
         ),
       );
-      // 清空输入框
       setState(() {
         // 添加到发送后的消息到列表
         _msgList.insert(0, msg);
@@ -196,6 +222,11 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       if (!_validateFileSize(fileType, fileSize)) {
         return;
       }
+      final multipart = await MultipartFile.fromFile(
+        filePath,
+        filename: filename,
+      );
+      print('Multipart 长度: ${multipart.length}');
       // 发送消息
       final msg = await sendMessageApi(
         SendMsgReq(
@@ -203,10 +234,9 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
           contactType: _contactType,
           messageType: MessageTypeEnum.file.type,
           messageContent: fileType.messageContent,
-          file: await MultipartFile.fromFile(filePath, filename: filename),
+          file: multipart,
         ),
       );
-      // 清空输入框
       setState(() {
         // 添加到发送后的消息到列表
         _msgList.insert(0, msg);
@@ -221,9 +251,43 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     print('发送个人名片');
   }
 
+  // 发起视频通话
+  void _makeVideoCall() async {
+    // 发送消息
+    final msg = await sendMessageApi(
+      SendMsgReq(
+        contactId: _contactId,
+        contactType: _contactType,
+        messageType: MessageTypeEnum.videoCall.type,
+        messageContent: MessageTypeEnum.videoCall.messageContent,
+      ),
+    );
+    setState(() {
+      // 添加到发送后的消息到列表
+      _msgList.insert(0, msg);
+    });
+    // 滚动到底部
+    _scrollToBottom();
+    // 前往视频通话页面
+    Navigator.pushNamed(
+      context,
+      RoutePath.videoCall,
+      arguments: {'isCaller': true, 'contactId': _contactId},
+    );
+  }
+
+  // 发起语音通话
+  void _makeVoiceCall() {
+    Navigator.pushNamed(context, RoutePath.voiceCall);
+  }
+
   // 视频通话
   void _videoCall() {
-    print('视频通话');
+    // 显示ActionSheet
+    showMyBottomSheet(context, [
+      SheetItem('视频通话', _makeVideoCall),
+      SheetItem('语音通话', _makeVoiceCall),
+    ]);
   }
 
   @override
@@ -251,12 +315,23 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     _streamSubscription = eventBus.on<ServerMsgEvent>().listen((event) {
       // json解析
       final msg = ChatMessageRes.fromJson(jsonDecode(event.msg));
-      setState(() {
-        _msgList.insert(0, msg);
-      });
-      // 如果滚动offset大于50，说明当前用户正在浏览历史消息，不应滚动到底部
-      if (_msgListController.offset < 200.w) {
-        _scrollToBottom();
+      // 如果是webrtc信令消息，不处理
+      if (msg.messageType != MessageTypeEnum.rtcSignal.type) {
+        setState(() {
+          _msgList.insert(0, msg);
+        });
+        // 如果滚动offset大于50，说明当前用户正在浏览历史消息，不应滚动到底部
+        if (_msgListController.offset < 200.w) {
+          _scrollToBottom();
+        }
+      }
+      // 如果是视频通话，跳转到视频通话页面
+      if (msg.messageType == MessageTypeEnum.videoCall.type) {
+        Navigator.pushNamed(
+          context,
+          RoutePath.videoCall,
+          arguments: {'isCaller': false, 'contactId': _contactId},
+        );
       }
     });
   }
@@ -330,10 +405,10 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         messageContent: _msg,
       ),
     );
-    // 清空输入框
     setState(() {
       // 添加到发送后的消息到列表
       _msgList.insert(0, msg);
+      // 清空输入框
       _messageController.clear();
       _msg = '';
     });
@@ -533,7 +608,20 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   Widget _buildMore() {
     // 更多功能列表
     final moreItems = [
-      MoreItem(name: '相册', icon: MyIcon.gallery, onTap: _sendMediaFromGallery),
+      MoreItem(
+        name: '图片',
+        icon: MyIcon.gallery,
+        onTap: () {
+          _sendMediaFromGallery('image');
+        },
+      ),
+      MoreItem(
+        name: '视频',
+        icon: MyIcon.video,
+        onTap: () {
+          _sendMediaFromGallery('video');
+        },
+      ),
       MoreItem(
         name: '拍照',
         icon: MyIcon.camera,
@@ -548,7 +636,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
           _sendMediaFromCamera('video');
         },
       ),
-      MoreItem(name: '视频通话', icon: MyIcon.videoCall, onTap: _videoCall),
+      MoreItem(name: '视频通话', icon: MyIcon.video, onTap: _videoCall),
       MoreItem(name: '个人名片', icon: MyIcon.personCard, onTap: _sendPersonCard),
       MoreItem(name: '文件', icon: MyIcon.file, onTap: _sendFile),
     ];
@@ -558,8 +646,10 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       height: 200.w,
       child: Center(
         child: GridView.count(
-          shrinkWrap: true, // 让GridView根据内容调整高度
-          physics: NeverScrollableScrollPhysics(), // 禁止滚动
+          shrinkWrap: true,
+          // 让GridView根据内容调整高度
+          physics: NeverScrollableScrollPhysics(),
+          // 禁止滚动
           crossAxisCount: 4,
           mainAxisSpacing: 10.w,
           children: List.generate(
@@ -686,12 +776,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
             statusBarColor: Color.fromRGBO(237, 237, 237, 1),
             statusBarBrightness: Brightness.light,
             statusBarIconBrightness: Brightness.dark,
-            systemNavigationBarColor: Color.fromRGBO(
-              247,
-              247,
-              247,
-              1,
-            ), // 底部导航栏背景
+            systemNavigationBarColor: Color.fromRGBO(247, 247, 247, 1),
+            // 底部导航栏背景
             systemNavigationBarIconBrightness: Brightness.dark, // 底部导航栏图标颜色
           ),
         ),

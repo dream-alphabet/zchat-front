@@ -98,9 +98,15 @@ class MyIcon {
     fontFamily: 'MyIcon',
     matchTextDirection: true,
   );
-  // 视频通话
-  static const videoCall = IconData(
+  // 视频
+  static const video = IconData(
     0xe66b,
+    fontFamily: 'MyIcon',
+    matchTextDirection: true,
+  );
+  // 语音通话
+  static const voiceCall = IconData(
+    0xe6ac,
     fontFamily: 'MyIcon',
     matchTextDirection: true,
   );

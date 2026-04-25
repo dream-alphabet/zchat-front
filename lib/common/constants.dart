@@ -1,7 +1,7 @@
 // 全局常量类
 class GlobalConstants {
   // 主机地址
-  static const host = '10.61.130.241';
+  static const host = '10.128.108.185';
   // api请求基础地址
   static const baseUrl = 'http://$host/api';
   // ws连接地址
@@ -29,7 +29,7 @@ class GlobalConstants {
   static const fileMaxSize = fileMaxMB * 1000 * 1000;
   // 支持的媒体格式
   // 图片格式
-  static const imageFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+  static const imageFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
   // 视频格式
   static const videoFormats = ['mp4'];
 }
@@ -89,4 +89,8 @@ class RoutePath {
   static const verifyApply = 'verifyApply';
   // 聊天消息
   static const chatMessage = 'chatMessage';
+  // 视频通话
+  static const videoCall = 'videoCall';
+  // 语音通话
+  static const voiceCall = 'voiceCall';
 }

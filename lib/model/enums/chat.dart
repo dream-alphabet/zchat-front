@@ -3,7 +3,13 @@ enum MessageTypeEnum {
   // 文本消息
   text(type: 0, messageContent: ''),
   // 文件消息
-  file(type: 1, messageContent: '');
+  file(type: 1, messageContent: ''),
+  // 视频通话
+  videoCall(type: 2, messageContent: '[视频通话]'),
+  // 语音通话
+  voiceCall(type: 3, messageContent: '[语音通话]'),
+  // webrtc信令消息
+  rtcSignal(type: 4, messageContent: '');
 
   const MessageTypeEnum({required this.type, required this.messageContent});
 
@@ -24,4 +30,16 @@ enum FileTypeEnum {
 
   final int type;
   final String messageContent;
+}
+
+// webrtc信令枚举
+class RTCSignalEnum {
+  // offer
+  static const offer = 'offer';
+  // answer
+  static const answer = 'answer';
+  // candidate
+  static const candidate = 'candidate';
+  // callEnd(挂断)
+  static const callEnd = 'callEnd';
 }

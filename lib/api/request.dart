@@ -31,6 +31,7 @@ class DioRequest {
           if (token.isNotEmpty) {
             request.headers['token'] = token;
           }
+          print('请求头: ${request.headers}');
           handler.next(request);
         },
         onResponse: (response, handler) {
