@@ -1,7 +1,7 @@
 // 全局常量类
 class GlobalConstants {
   // 主机地址
-  static const host = '10.128.108.185';
+  static const host = '10.31.71.77';
   // api请求基础地址
   static const baseUrl = 'http://$host/api';
   // ws连接地址

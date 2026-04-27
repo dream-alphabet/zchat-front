@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "6517479",
+      "name": "文件-文件-1",
+      "font_class": "wj-wj-1",
+      "unicode": "e718",
+      "unicode_decimal": 59160
+    },
+    {
       "icon_id": "11936518",
       "name": "语音通话",
       "font_class": "yuyintonghua",

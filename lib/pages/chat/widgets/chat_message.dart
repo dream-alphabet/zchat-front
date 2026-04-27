@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gal/gal.dart';
 import 'package:get/get.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/pages/chat/widgets/video_preview.dart';
 import 'package:zchat/stores/user.dart';
@@ -25,29 +27,37 @@ class ChatMessage extends StatelessWidget {
 
   ChatMessage({super.key, required this.message});
 
-  // 构建文本消息
-  Widget _buildTextMsg(String msg) {
+  // 构建消息框架
+  Widget _buildMsgLayout({required Widget child, required Color color}) {
     return Padding(
       padding: _isSelf
           ? EdgeInsets.only(right: 6.w)
           : EdgeInsets.only(left: 6.w),
       child: CustomPaint(
-        painter: BubbleArrowPainter(isSelf: _isSelf),
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.w),
-          decoration: BoxDecoration(
-            color: _isSelf ? Color.fromRGBO(20, 134, 237, 1) : Colors.white,
-            borderRadius: .circular(8.r),
-          ),
-          child: SelectableText(
-            msg,
-            style: TextStyle(
-              color: _isSelf ? Colors.white : Colors.black,
-              fontSize: 16.sp,
-            ),
+        painter: BubbleArrowPainter(isSelf: _isSelf, color: color),
+        child: child,
+      ),
+    );
+  }
+
+  // 构建文本消息
+  Widget _buildTextMsg(String msg) {
+    return _buildMsgLayout(
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.w),
+        decoration: BoxDecoration(
+          color: _isSelf ? Color.fromRGBO(20, 134, 237, 1) : Colors.white,
+          borderRadius: .circular(8.r),
+        ),
+        child: SelectableText(
+          msg,
+          style: TextStyle(
+            color: _isSelf ? Colors.white : Colors.black,
+            fontSize: 16.sp,
           ),
         ),
       ),
+      color: _isSelf ? Color.fromRGBO(20, 134, 237, 1) : Colors.white,
     );
   }
 
@@ -56,8 +66,9 @@ class ChatMessage extends StatelessWidget {
     final fileId = message.fileId ?? -1;
     final fileName = message.fileName ?? '';
     final fileType = message.fileType ?? -1;
+    final fileSize = message.fileSize ?? -1;
     // 校验参数
-    if (fileId == -1 || fileName.isEmpty || fileType == -1) {
+    if (fileId == -1 || fileName.isEmpty || fileType == -1 || fileSize == -1) {
       return _buildTextMsg('文件不存在');
     }
     // 图片
@@ -65,8 +76,90 @@ class ChatMessage extends StatelessWidget {
       return _buildImageMsg(context, fileId, fileName);
     } else if (fileType == FileTypeEnum.video.type) {
       return _buildVideoMsg(context, fileId, fileName);
+    } else if (fileType == FileTypeEnum.file.type) {
+      return _buildNormalFileMsg(context, fileId, fileName, fileSize);
     }
     return _buildTextMsg('未知文件类型');
+  }
+
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) {
+      return '$bytes B';
+    } else if (bytes < 1024 * 1024) {
+      double kb = bytes / 1024;
+      return '${kb.toStringAsFixed(1)} KB';
+    } else if (bytes < 1024 * 1024 * 1024) {
+      double mb = bytes / (1024 * 1024);
+      return '${mb.toStringAsFixed(1)} MB';
+    } else {
+      double gb = bytes / (1024 * 1024 * 1024);
+      return '${gb.toStringAsFixed(1)} GB';
+    }
+  }
+
+  // 构建普通文件消息
+  Widget _buildNormalFileMsg(BuildContext context, int fileId, String fileName, int fileSize) {
+    return GestureDetector(
+      onTap: () {
+        showMyBottomSheet(context, [
+          SheetItem('保存到本地', () async {
+            final dir = await getDownloadsDirectory();
+            final fileUrl = _getFileUrl(fileId, fileName);
+            final savePath = '${dir?.path ?? '/Downloads'}/zchat_app/$fileName';
+            print('已保存到: $savePath');
+            await Dio().download(fileUrl, savePath);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('已保存到: $savePath'),
+                duration: Duration(seconds: 2), // 显示时长
+              ),
+            );
+            Navigator.pop(context);
+          })
+        ]);
+      },
+      child: _buildMsgLayout(
+        child: Container(
+          width: 240.w,
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            borderRadius: .circular(5.r),
+            color: Colors.white,
+          ),
+          child: Row(
+            spacing: 10.w,
+            crossAxisAlignment: .center,
+            children: [
+              Expanded(
+                child: Column(
+                  spacing: 5.w,
+                  crossAxisAlignment: .start,
+                  children: [
+                    Text(
+                      fileName,
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16.sp,
+                        overflow: .ellipsis,
+                      ),
+                    ),
+                    Text(
+                      '${_formatFileSize(fileSize)} B',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(MyIcon.fileMsg, color: Colors.black, size: 50.w),
+            ],
+          ),
+        ),
+        color: Colors.white,
+      ),
+    );
   }
 
   // 构建视频消息
@@ -82,12 +175,15 @@ class ChatMessage extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (ctx) => VideoPreview(videoUrl: videoUrl),
+              builder: (ctx) => VideoPreview(
+                videoUrl: videoUrl,
+                messageId: message.messageId,
+              ),
             ),
           );
         },
         child: Hero(
-          tag: videoUrl,
+          tag: '$videoUrl-${message.messageId}',
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -138,7 +234,7 @@ class ChatMessage extends StatelessWidget {
   Widget _buildImageMsg(BuildContext context, int fileId, String fileName) {
     final imageUrl = _getFileUrl(fileId, fileName);
     return Hero(
-      tag: imageUrl,
+      tag: '$imageUrl-${message.messageId}',
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: 200.w, maxHeight: 400.w),
         child: GestureDetector(
@@ -187,7 +283,9 @@ class ChatMessage extends StatelessWidget {
               imageProvider: NetworkImage(imageUrl),
               minScale: PhotoViewComputedScale.contained,
               maxScale: PhotoViewComputedScale.covered * 2,
-              heroAttributes: PhotoViewHeroAttributes(tag: imageUrl),
+              heroAttributes: PhotoViewHeroAttributes(
+                tag: '$imageUrl-${message.messageId}',
+              ),
             ),
           ),
         ),
@@ -247,13 +345,14 @@ class ChatMessage extends StatelessWidget {
 // 文本消息气泡左侧箭头绘制器
 class BubbleArrowPainter extends CustomPainter {
   final bool isSelf;
+  final Color color;
 
-  BubbleArrowPainter({required this.isSelf});
+  BubbleArrowPainter({required this.isSelf, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = isSelf ? Color.fromRGBO(20, 134, 237, 1) : Colors.white
+      ..color = color
       ..style = PaintingStyle.fill;
 
     final path = Path();

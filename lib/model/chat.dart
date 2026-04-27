@@ -102,6 +102,7 @@ class ChatMessageRes {
   int? fileId;
   String? fileName;
   int? fileType;
+  int? fileSize;
   int status;
 
   ChatMessageRes({
@@ -117,6 +118,7 @@ class ChatMessageRes {
     required this.fileId,
     required this.fileName,
     required this.fileType,
+    required this.fileSize,
     required this.status,
   });
 
@@ -133,6 +135,7 @@ class ChatMessageRes {
     fileId: json["fileId"],
     fileName: json["fileName"],
     fileType: json["fileType"],
+    fileSize: json["fileSize"],
     status: json["status"],
   );
 }

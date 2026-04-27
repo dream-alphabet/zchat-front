@@ -136,8 +136,46 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     // 选择文件(可以选择多个)
     final result = await FilePicker.platform.pickFiles(allowMultiple: true);
     // 用户选择了文件
-    if (result != null) {
-      print('选择的文件: ${result.files}');
+    if (result != null && result.files.isNotEmpty) {
+      final files = result.files;
+      for (final file in files) {
+        // 文件路径
+        final filePath = file.path ?? '';
+        // 文件大小
+        final fileSize = file.size;
+        // 文件名
+        final filename = file.name;
+        // 文件类型
+        final fileType = _getFileType(filePath);
+        print(
+          '文件名:$filename, 文件路径:$filePath, 文件大小:$fileSize, 文件类型:${fileType.type}',
+        );
+        // 校验文件大小
+        if (!_validateFileSize(fileType, fileSize)) {
+          return;
+        }
+        final multipart = await MultipartFile.fromFile(
+          filePath,
+          filename: filename,
+        );
+        print('Multipart 长度: ${multipart.length}');
+        // 发送消息
+        final msg = await sendMessageApi(
+          SendMsgReq(
+            contactId: _contactId,
+            contactType: _contactType,
+            messageType: MessageTypeEnum.file.type,
+            messageContent: fileType.messageContent,
+            file: multipart,
+          ),
+        );
+        setState(() {
+          // 添加到发送后的消息到列表
+          _msgList.insert(0, msg);
+        });
+        // 滚动到底部
+        _scrollToBottom();
+      }
     }
   }
 
@@ -421,6 +459,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     return ListView.builder(
       controller: _msgListController,
       itemCount: _msgList.length,
+      padding: EdgeInsets.only(top: 10.w),
+      shrinkWrap: true,
       reverse: true,
       itemBuilder: (ctx, index) => ChatMessage(message: _msgList[index]),
     );

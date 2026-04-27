@@ -122,4 +122,10 @@ class MyIcon {
     fontFamily: 'MyIcon',
     matchTextDirection: true,
   );
+  // 文件消息图标
+  static const fileMsg = IconData(
+    0xe718,
+    fontFamily: 'MyIcon',
+    matchTextDirection: true,
+  );
 }

@@ -11,8 +11,13 @@ import 'package:zchat/common/toast.dart';
 // 视频预览组件
 class VideoPreview extends StatefulWidget {
   final String videoUrl;
+  final int messageId;
 
-  const VideoPreview({super.key, required this.videoUrl});
+  const VideoPreview({
+    super.key,
+    required this.videoUrl,
+    required this.messageId,
+  });
 
   @override
   State<VideoPreview> createState() => _VideoPreviewState();
@@ -170,7 +175,7 @@ class _VideoPreviewState extends State<VideoPreview> {
   // 保存视频到相册
   void _saveVideoToGallery() async {
     final videoPath = '${Directory.systemTemp.path}/video.mp4';
-    await Dio().download(widget.videoUrl,videoPath);
+    await Dio().download(widget.videoUrl, videoPath);
     await Gal.putVideo(videoPath);
     ToastUtils.showGlobalToast(msg: '已保存到系统相册');
   }
@@ -215,11 +220,7 @@ class _VideoPreviewState extends State<VideoPreview> {
           borderRadius: .circular(15.w),
         ),
         alignment: .center,
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 18.w,
-        ),
+        child: Icon(icon, color: Colors.white, size: 18.w),
       ),
     );
   }
@@ -246,7 +247,7 @@ class _VideoPreviewState extends State<VideoPreview> {
         child: Stack(
           children: [
             Hero(
-              tag: widget.videoUrl,
+              tag: '${widget.videoUrl}-${widget.messageId}',
               child: GestureDetector(
                 onTap: () {
                   setState(() {
