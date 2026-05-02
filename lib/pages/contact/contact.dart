@@ -116,16 +116,16 @@ class _ContactPageState extends State<ContactPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(
-        _userContactController.contactList.length,
+        _userContactController.userList.length,
         (index) => _buildListItem(
           ListItemData(
-            userId: _userContactController.contactList[index].contactId,
+            userId: _userContactController.userList[index].contactId,
             isFunction: false,
             leftAvatar: 'lib/assets/test/01.png',
-            rightName: _userContactController.contactList[index].contactName,
+            rightName: _userContactController.userList[index].contactName,
             path: RoutePath.contactInfo,
           ),
-          index < _userContactController.contactList.length - 1,
+          index < _userContactController.userList.length - 1,
         ),
       ),
     );
@@ -153,7 +153,7 @@ class _ContactPageState extends State<ContactPage> {
             ),
           ),
           Obx(() {
-            return _userContactController.contactList.isEmpty
+            return _userContactController.userList.isEmpty
                 ? ChatBlank(msg: '快去寻找好友吧!')
                 : _buildContactList();
           }),

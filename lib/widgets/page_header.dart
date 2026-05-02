@@ -69,7 +69,7 @@ class _PageHeaderState extends State<PageHeader> {
                         ),
                         SizedBox(width: 12.w),
                         Text(
-                          '发起群聊',
+                          '创建群聊',
                           style: TextStyle(color: Colors.black, fontSize: 15.w),
                         ),
                       ],

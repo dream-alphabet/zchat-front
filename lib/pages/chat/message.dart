@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart' hide MultipartFile;
 import 'package:get/get_utils/get_utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:zchat/api/chat.dart';
@@ -20,6 +21,7 @@ import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/chat.dart';
 import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/pages/chat/widgets/chat_message.dart';
+import 'package:zchat/stores/user.dart';
 import 'package:zchat/widgets/bottom_sheet.dart';
 import 'package:zchat/widgets/page_header.dart';
 
@@ -82,6 +84,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
 
   // 监听websocket服务器推送的消息
   late StreamSubscription<ServerMsgEvent> _streamSubscription;
+
+  final _userController = Get.find<UserController>();
 
   // 根据文件后缀获取文件类型
   FileTypeEnum _getFileType(String filePath) {
@@ -353,8 +357,9 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     _streamSubscription = eventBus.on<ServerMsgEvent>().listen((event) {
       // json解析
       final msg = ChatMessageRes.fromJson(jsonDecode(event.msg));
-      // 如果是webrtc信令消息，不处理
-      if (msg.messageType != MessageTypeEnum.rtcSignal.type) {
+      // 如果是webrtc信令消息，不处理, 如果是当前用户发送的，也不处理
+      if (msg.messageType != MessageTypeEnum.rtcSignal.type &&
+          msg.sendUserId != _userController.userInfo.value?.userId) {
         setState(() {
           _msgList.insert(0, msg);
         });
@@ -676,7 +681,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
           _sendMediaFromCamera('video');
         },
       ),
-      MoreItem(name: '视频通话', icon: MyIcon.video, onTap: _videoCall),
+      if (_contactType == UserContactTypeEnum.user)
+        MoreItem(name: '视频通话', icon: MyIcon.video, onTap: _videoCall),
       MoreItem(name: '个人名片', icon: MyIcon.personCard, onTap: _sendPersonCard),
       MoreItem(name: '文件', icon: MyIcon.file, onTap: _sendFile),
     ];
@@ -827,7 +833,9 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
             children: [
               // 导航栏
               PageHeader(
-                title: _contactInfo?.contactName ?? '',
+                title: _contactType == UserContactTypeEnum.user
+                    ? _contactInfo?.contactName ?? ''
+                    : '${_contactInfo?.contactName}(${_contactInfo?.memberCount})',
                 showLeftBackIcon: true,
                 backgroundColor: Color.fromRGBO(237, 237, 237, 1),
                 rightIconList: [

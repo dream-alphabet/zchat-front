@@ -118,7 +118,7 @@ class _AddContactPageState extends State<AddContactPage> {
     return GestureDetector(
       onTap: _send,
       child: Container(
-        width: 130.w,
+        width: 100.w,
         padding: EdgeInsets.symmetric(vertical: 12.w),
         decoration: BoxDecoration(
           color: Color.fromRGBO(20, 134, 237, 1),
@@ -126,7 +126,7 @@ class _AddContactPageState extends State<AddContactPage> {
         ),
         alignment: Alignment.center,
         child: Text(
-          '发送按钮',
+          '发送',
           style: TextStyle(fontSize: 16.sp, color: Colors.white),
         ),
       ),
@@ -162,8 +162,7 @@ class _AddContactPageState extends State<AddContactPage> {
               ),
               _buildApplyInfo(),
               SizedBox(height: 50.w),
-              _buildSendBtn(),
-              SizedBox(height: 50.w),
+              _buildSendBtn()
             ],
           ),
         ),

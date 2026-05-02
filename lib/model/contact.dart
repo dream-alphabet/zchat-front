@@ -4,12 +4,14 @@ class ContactInfoRes {
   String contactName;
   int contactStatus;
   int contactType;
+  int? memberCount;
 
   ContactInfoRes({
     required this.contactId,
     required this.contactName,
     required this.contactStatus,
     required this.contactType,
+    required this.memberCount,
   });
 
   factory ContactInfoRes.fromJson(Map<String, dynamic> json) => ContactInfoRes(
@@ -17,6 +19,7 @@ class ContactInfoRes {
     contactName: json["contactName"],
     contactStatus: json["contactStatus"],
     contactType: json["contactType"],
+    memberCount: json['memberCount'],
   );
 
   Map<String, dynamic> toJson() => {
@@ -48,6 +51,7 @@ class ContactApplyRes {
   int contactType;
   String contactId;
   String contactName;
+  String? groupName;
   int status;
   String applyInfo;
   int applyTime;
@@ -60,6 +64,7 @@ class ContactApplyRes {
     required this.contactType,
     required this.contactId,
     required this.contactName,
+    required this.groupName,
     required this.status,
     required this.applyInfo,
     required this.applyTime,
@@ -74,6 +79,7 @@ class ContactApplyRes {
         contactType: json["contactType"],
         contactId: json["contactId"],
         contactName: json["contactName"],
+        groupName: json['groupName'],
         status: json["status"],
         applyInfo: json["applyInfo"],
         applyTime: json["applyTime"],
@@ -98,19 +104,10 @@ class ContactApplyRes {
 class ApplyListReq {
   int page;
   int pageSize;
-  int contactType;
 
-  ApplyListReq({
-    required this.page,
-    required this.pageSize,
-    required this.contactType,
-  });
+  ApplyListReq({required this.page, required this.pageSize});
 
-  Map<String, dynamic> toMap() => {
-    "page": page,
-    "pageSize": pageSize,
-    "contactType": contactType,
-  };
+  Map<String, dynamic> toMap() => {"page": page, "pageSize": pageSize};
 }
 
 // 处理联系人申请请求参数
@@ -118,34 +115,25 @@ class HandleApplyReq {
   int applyId;
   int status;
 
-  HandleApplyReq({
-    required this.applyId,
-    required this.status
-  });
+  HandleApplyReq({required this.applyId, required this.status});
 
-  Map<String, dynamic> toMap() => {
-    "applyId": applyId,
-    "status": status,
-  };
+  Map<String, dynamic> toMap() => {"applyId": applyId, "status": status};
 }
 
 // 联系人响应对象
 class UserContactRes {
-    String contactId;
-    String contactName;
+  String contactId;
+  String contactName;
 
-    UserContactRes({
-        required this.contactId,
-        required this.contactName,
-    });
+  UserContactRes({required this.contactId, required this.contactName});
 
-    factory UserContactRes.fromJson(Map<String, dynamic> json) => UserContactRes(
-        contactId: json["contactId"],
-        contactName: json["contactName"],
-    );
+  factory UserContactRes.fromJson(Map<String, dynamic> json) => UserContactRes(
+    contactId: json["contactId"],
+    contactName: json["contactName"],
+  );
 
-    Map<String, dynamic> toJson() => {
-        "contactId": contactId,
-        "contactName": contactName,
-    };
+  Map<String, dynamic> toJson() => {
+    "contactId": contactId,
+    "contactName": contactName,
+  };
 }

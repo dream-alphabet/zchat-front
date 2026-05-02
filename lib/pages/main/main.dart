@@ -97,7 +97,9 @@ class _MainPageState extends State<MainPage> {
     // 获取用户信息并存入store
     _userController.getUserInfo();
     // 获取联系人信息
-    _userContactController.getContactList();
+    _userContactController.getUserContactList();
+    // 获取群聊列表
+    _userContactController.getGroupList();
     // 获取会话列表
     _chatSessionStore.getSessionList();
     initWebSocket();

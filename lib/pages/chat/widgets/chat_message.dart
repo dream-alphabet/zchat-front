@@ -10,6 +10,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/toast.dart';
+import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/pages/chat/widgets/video_preview.dart';
 import 'package:zchat/stores/user.dart';
 import 'package:zchat/model/chat.dart';
@@ -27,12 +28,19 @@ class ChatMessage extends StatelessWidget {
 
   ChatMessage({super.key, required this.message});
 
-  // 构建消息框架
-  Widget _buildMsgLayout({required Widget child, required Color color}) {
+  // 消息通用边距
+  Widget _buildPadding({required Widget child}) {
     return Padding(
       padding: _isSelf
           ? EdgeInsets.only(right: 6.w)
           : EdgeInsets.only(left: 6.w),
+      child: child,
+    );
+  }
+
+  // 构建消息框架
+  Widget _buildMsgLayout({required Widget child, required Color color}) {
+    return _buildPadding(
       child: CustomPaint(
         painter: BubbleArrowPainter(isSelf: _isSelf, color: color),
         child: child,
@@ -82,6 +90,7 @@ class ChatMessage extends StatelessWidget {
     return _buildTextMsg('未知文件类型');
   }
 
+  // 格式化文件大小
   String _formatFileSize(int bytes) {
     if (bytes < 1024) {
       return '$bytes B';
@@ -98,7 +107,12 @@ class ChatMessage extends StatelessWidget {
   }
 
   // 构建普通文件消息
-  Widget _buildNormalFileMsg(BuildContext context, int fileId, String fileName, int fileSize) {
+  Widget _buildNormalFileMsg(
+    BuildContext context,
+    int fileId,
+    String fileName,
+    int fileSize,
+  ) {
     return GestureDetector(
       onTap: () {
         showMyBottomSheet(context, [
@@ -115,7 +129,7 @@ class ChatMessage extends StatelessWidget {
               ),
             );
             Navigator.pop(context);
-          })
+          }),
         ]);
       },
       child: _buildMsgLayout(
@@ -144,11 +158,8 @@ class ChatMessage extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${_formatFileSize(fileSize)} B',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14.sp,
-                      ),
+                      _formatFileSize(fileSize),
+                      style: TextStyle(color: Colors.grey, fontSize: 14.sp),
                     ),
                   ],
                 ),
@@ -168,46 +179,48 @@ class ChatMessage extends StatelessWidget {
     final videoUrl = _getFileUrl(fileId, fileName);
     // 封面url
     final coverUrl = _getFileUrl(fileId, fileName, isCover: true);
-    return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: 200.w, maxHeight: 400.w),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (ctx) => VideoPreview(
-                videoUrl: videoUrl,
-                messageId: message.messageId,
+    return _buildPadding(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 200.w, maxHeight: 400.w),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (ctx) => VideoPreview(
+                  videoUrl: videoUrl,
+                  messageId: message.messageId,
+                ),
               ),
-            ),
-          );
-        },
-        child: Hero(
-          tag: '$videoUrl-${message.messageId}',
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: .circular(8.r),
-                child: Image.network(
-                  coverUrl,
-                  fit: BoxFit.fitWidth,
-                  errorBuilder: (ctx, _, _) => Container(
-                    width: 200.w,
-                    height: 200.w,
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: .circular(8.r),
+            );
+          },
+          child: Hero(
+            tag: '$videoUrl-${message.messageId}',
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                ClipRRect(
+                  borderRadius: .circular(8.r),
+                  child: Image.network(
+                    coverUrl,
+                    fit: BoxFit.fitWidth,
+                    errorBuilder: (ctx, _, _) => Container(
+                      width: 200.w,
+                      height: 200.w,
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: .circular(8.r),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Icon(
-                Icons.play_circle_outline_rounded,
-                color: Colors.white,
-                size: 50.w,
-              ),
-            ],
+                Icon(
+                  Icons.play_circle_outline_rounded,
+                  color: Colors.white,
+                  size: 50.w,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -233,17 +246,19 @@ class ChatMessage extends StatelessWidget {
   // 构建图片消息
   Widget _buildImageMsg(BuildContext context, int fileId, String fileName) {
     final imageUrl = _getFileUrl(fileId, fileName);
-    return Hero(
-      tag: '$imageUrl-${message.messageId}',
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 200.w, maxHeight: 400.w),
-        child: GestureDetector(
-          onTap: () {
-            _previewImage(context, imageUrl);
-          },
-          child: ClipRRect(
-            borderRadius: .circular(8.r),
-            child: Image.network(imageUrl, fit: BoxFit.fitWidth),
+    return _buildPadding(
+      child: Hero(
+        tag: '$imageUrl-${message.messageId}',
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 200.w, maxHeight: 400.w),
+          child: GestureDetector(
+            onTap: () {
+              _previewImage(context, imageUrl);
+            },
+            child: ClipRRect(
+              borderRadius: .circular(8.r),
+              child: Image.network(imageUrl, fit: BoxFit.fitWidth),
+            ),
           ),
         ),
       ),
@@ -332,9 +347,20 @@ class ChatMessage extends StatelessWidget {
             : [
                 // 头像
                 ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
-                Container(
-                  constraints: BoxConstraints(maxWidth: 240.w),
-                  child: _buildMsgContent(context),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 5.w,
+                  children: [
+                    if (message.contactType == UserContactTypeEnum.group)
+                      Padding(
+                        padding: .only(left: 6.w),
+                        child: Text(message.sendUserNickname ?? ''),
+                      ),
+                    Container(
+                      constraints: BoxConstraints(maxWidth: 240.w),
+                      child: _buildMsgContent(context),
+                    ),
+                  ],
                 ),
               ],
       ),

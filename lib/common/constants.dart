@@ -49,6 +49,7 @@ class Api {
   static const getChatSessionList = '/chat/session/list';
   static const sendMessage = '/chat/send';
   static const getMsgList = '/chat/message/list';
+  static const createGroup = '/group';
 }
 
 // 路由路径常量
@@ -73,7 +74,7 @@ class RoutePath {
   static const scan = 'scan';
   // 添加朋友
   static const addFriend = 'addFriend';
-  // 发起群聊
+  // 创建群聊
   static const createGroup = 'createGroup';
   // 搜索好友(用户/群聊)
   static const searchContact = 'searchContact';

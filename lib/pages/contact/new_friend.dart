@@ -21,8 +21,10 @@ class NewFriendPage extends StatefulWidget {
 class _NewFriendPageState extends State<NewFriendPage> {
   // 申请列表
   List<ContactApplyRes> _applyList = [];
+
   // 当前页码
   int page = 1;
+
   // 每页条数
   int pageSize = 10;
 
@@ -35,11 +37,7 @@ class _NewFriendPageState extends State<NewFriendPage> {
   // 获取联系人申请列表
   Future<void> _getApplyList() async {
     final res = await getContactApplyListApi(
-      ApplyListReq(
-        page: page,
-        pageSize: pageSize,
-        contactType: UserContactTypeEnum.user,
-      ),
+      ApplyListReq(page: page, pageSize: pageSize),
     );
     // 申请列表
     _applyList = res.list
@@ -132,6 +130,15 @@ class _NewFriendPageState extends State<NewFriendPage> {
                     spacing: 4.w,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // 如果是群聊，额外显示群聊名称
+                      if (apply.contactType == UserContactTypeEnum.group)
+                        Text(
+                          apply.groupName ?? '',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            color: Color.fromRGBO(20, 134, 237, 1),
+                          ),
+                        ),
                       Text(
                         apply.contactName,
                         style: TextStyle(fontSize: 16.sp, color: Colors.black),
@@ -190,7 +197,8 @@ class _NewFriendPageState extends State<NewFriendPage> {
           statusBarColor: Color.fromRGBO(247, 247, 247, 1),
           statusBarBrightness: Brightness.light,
           statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: Color.fromRGBO(247, 247, 247, 1), // 底部导航栏背景
+          systemNavigationBarColor: Color.fromRGBO(247, 247, 247, 1),
+          // 底部导航栏背景
           systemNavigationBarIconBrightness: Brightness.dark, // 底部导航栏图标颜色
         ),
       ),
