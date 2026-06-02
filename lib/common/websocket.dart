@@ -246,3 +246,18 @@ void initWebSocket() {
     },
   );
 }
+
+// 活跃的会话id
+String activeSessionId = '';
+
+// 设置活跃会话(前端+后端)
+void setActiveSession(String sessionId) {
+  activeSessionId = sessionId;
+  // TODO 后端
+}
+
+// 删除活跃会话(前端+后端)
+void removeActiveSession() {
+  activeSessionId = '';
+  // TODO 后端
+}

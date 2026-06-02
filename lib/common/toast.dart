@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:zchat/routes/index.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-// 工具类：全局 Toast 工具
+// 全局Toast工具类
 class ToastUtils {
   static late FToast _fToast;
   static bool _isShow = false;

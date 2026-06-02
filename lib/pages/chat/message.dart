@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart' hide MultipartFile;
-import 'package:get/get_utils/get_utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:zchat/api/chat.dart';
 import 'package:zchat/api/contact.dart';
@@ -39,6 +38,9 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
 
   // 联系人类型
   int _contactType = UserContactTypeEnum.user;
+
+  // 会话id
+  String _sessionId = '';
 
   // 联系人信息
   ContactInfoRes? _contactInfo;
@@ -342,6 +344,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
             ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
         _contactId = params['contactId'];
         _contactType = params['contactType'];
+        _sessionId = params['sessionId'];
+        print('当前会话id: $_sessionId');
         _getContactInfo();
         _getMsgList().then((_) {
           _scrollToBottom();

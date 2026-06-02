@@ -117,7 +117,12 @@ class _MainPageState extends State<MainPage> {
           statusBarColor: Color.fromRGBO(247, 247, 247, 1), // 顶部状态栏背景颜色
           statusBarBrightness: Brightness.light,
           statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: Color.fromRGBO(247, 247, 247, 1), // 底部导航栏背景颜色
+          systemNavigationBarColor: Color.fromRGBO(
+            247,
+            247,
+            247,
+            1,
+          ), // 底部导航栏背景颜色
           systemNavigationBarIconBrightness: Brightness.dark, // 底部导航栏图标颜色
         ),
       ),
