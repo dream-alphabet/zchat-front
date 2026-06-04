@@ -10,6 +10,7 @@ import 'package:zchat/pages/chat/chat.dart';
 import 'package:zchat/pages/contact/contact.dart';
 import 'package:zchat/pages/discover/discover.dart';
 import 'package:zchat/stores/contact.dart';
+import 'package:zchat/stores/message.dart';
 import 'package:zchat/stores/session.dart';
 import 'package:zchat/stores/token.dart';
 import 'package:zchat/stores/user.dart';
@@ -73,6 +74,8 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+    // 初始化消息store
+    Get.put(MessageController());
     // 初始化toast
     ToastUtils.init();
     _initUser();

@@ -1,7 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/event_bus.dart';
+import 'package:zchat/common/message.dart';
+import 'package:zchat/model/chat.dart';
+import 'package:zchat/model/enums/chat.dart';
+import 'package:zchat/routes/index.dart';
 import 'package:zchat/stores/token.dart';
 
 /// WebSocket状态
@@ -230,8 +236,34 @@ final _utility = WebSocketUtility();
 
 // 处理服务器推送的消息
 void _handleServerMsg(dynamic msg) {
-  print('服务器推送的消息: $msg');
-  eventBus.fire(ServerMsgEvent(msg: msg));
+  final message = ChatMessageRes.fromJson(jsonDecode(msg));
+  print('服务器推送的消息: $message');
+  // 类型为文本或媒体文件, 如果不是当前活跃会话的消息，弹出消息提示
+  if ([
+        MessageTypeEnum.text.type,
+        MessageTypeEnum.file.type,
+      ].contains(message.messageType) &&
+      message.sessionId != activeSessionId) {
+    MessageUtils.show(
+      contactId: message.contactId,
+      contactName: message.sendUserNickname ?? '...',
+      msg: message.messageContent,
+      sendTime: message.sendTime,
+      onTap: () {
+        // 跳转到聊天消息页面
+        Navigator.pushNamed(
+          globalNavigatorKey.currentState!.context,
+          RoutePath.chatMessage,
+          arguments: {
+            'contactId': message.sendUserId,
+            'contactType': message.contactType,
+            'sessionId': message.sessionId
+          },
+        );
+      },
+    );
+  }
+  eventBus.fire(ServerMsgEvent(msg: message));
 }
 
 // 初始化websocket
@@ -253,11 +285,9 @@ String activeSessionId = '';
 // 设置活跃会话(前端+后端)
 void setActiveSession(String sessionId) {
   activeSessionId = sessionId;
-  // TODO 后端
 }
 
 // 删除活跃会话(前端+后端)
 void removeActiveSession() {
   activeSessionId = '';
-  // TODO 后端
 }

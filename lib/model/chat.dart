@@ -77,14 +77,14 @@ class GetMsgListReq {
     required this.page,
     required this.pageSize,
     required this.contactId,
-    required this.maxMessageId
+    required this.maxMessageId,
   });
 
   Map<String, dynamic> toMap() => {
     "page": page,
     "pageSize": pageSize,
     "contactId": contactId,
-    "maxMessageId": maxMessageId
+    "maxMessageId": maxMessageId,
   };
 }
 
@@ -138,4 +138,24 @@ class ChatMessageRes {
     fileSize: json["fileSize"],
     status: json["status"],
   );
+
+  @override
+  String toString() {
+    return 'ChatMessageRes{'
+        'messageId: $messageId, '
+        'sessionId: $sessionId, '
+        'messageType: $messageType, '
+        'messageContent: $messageContent, '
+        'sendUserId: $sendUserId, '
+        'sendUserNickname: $sendUserNickname, '
+        'sendTime: $sendTime, '
+        'contactId: $contactId, '
+        'contactType: $contactType, '
+        'fileId: $fileId, '
+        'fileName: $fileName, '
+        'fileType: $fileType, '
+        'fileSize: $fileSize, '
+        'status: $status'
+        '}';
+  }
 }

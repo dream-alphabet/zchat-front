@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:zchat/common/utils.dart';
 import 'package:zchat/routes/index.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 
@@ -13,6 +14,9 @@ class MessageUtils {
   // 显示全局消息
   static void show({
     required String msg,
+    required String contactId,
+    required String contactName,
+    required int sendTime,
     Duration duration = const Duration(milliseconds: 1500),
     GestureTapCallback? onTap,
   }) {
@@ -27,13 +31,19 @@ class MessageUtils {
     if (overlay == null) return;
     // 创建entry(消息提示本体)
     _currentEntry = OverlayEntry(
-      builder: (ctx) => _MessageOverlay(message: msg, onTap: () {
-        // 如果传递了点击事件
-        if (onTap != null) {
-          onTap();
-          hide();
-        }
-      }),
+      builder: (ctx) => _MessageOverlay(
+        sendTime: sendTime,
+        contactId: contactId,
+        contactName: contactName,
+        message: msg,
+        onTap: () {
+          // 如果传递了点击事件
+          if (onTap != null) {
+            onTap();
+            hide();
+          }
+        },
+      ),
     );
     // 将entry插入悬浮层
     overlay.insert(_currentEntry!);
@@ -54,8 +64,17 @@ class MessageUtils {
 // 全局消息遮罩
 class _MessageOverlay extends StatefulWidget {
   final String message;
+  final String contactId;
+  final String contactName;
+  final int sendTime;
   final GestureTapCallback? onTap;
-  const _MessageOverlay({required this.message, this.onTap});
+  const _MessageOverlay({
+    required this.message,
+    required this.contactId,
+    required this.contactName,
+    required this.sendTime,
+    this.onTap,
+  });
 
   @override
   State<_MessageOverlay> createState() => _MessageOverlayState();
@@ -98,57 +117,58 @@ class _MessageOverlayState extends State<_MessageOverlay>
           child: GestureDetector(
             onTap: widget.onTap,
             child: Container(
-            margin: EdgeInsets.all(10.w),
-            padding: EdgeInsets.all(15.w),
-            decoration: BoxDecoration(
-              color: Color.fromRGBO(255, 255, 255, 0.9),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Row(
-              spacing: 10.w,
-              crossAxisAlignment: .start,
-              children: [
-                // 头像
-                ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
-                // 内容
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: .start,
-                    children: [
-                      Text(
-                        '用户名',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16.sp,
-                          fontWeight: .normal,
-                          decoration: .none,
+              margin: EdgeInsets.all(10.w),
+              padding: EdgeInsets.all(15.w),
+              decoration: BoxDecoration(
+                color: Color.fromRGBO(255, 255, 255, 0.9),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Row(
+                spacing: 10.w,
+                crossAxisAlignment: .start,
+                children: [
+                  // 头像
+                  ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
+                  // 内容
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: .start,
+                      children: [
+                        Text(
+                          widget.contactName,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16.sp,
+                            fontWeight: .normal,
+                            decoration: .none,
+                          ),
                         ),
-                      ),
-                      Text(
-                        widget.message,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16.sp,
-                          fontWeight: .normal,
-                          decoration: .none,
+                        Text(
+                          widget.message,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16.sp,
+                            fontWeight: .normal,
+                            decoration: .none,
+                            overflow: .ellipsis,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                // 时间
-                Text(
-                  '12:00',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16.sp,
-                    fontWeight: .normal,
-                    decoration: .none,
+                  // 时间
+                  Text(
+                    formatTimestamp(widget.sendTime),
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16.sp,
+                      fontWeight: .normal,
+                      decoration: .none,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
           ),
         ),
       ),

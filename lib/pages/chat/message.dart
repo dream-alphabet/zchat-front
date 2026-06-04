@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
@@ -15,6 +14,7 @@ import 'package:zchat/common/emoji.dart';
 import 'package:zchat/common/event_bus.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/toast.dart';
+import 'package:zchat/common/websocket.dart';
 import 'package:zchat/model/chat.dart';
 import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/chat.dart';
@@ -345,7 +345,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         _contactId = params['contactId'];
         _contactType = params['contactType'];
         _sessionId = params['sessionId'];
-        print('当前会话id: $_sessionId');
+        // 设置当前活跃会话id
+        setActiveSession(_sessionId);
         _getContactInfo();
         _getMsgList().then((_) {
           _scrollToBottom();
@@ -359,8 +360,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     });
     // 监听服务器推送消息事件
     _streamSubscription = eventBus.on<ServerMsgEvent>().listen((event) {
-      // json解析
-      final msg = ChatMessageRes.fromJson(jsonDecode(event.msg));
+      final msg = event.msg;
       // 如果是webrtc信令消息，不处理, 如果是当前用户发送的，也不处理
       if (msg.messageType != MessageTypeEnum.rtcSignal.type &&
           msg.sendUserId != _userController.userInfo.value?.userId) {
@@ -872,6 +872,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
 
   @override
   void dispose() {
+    // 删除活跃会话id
+    removeActiveSession();
     // 取消监听
     _streamSubscription.cancel();
     _messageController.dispose();
