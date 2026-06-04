@@ -5,8 +5,12 @@ class MessageController extends GetxController {
   // 持久化实例
   final _storage = GetStorage();
 
-  // 未读消息数量map(sessionId->数量)
+  // 未读消息数量map(聊天消息，sessionId->数量)
   late final RxMap<String, int> unreadCount;
+  // 未读消息数量map(其他消息，如联系人申请，朋友圈等)
+  late final RxMap<String, int> otherUnreadCount;
+  // 聊天消息总未读数量
+  final RxInt chatUnreadTotal = 0.obs;
 
   @override
   void onInit() {
@@ -24,9 +28,28 @@ class MessageController extends GetxController {
     } else {
       unreadCount = RxMap<String, int>();
     }
+    final otherSaved = _storage.read('otherUnreadCount');
+    if (otherSaved != null && otherSaved is Map<String, dynamic>) {
+      // 将 Map<String, dynamic> 转换为 Map<String, int>
+      final converted = otherSaved.map((key, value) {
+        // 确保 value 是 int，如果不是则尝试转换或设为 0
+        final intValue = (value as int?) ?? 0;
+        return MapEntry(key, intValue);
+      });
+      otherUnreadCount = RxMap<String, int>.from(converted);
+    } else {
+      otherUnreadCount = RxMap<String, int>();
+    }
+    // 第一次计算
+    chatUnreadTotal.value = unreadCount.values.fold(0, (sum, count) => sum + count);
     // 监听变化并持久化
     ever(unreadCount, (_) {
+      final total = unreadCount.values.fold(0, (sum, count) => sum + count);
+      chatUnreadTotal.value = total;
       _storage.write('unreadCount', unreadCount);
+    });
+    ever(otherUnreadCount, (_) {
+      _storage.write('otherUnreadCount', otherUnreadCount);
     });
   }
 
@@ -39,10 +62,22 @@ class MessageController extends GetxController {
   void clearSessionUnreadCount(String sessionId) {
     unreadCount[sessionId] = 0;
   }
+
+  // 新增指定消息类型未读数量
+  void addUnreadCount(String unreadType) {
+    otherUnreadCount[unreadType] = (otherUnreadCount[unreadType] ?? 0) + 1;
+  }
+
+  // 清零指定消息类型未读数量
+  void clearUnreadCount(String unreadType) {
+    otherUnreadCount[unreadType] = 0;
+  }
 }
 
-// 未读消息类型(默认为聊天消息，这里没写)
+// 未读消息类型
 class UnreadType {
   // 联系人申请
   static final contactApply = 'contactApply';
+  // 朋友圈
+  static final share = 'share';
 }

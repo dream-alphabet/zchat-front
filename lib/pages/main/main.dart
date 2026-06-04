@@ -14,6 +14,7 @@ import 'package:zchat/stores/message.dart';
 import 'package:zchat/stores/session.dart';
 import 'package:zchat/stores/token.dart';
 import 'package:zchat/stores/user.dart';
+import 'package:zchat/widgets/badge.dart';
 
 // 主页
 class MainPage extends StatefulWidget {
@@ -46,36 +47,54 @@ class _MainPageState extends State<MainPage> {
   final List<Widget> _pages = [ChatPage(), ContactPage(), DiscoverPage()];
   // 当前激活的tab栏索引
   int _currentTabIndex = 0;
-
-  // 构建底部导航栏项目
-  List<BottomNavigationBarItem> _buildTabItems(BuildContext context) {
-    return List.generate(
-      _tabs.length,
-      (index) => BottomNavigationBarItem(
-        icon: Image.asset(_tabs[index].icon, width: 20.w, height: 20.w),
-        activeIcon: Image.asset(
-          _tabs[index].activeIcon,
-          width: 20.w,
-          height: 20.w,
-        ),
-        label: _tabs[index].text,
-        backgroundColor: Colors.white,
-      ),
-    );
-  }
-
   // 用户信息store
   final _userController = Get.put(UserController());
   // 联系人store
   final _userContactController = Get.put(UserContactController());
   // 聊天会话store
   final _chatSessionStore = Get.put(ChatSessionStore());
+  // 消息store
+  final _messageStore = Get.put(MessageController());
+
+  // 获取徽标数量(未读消息数)
+  int _getUnreadCount(int index) {
+    final tab = _tabs[index].text;
+    if (tab == '聊天') {
+      return _messageStore.chatUnreadTotal.value;
+    } else if (tab == '通讯录') {
+      return _messageStore.otherUnreadCount[UnreadType.contactApply] ?? 0;
+    } else if (tab == '发现') {
+      return _messageStore.otherUnreadCount[UnreadType.share] ?? 0;
+    }
+    return 0;
+  }
+
+  // 构建底部导航栏项目
+  List<BottomNavigationBarItem> _buildTabItems() {
+    return List.generate(_tabs.length, (index) {
+      int unreadCount = _getUnreadCount(index);
+      return BottomNavigationBarItem(
+        icon: UnreadCountBadge(
+          count: unreadCount,
+          child: Image.asset(_tabs[index].icon, width: 20.w, height: 20.w),
+        ),
+        activeIcon: UnreadCountBadge(
+          count: unreadCount,
+          child: Image.asset(
+            _tabs[index].activeIcon,
+            width: 20.w,
+            height: 20.w,
+          ),
+        ),
+        label: _tabs[index].text,
+        backgroundColor: Colors.white,
+      );
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    // 初始化消息store
-    Get.put(MessageController());
     // 初始化toast
     ToastUtils.init();
     _initUser();
@@ -151,23 +170,25 @@ class _MainPageState extends State<MainPage> {
             highlightColor: Colors.transparent,
             splashFactory: NoSplash.splashFactory,
           ),
-          child: BottomNavigationBar(
-            enableFeedback: true,
-            type: BottomNavigationBarType.fixed, // 固定样式，适合5个标签
-            onTap: (index) {
-              setState(() {
-                _currentTabIndex = index;
-              });
-            },
-            currentIndex: _currentTabIndex,
-            items: _buildTabItems(context),
-            selectedItemColor: Colors.black,
-            unselectedItemColor: Color.fromRGBO(122, 122, 122, 1),
-            selectedFontSize: 12.sp,
-            unselectedFontSize: 12.sp,
-            selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
-            unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
-            backgroundColor: Color.fromRGBO(247, 247, 247, 1),
+          child: Obx(
+            () => BottomNavigationBar(
+              enableFeedback: true,
+              type: BottomNavigationBarType.fixed, // 固定样式，适合5个标签
+              onTap: (index) {
+                setState(() {
+                  _currentTabIndex = index;
+                });
+              },
+              currentIndex: _currentTabIndex,
+              items: _buildTabItems(),
+              selectedItemColor: Colors.black,
+              unselectedItemColor: Color.fromRGBO(122, 122, 122, 1),
+              selectedFontSize: 12.sp,
+              unselectedFontSize: 12.sp,
+              selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
+              unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
+              backgroundColor: Color.fromRGBO(247, 247, 247, 1),
+            ),
           ),
         ),
       ),
