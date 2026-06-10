@@ -152,16 +152,20 @@ class _SearchContactPageState extends State<SearchContactPage> {
             ),
             child: Icon(MyIcon.newFriend, size: 20.w, color: Colors.white),
           ),
-          Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(text: '搜索:'),
-                TextSpan(
-                  text: _searchText,
-                  style: TextStyle(color: Color.fromRGBO(20, 134, 237, 1)),
-                ),
-              ],
-              style: TextStyle(color: Colors.black, fontSize: 16.sp),
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(text: '搜索:'),
+                  TextSpan(
+                    text: _searchText,
+                    style: TextStyle(color: Color.fromRGBO(20, 134, 237, 1)),
+                  ),
+                ],
+                style: TextStyle(color: Colors.black, fontSize: 16.sp),
+              ),
+              maxLines: 1,
+              overflow: .ellipsis,
             ),
           ),
         ],

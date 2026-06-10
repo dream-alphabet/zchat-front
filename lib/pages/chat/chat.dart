@@ -36,7 +36,9 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     super.initState();
     // 监听服务器推送消息事件
-    _streamSubscription = eventBus.on<ServerMsgEvent>().listen((event) {
+    _streamSubscription = eventBus.on<ServerMsgEvent<ChatMessageRes>>().listen((
+      event,
+    ) {
       print('chat页面收到服务器推送的消息:${event.msg}');
     });
   }
@@ -49,8 +51,6 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildSessionItem(ChatSessionRes session) {
-    // 消息未读数量
-    final noReadCount = _messageStore.unreadCount[session.sessionId] ?? 0;
     return InkClick(
       backgroundColor: Colors.white,
       onTap: () {
@@ -78,9 +78,11 @@ class _ChatPageState extends State<ChatPage> {
           spacing: 20.w,
           children: [
             // 头像
-            UnreadCountBadge(
-              count: noReadCount,
-              child: ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
+            Obx(
+              () => UnreadCountBadge(
+                count: _messageStore.unreadCount[session.sessionId] ?? 0,
+                child: ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
+              ),
             ),
             Expanded(
               child: Column(

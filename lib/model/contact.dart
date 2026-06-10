@@ -5,6 +5,7 @@ class ContactInfoRes {
   int contactStatus;
   int contactType;
   int? memberCount;
+  String sessionId;
 
   ContactInfoRes({
     required this.contactId,
@@ -12,6 +13,7 @@ class ContactInfoRes {
     required this.contactStatus,
     required this.contactType,
     required this.memberCount,
+    required this.sessionId
   });
 
   factory ContactInfoRes.fromJson(Map<String, dynamic> json) => ContactInfoRes(
@@ -20,6 +22,7 @@ class ContactInfoRes {
     contactStatus: json["contactStatus"],
     contactType: json["contactType"],
     memberCount: json['memberCount'],
+    sessionId: json['sessionId']
   );
 
   Map<String, dynamic> toJson() => {
@@ -27,6 +30,7 @@ class ContactInfoRes {
     "contactName": contactName,
     "contactStatus": contactStatus,
     "contactType": contactType,
+    'sessionId': sessionId
   };
 }
 

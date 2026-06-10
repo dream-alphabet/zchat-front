@@ -1,13 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/event_bus.dart';
 import 'package:zchat/common/message.dart';
+import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/chat.dart';
+import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/chat.dart';
-import 'package:zchat/routes/index.dart';
+import 'package:zchat/model/enums/contact.dart';
+import 'package:zchat/stores/message.dart';
+import 'package:zchat/stores/session.dart';
 import 'package:zchat/stores/token.dart';
 
 /// WebSocket状态
@@ -234,36 +238,100 @@ class WebSocketUtility {
 // 工具类实例
 final _utility = WebSocketUtility();
 
-// 处理服务器推送的消息
-void _handleServerMsg(dynamic msg) {
-  final message = ChatMessageRes.fromJson(jsonDecode(msg));
-  print('服务器推送的消息: $message');
+// 处理聊天消息
+void _handleChatMsg(dynamic msg) {
+  // 聊天消息本体
+  final message = ChatMessageRes.fromJson(msg);
+  // 消息store
+  final messageStore = Get.find<MessageController>();
+  // 会话store
+  final sessionStore = Get.find<ChatSessionStore>();
   // 类型为文本或媒体文件, 如果不是当前活跃会话的消息，弹出消息提示
   if ([
-        MessageTypeEnum.text.type,
-        MessageTypeEnum.file.type,
-      ].contains(message.messageType) &&
-      message.sessionId != activeSessionId) {
+    MessageTypeEnum.text.type,
+    MessageTypeEnum.file.type,
+  ].contains(message.messageType)) {
+    // 联系人类型
+    final contactType = message.contactType;
+    // 会话id
+    final sessionId = message.sessionId;
+    // 消息内容
+    String messageContent = message.messageContent;
+    // 如果是群聊，需要再做一下处理
+    if (contactType == UserContactTypeEnum.group) {
+      messageContent = '${message.sendUserNickname}: $messageContent';
+    }
+    // 不是正在活跃的会话，消息提示和新增消息未读数量
+    if (message.sessionId != activeSessionId) {
+      final contactId = contactType == UserContactTypeEnum.group
+          ? message.contactId
+          : message.sendUserId;
+      final contactName = contactType == UserContactTypeEnum.group
+          ? message.contactName
+          : message.sendUserNickname;
+      // 新增未读数量
+      messageStore.addSessionUnreadCount(sessionId);
+      // 展示消息提示
+      MessageUtils.show(
+        contactId: contactId ?? '',
+        contactName: contactName ?? '...',
+        msg: messageContent,
+        sendTime: message.sendTime,
+        onTap: () {
+          // 跳转到聊天消息页面
+          navigateToPage(
+            RoutePath.chatMessage,
+            arguments: {
+              'contactId': contactId,
+              'contactType': contactType,
+              'sessionId': sessionId,
+            },
+          );
+        },
+      );
+    }
+    // 更新会话的lastMessage和lastReceiveTime
+    sessionStore.updateLastMessage(sessionId, messageContent, message.sendTime);
+  }
+  eventBus.fire(ServerMsgEvent(type: ServerMsgType.chat, msg: message));
+}
+
+// 处理联系人申请
+void _handleContactApply(dynamic msg) {
+  // 联系人申请
+  final apply = ContactApplyRes.fromJson(msg);
+  // 消息store
+  final messageStore = Get.find<MessageController>();
+  // 如果不在联系人申请页面，不需要发送eventBus(因为也收不到)，消息提示即可
+  if (activeSessionId != UnreadType.contactApply) {
     MessageUtils.show(
-      contactId: message.contactId,
-      contactName: message.sendUserNickname ?? '...',
-      msg: message.messageContent,
-      sendTime: message.sendTime,
+      msg: apply.applyInfo,
+      contactId: apply.applyUserId,
+      contactName: apply.contactName,
+      sendTime: apply.applyTime,
       onTap: () {
-        // 跳转到聊天消息页面
-        Navigator.pushNamed(
-          globalNavigatorKey.currentState!.context,
-          RoutePath.chatMessage,
-          arguments: {
-            'contactId': message.sendUserId,
-            'contactType': message.contactType,
-            'sessionId': message.sessionId
-          },
-        );
+        // 跳转到联系人申请页面
+        navigateToPage(RoutePath.newFriend);
       },
     );
+    // 新增联系人申请未读数量
+    messageStore.addUnreadCount(UnreadType.contactApply);
+  } else {
+    eventBus.fire(ServerMsgEvent(type: ServerMsgType.contactApply, msg: apply));
   }
-  eventBus.fire(ServerMsgEvent(msg: message));
+}
+
+// 处理服务器推送的消息
+void _handleServerMsg(dynamic msg) {
+  final serverMsg = ServerMsgEvent.fromJson(jsonDecode(msg));
+  print('服务器推送的消息: $serverMsg');
+  // 聊天消息
+  if (serverMsg.type == ServerMsgType.chat) {
+    _handleChatMsg(serverMsg.msg);
+  } else if (serverMsg.type == ServerMsgType.contactApply) {
+    // 联系人申请
+    _handleContactApply(serverMsg.msg);
+  }
 }
 
 // 初始化websocket

@@ -10,7 +10,11 @@ class MessageController extends GetxController {
   // 未读消息数量map(其他消息，如联系人申请，朋友圈等)
   late final RxMap<String, int> otherUnreadCount;
   // 聊天消息总未读数量
-  final RxInt chatUnreadTotal = 0.obs;
+  final chatUnreadTotal = 0.obs;
+  // 通讯录总未读数量
+  final contactUnreadTotal = 0.obs;
+  // 发现总未读数量
+  final discoverUnreadTotal = 0.obs;
 
   @override
   void onInit() {
@@ -41,7 +45,22 @@ class MessageController extends GetxController {
       otherUnreadCount = RxMap<String, int>();
     }
     // 第一次计算
-    chatUnreadTotal.value = unreadCount.values.fold(0, (sum, count) => sum + count);
+    chatUnreadTotal.value = unreadCount.values.fold(
+      0,
+      (sum, count) => sum + count,
+    );
+    contactUnreadTotal.value = otherUnreadCount.keys.fold(0, (sum, key) {
+      if ([UnreadType.contactApply].contains(key)) {
+        return sum + otherUnreadCount[key]!;
+      }
+      return sum;
+    });
+    discoverUnreadTotal.value = otherUnreadCount.keys.fold(0, (sum, key) {
+      if ([UnreadType.share].contains(key)) {
+        return sum + otherUnreadCount[key]!;
+      }
+      return sum;
+    });
     // 监听变化并持久化
     ever(unreadCount, (_) {
       final total = unreadCount.values.fold(0, (sum, count) => sum + count);
@@ -49,6 +68,18 @@ class MessageController extends GetxController {
       _storage.write('unreadCount', unreadCount);
     });
     ever(otherUnreadCount, (_) {
+      contactUnreadTotal.value = otherUnreadCount.keys.fold(0, (sum, key) {
+        if ([UnreadType.contactApply].contains(key)) {
+          return sum + otherUnreadCount[key]!;
+        }
+        return sum;
+      });
+      discoverUnreadTotal.value = otherUnreadCount.keys.fold(0, (sum, key) {
+        if ([UnreadType.share].contains(key)) {
+          return sum + otherUnreadCount[key]!;
+        }
+        return sum;
+      });
       _storage.write('otherUnreadCount', otherUnreadCount);
     });
   }

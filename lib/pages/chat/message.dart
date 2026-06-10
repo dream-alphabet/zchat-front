@@ -20,6 +20,8 @@ import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/chat.dart';
 import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/pages/chat/widgets/chat_message.dart';
+import 'package:zchat/stores/message.dart';
+import 'package:zchat/stores/session.dart';
 import 'package:zchat/stores/user.dart';
 import 'package:zchat/widgets/bottom_sheet.dart';
 import 'package:zchat/widgets/page_header.dart';
@@ -41,6 +43,12 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
 
   // 会话id
   String _sessionId = '';
+
+  // 消息store
+  final _messageStore = Get.find<MessageController>();
+
+  // 会话store
+  final _sessionStore = Get.find<ChatSessionStore>();
 
   // 联系人信息
   ContactInfoRes? _contactInfo;
@@ -181,6 +189,12 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         });
         // 滚动到底部
         _scrollToBottom();
+        // 更新会话的lastMessage和lastReceiveTime
+        _sessionStore.updateLastMessage(
+          _sessionId,
+          fileType.messageContent,
+          msg.sendTime,
+        );
       }
     }
   }
@@ -232,6 +246,12 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       });
       // 滚动到底部
       _scrollToBottom();
+      // 更新会话的lastMessage和lastReceiveTime
+      _sessionStore.updateLastMessage(
+        _sessionId,
+        fileType.messageContent,
+        msg.sendTime,
+      );
     }
   }
 
@@ -287,6 +307,12 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       });
       // 滚动到底部
       _scrollToBottom();
+      // 更新会话的lastMessage和lastReceiveTime
+      _sessionStore.updateLastMessage(
+        _sessionId,
+        fileType.messageContent,
+        msg.sendTime,
+      );
     }
   }
 
@@ -347,6 +373,9 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         _sessionId = params['sessionId'];
         // 设置当前活跃会话id
         setActiveSession(_sessionId);
+        // 清空当前会话消息未读数量
+        // 不能在build之前清空因为Obx在build之前重构会有问题，这里因为Future.microtask所以没有问题
+        _messageStore.clearSessionUnreadCount(_sessionId);
         _getContactInfo();
         _getMsgList().then((_) {
           _scrollToBottom();
@@ -360,6 +389,10 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     });
     // 监听服务器推送消息事件
     _streamSubscription = eventBus.on<ServerMsgEvent>().listen((event) {
+      // 消息类型不是聊天消息，直接返回
+      if (event.type != ServerMsgType.chat) {
+        return;
+      }
       final msg = event.msg;
       // 如果是webrtc信令消息，不处理, 如果是当前用户发送的，也不处理
       if (msg.messageType != MessageTypeEnum.rtcSignal.type &&
@@ -461,6 +494,12 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     });
     // 滚动到底部
     _scrollToBottom();
+    // 更新会话的lastMessage和lastReceiveTime
+    _sessionStore.updateLastMessage(
+      _sessionId,
+      msg.messageContent,
+      msg.sendTime,
+    );
   }
 
   // 消息列表

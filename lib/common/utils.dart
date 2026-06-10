@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:zchat/common/toast.dart';
+import 'package:zchat/routes/index.dart';
 
 // 转换时间戳为字符串
 String formatTimestamp(int? millisecondsTimestamp) {
@@ -114,4 +116,13 @@ Future<void> requestNotificationPermission() async {
   } else {
     print('用户没授权');
   }
+}
+
+// 全局页面跳转
+void navigateToPage(String routePath, {Map<String, dynamic>? arguments}) {
+  Navigator.pushNamed(
+    globalNavigatorKey.currentState!.context,
+    routePath,
+    arguments: arguments,
+  );
 }

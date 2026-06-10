@@ -181,6 +181,7 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
               arguments: {
                 'contactId': _contactInfo?.contactId,
                 'contactType': _contactInfo?.contactType,
+                'sessionId': _contactInfo?.sessionId,
               },
             );
           }),

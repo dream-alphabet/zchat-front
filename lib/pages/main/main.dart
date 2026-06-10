@@ -62,9 +62,9 @@ class _MainPageState extends State<MainPage> {
     if (tab == '聊天') {
       return _messageStore.chatUnreadTotal.value;
     } else if (tab == '通讯录') {
-      return _messageStore.otherUnreadCount[UnreadType.contactApply] ?? 0;
+      return _messageStore.contactUnreadTotal.value;
     } else if (tab == '发现') {
-      return _messageStore.otherUnreadCount[UnreadType.share] ?? 0;
+      return _messageStore.discoverUnreadTotal.value;
     }
     return 0;
   }

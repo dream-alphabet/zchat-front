@@ -4,10 +4,12 @@ import 'package:get/get.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/stores/contact.dart';
+import 'package:zchat/stores/message.dart';
 import 'package:zchat/widgets/chat_blank.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/ink_click.dart';
 import 'package:zchat/widgets/page_header.dart';
+import 'package:zchat/widgets/badge.dart';
 
 // 联系人
 class ContactPage extends StatefulWidget {
@@ -20,6 +22,8 @@ class ContactPage extends StatefulWidget {
 class _ContactPageState extends State<ContactPage> {
   // 联系人store
   final _userContactController = Get.find<UserContactController>();
+  // 消息store
+  final _messageStore = Get.find<MessageController>();
   // 功能列表数据
   final _functionList = [
     ListItemData(
@@ -39,6 +43,37 @@ class _ContactPageState extends State<ContactPage> {
     ),
   ];
 
+  // 功能列表图标
+  Widget _buildFunctionIcon(ListItemData data) {
+    return data.path == RoutePath.newFriend
+        ? Obx(
+            () => UnreadCountBadge(
+              count:
+                  _messageStore.otherUnreadCount[UnreadType.contactApply] ?? 0,
+              child: Container(
+                width: 40.w,
+                height: 40.w,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8.w),
+                  color: Color.fromRGBO(20, 134, 237, 1),
+                ),
+                child: Icon(data.leftIcon, color: Colors.white, size: 26.w),
+              ),
+            ),
+          )
+        : Container(
+            width: 40.w,
+            height: 40.w,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8.w),
+              color: Color.fromRGBO(20, 134, 237, 1),
+            ),
+            child: Icon(data.leftIcon, color: Colors.white, size: 26.w),
+          );
+  }
+
   // 列表项
   Widget _buildListItem(ListItemData data, bool showBorder) {
     return InkClick(
@@ -57,16 +92,7 @@ class _ContactPageState extends State<ContactPage> {
           children: [
             // 如果是功能列表项显示图标，联系人就显示头像
             data.isFunction
-                ? Container(
-                    width: 40.w,
-                    height: 40.w,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8.w),
-                      color: Color.fromRGBO(20, 134, 237, 1),
-                    ),
-                    child: Icon(data.leftIcon, color: Colors.white, size: 26.w),
-                  )
+                ? _buildFunctionIcon(data)
                 : ContactAvatar(imageUrl: data.leftAvatar ?? ''),
             Expanded(
               child: Container(

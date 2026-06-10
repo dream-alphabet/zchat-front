@@ -68,7 +68,11 @@ class _VideoCallPageState extends State<VideoCallPage> {
       _initRenderer();
       _getUserMedia();
       // 监听服务器推送消息事件
-      _streamSubscription = eventBus.on<ServerMsgEvent>().listen((event) {
+      _streamSubscription = eventBus.on<ServerMsgEvent<ChatMessageRes>>().listen((event) {
+        // 消息类型不是聊天消息，直接返回
+        if (event.type != ServerMsgType.chat) {
+          return;
+        }
         final msg = event.msg;
         // 如果是对方发送的信令
         if (msg.messageType == MessageTypeEnum.rtcSignal.type) {

@@ -1,10 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:zchat/api/contact.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/common/event_bus.dart';
+import 'package:zchat/common/websocket.dart';
 import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/contact.dart';
+import 'package:zchat/stores/message.dart';
 import 'package:zchat/widgets/chat_blank.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/ink_click.dart';
@@ -28,9 +34,46 @@ class _NewFriendPageState extends State<NewFriendPage> {
   // 每页条数
   int pageSize = 10;
 
+  // 监听websocket服务器推送的消息
+  late StreamSubscription<ServerMsgEvent> _streamSubscription;
+
+  // 消息store
+  final _messageStore = Get.find<MessageController>();
+
   @override
   void initState() {
     super.initState();
+    // 设置活跃会话为contact_apply
+    setActiveSession(UnreadType.contactApply);
+    // 监听推送消息
+    _streamSubscription = eventBus.on<ServerMsgEvent<ContactApplyRes>>().listen(
+      (event) {
+        // 消息类型不是联系人申请
+        if (event.type != ServerMsgType.contactApply) {
+          return;
+        }
+        // 申请数据
+        final apply = event.msg;
+        final index = _applyList.indexWhere(
+          (item) => item.applyId == apply.applyId,
+        );
+        if (index >= 0) {
+          // 更新
+          _applyList[index] = apply;
+        } else {
+          // 新增
+          // 插入到列表中
+          _applyList.insert(0, apply);
+        }
+        setState(() {});
+      },
+    );
+    // 延迟到帧结束再修改
+    // 不能在build之前清空因为Obx在build之前重构会有问题
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 清空联系人未读消息数量
+      _messageStore.clearUnreadCount(UnreadType.contactApply);
+    });
     _getApplyList();
   }
 
@@ -218,5 +261,14 @@ class _NewFriendPageState extends State<NewFriendPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // 删除活跃会话
+    removeActiveSession();
+    // 移除ws监听
+    _streamSubscription.cancel();
+    super.dispose();
   }
 }

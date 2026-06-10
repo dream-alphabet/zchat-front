@@ -98,6 +98,7 @@ class ChatMessageRes {
   String? sendUserNickname;
   int sendTime;
   String contactId;
+  String contactName;
   int contactType;
   int? fileId;
   String? fileName;
@@ -114,6 +115,7 @@ class ChatMessageRes {
     required this.sendUserNickname,
     required this.sendTime,
     required this.contactId,
+    required this.contactName,
     required this.contactType,
     required this.fileId,
     required this.fileName,
@@ -131,6 +133,7 @@ class ChatMessageRes {
     sendUserNickname: json["sendUserNickname"],
     sendTime: json["sendTime"],
     contactId: json["contactId"],
+    contactName: json['contactName'] ?? '',
     contactType: json["contactType"],
     fileId: json["fileId"],
     fileName: json["fileName"],
@@ -150,6 +153,7 @@ class ChatMessageRes {
         'sendUserNickname: $sendUserNickname, '
         'sendTime: $sendTime, '
         'contactId: $contactId, '
+        'contactName: $contactName, '
         'contactType: $contactType, '
         'fileId: $fileId, '
         'fileName: $fileName, '
