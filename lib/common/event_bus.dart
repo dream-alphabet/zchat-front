@@ -23,8 +23,12 @@ class ServerMsgEvent<T> {
 
 // 服务器推送消息类型
 class ServerMsgType {
+  // 聊天消息
   static final chat = 'chat';
+  // 联系人申请
   static final contactApply = 'contactApply';
+  // 新增联系人
+  static final addContact = 'addContact';
 }
 
 // 全局事件总线

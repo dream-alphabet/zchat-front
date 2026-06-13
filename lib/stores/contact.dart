@@ -19,4 +19,13 @@ class UserContactController extends GetxController {
   Future<void> getGroupList() async {
     groupList.value = await getContactListApi(UserContactTypeEnum.group);
   }
+
+  // 新增联系人
+  void addContact(int contactType, UserContactRes contact) {
+    if (UserContactTypeEnum.group == contactType) {
+      groupList.add(contact);
+    } else if (UserContactTypeEnum.user == contactType) {
+      userList.add(contact);
+    }
+  }
 }

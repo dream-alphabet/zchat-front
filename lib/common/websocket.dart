@@ -8,10 +8,12 @@ import 'package:zchat/common/message.dart';
 import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/chat.dart';
 import 'package:zchat/model/contact.dart';
+import 'package:zchat/model/server_msg.dart';
 import 'package:zchat/model/enums/chat.dart';
 import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/stores/message.dart';
 import 'package:zchat/stores/session.dart';
+import 'package:zchat/stores/contact.dart';
 import 'package:zchat/stores/token.dart';
 
 /// WebSocket状态
@@ -321,6 +323,19 @@ void _handleContactApply(dynamic msg) {
   }
 }
 
+// 处理新增联系人
+void _handleAddContact(dynamic msg) {
+  final message = AddContactMsg.fromJson(msg);
+  // 联系人store
+  final contactStore = Get.find<UserContactController>();
+  // 会话store
+  final sessionStore = Get.find<ChatSessionStore>();
+  // 新增联系人
+  contactStore.addContact(message.contactType, message.contact);
+  // 新增会话
+  sessionStore.addSession(message.session);
+}
+
 // 处理服务器推送的消息
 void _handleServerMsg(dynamic msg) {
   final serverMsg = ServerMsgEvent.fromJson(jsonDecode(msg));
@@ -331,6 +346,9 @@ void _handleServerMsg(dynamic msg) {
   } else if (serverMsg.type == ServerMsgType.contactApply) {
     // 联系人申请
     _handleContactApply(serverMsg.msg);
+  } else if (serverMsg.type == ServerMsgType.addContact) {
+    // 新增联系人
+    _handleAddContact(serverMsg.msg);
   }
 }
 

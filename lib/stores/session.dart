@@ -29,4 +29,9 @@ class ChatSessionStore extends GetxController {
   Future<void> getSessionList() async {
     sessionList.value = await getChatSessionListApi();
   }
+
+  // 新增会话
+  void addSession(ChatSessionRes session) {
+    sessionList.add(session);
+  }
 }
