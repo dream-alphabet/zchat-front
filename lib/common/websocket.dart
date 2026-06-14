@@ -336,6 +336,23 @@ void _handleAddContact(dynamic msg) {
   sessionStore.addSession(message.session);
 }
 
+// 处理更新消息未读数量
+void _handleUnreadCount(List<dynamic> msg) {
+  // 消息store
+  final messageStore = Get.find<MessageController>();
+  for (final item in msg) {
+    final sessionId = item['sessionId'];
+    final unreadCount = item['unreadCount'];
+    // 新增其他类型未读数量
+    if ([UnreadType.contactApply, UnreadType.share].contains(sessionId)) {
+      messageStore.addUnreadCountByStep(sessionId, unreadCount);
+    } else {
+      // 聊天消息未读数量
+      messageStore.addSessionUnreadCountByStep(sessionId, unreadCount);
+    }
+  }
+}
+
 // 处理服务器推送的消息
 void _handleServerMsg(dynamic msg) {
   final serverMsg = ServerMsgEvent.fromJson(jsonDecode(msg));
@@ -349,6 +366,9 @@ void _handleServerMsg(dynamic msg) {
   } else if (serverMsg.type == ServerMsgType.addContact) {
     // 新增联系人
     _handleAddContact(serverMsg.msg);
+  } else if (serverMsg.type == ServerMsgType.unreadCount) {
+    // 更新消息未读数量
+    _handleUnreadCount(serverMsg.msg);
   }
 }
 
@@ -368,12 +388,12 @@ void initWebSocket() {
 // 活跃的会话id
 String activeSessionId = '';
 
-// 设置活跃会话(前端+后端)
+// 设置活跃会话
 void setActiveSession(String sessionId) {
   activeSessionId = sessionId;
 }
 
-// 删除活跃会话(前端+后端)
+// 删除活跃会话
 void removeActiveSession() {
   activeSessionId = '';
 }

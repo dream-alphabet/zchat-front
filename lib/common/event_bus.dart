@@ -29,6 +29,8 @@ class ServerMsgType {
   static final contactApply = 'contactApply';
   // 新增联系人
   static final addContact = 'addContact';
+  // 更新消息未读数量
+  static final unreadCount = 'unreadCount';
 }
 
 // 全局事件总线

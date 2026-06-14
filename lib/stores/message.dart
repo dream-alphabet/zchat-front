@@ -86,7 +86,11 @@ class MessageController extends GetxController {
 
   // 新增指定会话的未读消息数量
   void addSessionUnreadCount(String sessionId) {
-    unreadCount[sessionId] = (unreadCount[sessionId] ?? 0) + 1;
+    addSessionUnreadCountByStep(sessionId, 1);
+  }
+
+  void addSessionUnreadCountByStep(String sessionId, int count) {
+    unreadCount[sessionId] = (unreadCount[sessionId] ?? 0) + count;
   }
 
   // 清零指定会话未读消息数量
@@ -96,7 +100,12 @@ class MessageController extends GetxController {
 
   // 新增指定消息类型未读数量
   void addUnreadCount(String unreadType) {
-    otherUnreadCount[unreadType] = (otherUnreadCount[unreadType] ?? 0) + 1;
+    addUnreadCountByStep(unreadType, 1);
+  }
+
+  // 新增指定消息类型未读数量
+  void addUnreadCountByStep(String unreadType, int count) {
+    otherUnreadCount[unreadType] = (otherUnreadCount[unreadType] ?? 0) + count;
   }
 
   // 清零指定消息类型未读数量
