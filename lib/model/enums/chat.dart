@@ -9,7 +9,9 @@ enum MessageTypeEnum {
   // 语音通话
   voiceCall(type: 3, messageContent: '[语音通话]'),
   // webrtc信令消息
-  rtcSignal(type: 4, messageContent: '');
+  rtcSignal(type: 4, messageContent: ''),
+  // 系统通知
+  systemNotice(type: 5, messageContent: '');
 
   const MessageTypeEnum({required this.type, required this.messageContent});
 

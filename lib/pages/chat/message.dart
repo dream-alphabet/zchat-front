@@ -14,6 +14,7 @@ import 'package:zchat/common/emoji.dart';
 import 'package:zchat/common/event_bus.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/toast.dart';
+import 'package:zchat/common/utils.dart';
 import 'package:zchat/common/websocket.dart';
 import 'package:zchat/model/chat.dart';
 import 'package:zchat/model/contact.dart';
@@ -510,7 +511,28 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       padding: EdgeInsets.only(top: 10.w),
       shrinkWrap: true,
       reverse: true,
-      itemBuilder: (ctx, index) => ChatMessage(message: _msgList[index]),
+      itemBuilder: (ctx, index) {
+        // 第一条消息显示发送时间，因为顺序翻转，所以_msgList.length-1是第一条消息
+        // 两条消息发送时间间隔超过5分钟就显示时间
+        if (index == _msgList.length - 1 ||
+            (_msgList[index].sendTime - _msgList[index + 1].sendTime) >
+                5 * 60 * 1000) {
+          return Column(
+            children: [
+              Text(
+                formatTimestamp(_msgList[index].sendTime),
+                textAlign: .center,
+                style: TextStyle(
+                  color: Color.fromRGBO(123, 123, 128, 1),
+                  fontSize: 16.sp,
+                ),
+              ),
+              ChatMessage(message: _msgList[index]),
+            ],
+          );
+        }
+        return ChatMessage(message: _msgList[index]);
+      },
     );
   }
 

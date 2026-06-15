@@ -252,6 +252,7 @@ void _handleChatMsg(dynamic msg) {
   if ([
     MessageTypeEnum.text.type,
     MessageTypeEnum.file.type,
+    MessageTypeEnum.systemNotice.type
   ].contains(message.messageType)) {
     // 联系人类型
     final contactType = message.contactType;
@@ -259,8 +260,10 @@ void _handleChatMsg(dynamic msg) {
     final sessionId = message.sessionId;
     // 消息内容
     String messageContent = message.messageContent;
+    // 消息类型
+    final messageType = message.messageType;
     // 如果是群聊，需要再做一下处理
-    if (contactType == UserContactTypeEnum.group) {
+    if (contactType == UserContactTypeEnum.group && messageType != MessageTypeEnum.systemNotice.type) {
       messageContent = '${message.sendUserNickname}: $messageContent';
     }
     // 不是正在活跃的会话，消息提示和新增消息未读数量

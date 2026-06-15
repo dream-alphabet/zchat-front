@@ -308,6 +308,18 @@ class ChatMessage extends StatelessWidget {
     );
   }
 
+  // 构建系统通知消息
+  Widget _buildSystemNotice() {
+    return Text(
+      message.messageContent,
+      textAlign: .center,
+      style: TextStyle(
+        color: Color.fromRGBO(123, 123, 128, 1),
+        fontSize: 16.sp,
+      ),
+    );
+  }
+
   // 构建消息内容
   Widget _buildMsgContent(BuildContext context) {
     // 消息类型
@@ -316,7 +328,11 @@ class ChatMessage extends StatelessWidget {
     if (messageType == MessageTypeEnum.text.type) {
       return _buildTextMsg(message.messageContent);
     } else if (messageType == MessageTypeEnum.file.type) {
+      // 媒体文件
       return _buildFileMsg(context);
+    } else if (messageType == MessageTypeEnum.systemNotice.type) {
+      // 系统通知
+      return _buildSystemNotice();
     }
     return _buildTextMsg('未知消息类型');
   }
@@ -329,41 +345,43 @@ class ChatMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsetsGeometry.only(left: 10.w, right: 10.w, bottom: 10.w),
-      child: Row(
-        mainAxisAlignment: _isSelf
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 5.w,
-        children: _isSelf
-            ? [
-                Container(
-                  constraints: BoxConstraints(maxWidth: 240.w),
-                  child: _buildMsgContent(context),
-                ),
-                // 头像
-                ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
-              ]
-            : [
-                // 头像
-                ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 5.w,
-                  children: [
-                    if (message.contactType == UserContactTypeEnum.group)
-                      Padding(
-                        padding: .only(left: 6.w),
-                        child: Text(message.sendUserNickname ?? ''),
+      child: message.messageType != MessageTypeEnum.systemNotice.type
+          ? Row(
+              mainAxisAlignment: _isSelf
+                  ? MainAxisAlignment.end
+                  : MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 5.w,
+              children: _isSelf
+                  ? [
+                      Container(
+                        constraints: BoxConstraints(maxWidth: 240.w),
+                        child: _buildMsgContent(context),
                       ),
-                    Container(
-                      constraints: BoxConstraints(maxWidth: 240.w),
-                      child: _buildMsgContent(context),
-                    ),
-                  ],
-                ),
-              ],
-      ),
+                      // 头像
+                      ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
+                    ]
+                  : [
+                      // 头像
+                      ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 5.w,
+                        children: [
+                          if (message.contactType == UserContactTypeEnum.group)
+                            Padding(
+                              padding: .only(left: 6.w),
+                              child: Text(message.sendUserNickname ?? ''),
+                            ),
+                          Container(
+                            constraints: BoxConstraints(maxWidth: 240.w),
+                            child: _buildMsgContent(context),
+                          ),
+                        ],
+                      ),
+                    ],
+            )
+          : _buildSystemNotice(),
     );
   }
 }
