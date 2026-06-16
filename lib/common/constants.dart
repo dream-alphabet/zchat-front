@@ -1,7 +1,7 @@
 // 全局常量类
 class GlobalConstants {
   // 主机地址
-  static const host = '192.168.2.105';
+  static const host = '192.168.2.104';
   // api请求基础地址
   static const baseUrl = 'http://$host/api';
   // ws连接地址
@@ -12,6 +12,8 @@ class GlobalConstants {
   static const avatarUrl = '$fileUrl/avatar';
   // 消息文件访问地址
   static const msgFileUrl = '$fileUrl/messages';
+  // 默认用户头像
+  static const defaultAvatar = 'lib/assets/images/default_user.png';
   // 超时时间
   static const timeout = 5;
   // 业务状态
@@ -40,6 +42,7 @@ class Api {
   static const login = '/user/login';
   static const register = '/user/register';
   static const getUserInfo = '/user/userInfo';
+  static const updateUserAvatar = '/user/updateAvatar';
   static const searchContactExist = '/contact/searchExist';
   static const getContactInfo = '/contact/contactInfo';
   static const sendContactApply = '/contact/sendApply';
@@ -80,6 +83,8 @@ class RoutePath {
   static const searchContact = 'searchContact';
   // 我的二维码
   static const myQRCode = 'myQRCode';
+  // 用户中心
+  static const my = 'my';
   // 好友设置
   static const friendSetting = 'friendSetting';
   // 群聊设置

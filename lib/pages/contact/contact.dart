@@ -5,6 +5,7 @@ import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/stores/contact.dart';
 import 'package:zchat/stores/message.dart';
+import 'package:zchat/stores/user.dart';
 import 'package:zchat/widgets/chat_blank.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/ink_click.dart';
@@ -24,6 +25,9 @@ class _ContactPageState extends State<ContactPage> {
   final _userContactController = Get.find<UserContactController>();
   // 消息store
   final _messageStore = Get.find<MessageController>();
+  // 用户store
+  final _userController = Get.find<UserController>();
+
   // 功能列表数据
   final _functionList = [
     ListItemData(
@@ -93,7 +97,7 @@ class _ContactPageState extends State<ContactPage> {
             // 如果是功能列表项显示图标，联系人就显示头像
             data.isFunction
                 ? _buildFunctionIcon(data)
-                : ContactAvatar(imageUrl: data.leftAvatar ?? ''),
+                : ContactAvatar(contactId: data.userId ?? '-1'),
             Expanded(
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 8.w),
@@ -147,7 +151,6 @@ class _ContactPageState extends State<ContactPage> {
           ListItemData(
             userId: _userContactController.userList[index].contactId,
             isFunction: false,
-            leftAvatar: 'lib/assets/test/01.png',
             rightName: _userContactController.userList[index].contactName,
             path: RoutePath.contactInfo,
           ),
@@ -163,7 +166,7 @@ class _ContactPageState extends State<ContactPage> {
       backgroundColor: Color.fromRGBO(237, 237, 237, 1),
       body: ListView(
         children: [
-          PageHeader(title: '通讯录'),
+          Obx(() => PageHeader(title: '通讯录', showLeftAvatar: true, userId: _userController.userInfo.value?.userId)),
           _buildFunctionList(),
           Padding(
             padding: EdgeInsetsGeometry.symmetric(
@@ -193,14 +196,12 @@ class _ContactPageState extends State<ContactPage> {
 class ListItemData {
   final String rightName;
   final IconData? leftIcon;
-  final String? leftAvatar;
   final String? userId;
   final String path;
   final bool isFunction;
 
   ListItemData({
     this.leftIcon,
-    this.leftAvatar,
     this.userId,
     required this.rightName,
     required this.path,

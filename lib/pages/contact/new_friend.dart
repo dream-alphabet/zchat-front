@@ -148,7 +148,7 @@ class _NewFriendPageState extends State<NewFriendPage> {
         spacing: 15.w,
         children: [
           // 头像
-          ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
+          ContactAvatar(contactId: apply.applyUserId),
           Expanded(
             child: Container(
               padding: EdgeInsets.symmetric(vertical: 10.w),

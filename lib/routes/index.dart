@@ -22,6 +22,7 @@ import 'package:zchat/pages/discover/moments.dart';
 import 'package:zchat/pages/discover/scan.dart';
 import 'package:zchat/pages/main/main.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/pages/my/my.dart';
 import 'package:zchat/pages/my/my_qrcode.dart';
 
 // 路由配置
@@ -39,6 +40,7 @@ final Map<String, WidgetBuilder> routes = {
   RoutePath.createGroup: (ctx) => CreateGroupPage(),
   RoutePath.searchContact: (ctx) => SearchContactPage(),
   RoutePath.myQRCode: (ctx) => MyQrcodePage(),
+  RoutePath.my: (ctx) => MyPage(),
   RoutePath.friendSetting: (ctx) => FriendSettingPage(),
   RoutePath.addContact: (ctx) => AddContactPage(),
   RoutePath.verifyApply: (ctx) => VerifyApplyPage(),
@@ -79,12 +81,10 @@ Widget getRootWidget() {
             bodyMedium: TextStyle(fontSize: 16.sp),
           ),
           appBarTheme: AppBarTheme(surfaceTintColor: Colors.transparent),
-          // 配置页面过渡主题
+          // 配置页面过渡主题: android和ios都配置为ios的滑动效果
           pageTransitionsTheme: PageTransitionsTheme(
             builders: {
-              // Android 缩放效果
-              TargetPlatform.android: ZoomPageTransitionsBuilder(),
-              // iOS 滑动效果
+              TargetPlatform.android: CupertinoPageTransitionsBuilder(),
               TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
             },
           ),
@@ -100,6 +100,7 @@ Widget getRootWidget() {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
+        // 支持的语言
         supportedLocales: [
           //此处设置
           Locale('zh', 'CH'),

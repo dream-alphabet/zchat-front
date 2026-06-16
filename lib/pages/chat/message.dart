@@ -173,7 +173,6 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
           filePath,
           filename: filename,
         );
-        print('Multipart 长度: ${multipart.length}');
         // 发送消息
         final msg = await sendMessageApi(
           SendMsgReq(
@@ -230,7 +229,6 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         filePath,
         filename: filename,
       );
-      print('Multipart 长度: ${multipart.length}');
       // 发送消息
       final msg = await sendMessageApi(
         SendMsgReq(
@@ -291,7 +289,6 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         filePath,
         filename: filename,
       );
-      print('Multipart 长度: ${multipart.length}');
       // 发送消息
       final msg = await sendMessageApi(
         SendMsgReq(

@@ -23,3 +23,12 @@ Future<void> registerApi(RegisterReq data) async {
 Future<UserInfo> getUserInfoApi() async {
   return UserInfo.fromJson((await request.get(Api.getUserInfo)));
 }
+
+// 更新用户头像
+Future<void> updateUserAvatarApi(UpdateAvatarReq data) async {
+  await request.post(
+    Api.updateUserAvatar,
+    data: data.toJson(),
+    isFormData: true,
+  );
+}

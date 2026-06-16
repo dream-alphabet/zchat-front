@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/stores/user.dart';
+import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/ink_click.dart';
 import 'package:zchat/widgets/page_header.dart';
 
@@ -14,6 +17,9 @@ class DiscoverPage extends StatefulWidget {
 }
 
 class _DiscoverPageState extends State<DiscoverPage> {
+  // 用户store
+  final _userController = Get.find<UserController>();
+
   // 朋友圈
   Widget _buildMoments() {
     return InkClick(
@@ -33,14 +39,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
             ),
             SizedBox(width: 20.w),
             Expanded(child: Text('朋友圈')),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6.w),
-              child: Image.asset(
-                'lib/assets/test/01.png',
-                width: 30.w,
-                height: 30.w,
-              ),
-            ),
+            ContactAvatar(contactId: '-1', size: 30),
             SizedBox(width: 10.w),
             Icon(
               MyIcon.arrowRight,
@@ -95,7 +94,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
       backgroundColor: Color.fromRGBO(237, 237, 237, 1),
       body: Column(
         children: [
-          PageHeader(title: '发现'),
+          Obx(() => PageHeader(title: '发现', showLeftAvatar: true, userId: _userController.userInfo.value?.userId)),
           _buildDiscoverItems(),
         ],
       ),

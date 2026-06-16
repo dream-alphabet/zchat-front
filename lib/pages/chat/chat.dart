@@ -9,6 +9,7 @@ import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/chat.dart';
 import 'package:zchat/stores/message.dart';
 import 'package:zchat/stores/session.dart';
+import 'package:zchat/stores/user.dart';
 import 'package:zchat/widgets/badge.dart';
 import 'package:zchat/widgets/chat_blank.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
@@ -28,6 +29,8 @@ class _ChatPageState extends State<ChatPage> {
   final _chatSessionStore = Get.find<ChatSessionStore>();
   // 消息store
   final _messageStore = Get.find<MessageController>();
+  // 用户store
+  final _userController = Get.find<UserController>();
 
   // 监听websocket服务器推送的消息
   late StreamSubscription<ServerMsgEvent> _streamSubscription;
@@ -81,7 +84,7 @@ class _ChatPageState extends State<ChatPage> {
             Obx(
               () => UnreadCountBadge(
                 count: _messageStore.unreadCount[session.sessionId] ?? 0,
-                child: ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
+                child: ContactAvatar(contactId: session.contactId),
               ),
             ),
             Expanded(
@@ -140,7 +143,7 @@ class _ChatPageState extends State<ChatPage> {
       backgroundColor: Color.fromRGBO(237, 237, 237, 1),
       body: Column(
         children: [
-          PageHeader(title: '聊天'),
+          Obx(() => PageHeader(title: '聊天', showLeftAvatar: true, userId: _userController.userInfo.value?.userId)),
           Expanded(
             child: Obx(() {
               return _chatSessionStore.sessionList.isEmpty

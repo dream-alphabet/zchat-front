@@ -128,7 +128,7 @@ class _MessageOverlayState extends State<_MessageOverlay>
                 crossAxisAlignment: .start,
                 children: [
                   // 头像
-                  ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
+                  ContactAvatar(contactId: widget.contactId),
                   // 内容
                   Expanded(
                     child: Column(

@@ -1,4 +1,6 @@
 // 图形验证码响应结果
+import 'package:dio/dio.dart';
+
 class CaptchaRes {
   String captcha;
   String captchaKey;
@@ -117,4 +119,13 @@ class UserInfo {
     "lastLoginTime": lastLoginTime,
     "lastOffTime": lastOffTime,
   };
+}
+
+// 更新用户头像请求参数
+class UpdateAvatarReq {
+  final MultipartFile avatar;
+
+  UpdateAvatarReq({required this.avatar});
+
+  Map<String, dynamic> toJson() => {'avatar': avatar};
 }

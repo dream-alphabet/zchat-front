@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:zchat/common/animation.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/pages/my/my.dart';
+import 'package:zchat/stores/user.dart';
+import 'package:zchat/widgets/contact_avatar.dart';
 
 // 页面头部组件
 class PageHeader extends StatefulWidget {
   final String title;
+  // 是否显示右侧图标
   final bool showRightIcon;
+  // 是否显示左侧返回图标
   final bool showLeftBackIcon;
+  // 是否显示左侧用户头像
+  final bool showLeftAvatar;
+  // 用户id
+  final String? userId;
   final bool showBorder;
   final Color backgroundColor;
   final void Function()? onBack;
@@ -17,6 +28,8 @@ class PageHeader extends StatefulWidget {
     required this.title,
     this.showRightIcon = true,
     this.showLeftBackIcon = false,
+    this.showLeftAvatar = false,
+    this.userId,
     this.showBorder = true,
     this.backgroundColor = const Color.fromRGBO(247, 247, 247, 1),
     this.onBack,
@@ -143,6 +156,17 @@ class _PageHeaderState extends State<PageHeader> {
     );
   }
 
+  // 构建左侧用户头像
+  Widget _buildLeftAvatar() {
+    return GestureDetector(
+      onTap: () {
+        // 跳转到用户中心页面
+        Navigator.push(context, SlideRightRoute(page: MyPage()));
+      },
+      child: ContactAvatar(contactId: widget.userId ?? '-1'),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -173,6 +197,13 @@ class _PageHeaderState extends State<PageHeader> {
             bottom: 0,
             left: 20.w,
             child: Center(child: _buildLeftBackIcon()),
+          ),
+        if (widget.showLeftAvatar)
+          Positioned(
+            top: 0,
+            bottom: 0,
+            left: 15.w,
+            child: Center(child: _buildLeftAvatar()),
           ),
         if (widget.showRightIcon)
           Positioned(

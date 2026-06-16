@@ -98,7 +98,7 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
       child: Row(
         spacing: 20.w,
         children: [
-          ContactAvatar(imageUrl: 'lib/assets/test/01.png', size: 50),
+          ContactAvatar(contactId: _contactId, size: 50),
           Text(_contactInfo?.contactName ?? ''),
         ],
       ),

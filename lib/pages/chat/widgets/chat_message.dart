@@ -359,11 +359,11 @@ class ChatMessage extends StatelessWidget {
                         child: _buildMsgContent(context),
                       ),
                       // 头像
-                      ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
+                      ContactAvatar(contactId: message.sendUserId ?? '-1'),
                     ]
                   : [
                       // 头像
-                      ContactAvatar(imageUrl: 'lib/assets/test/01.png'),
+                      ContactAvatar(contactId: message.sendUserId ?? '-1'),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         spacing: 5.w,

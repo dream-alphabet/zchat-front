@@ -386,7 +386,7 @@ class _VideoCallPageState extends State<VideoCallPage> {
                     crossAxisAlignment: .center,
                     children: [
                       ContactAvatar(
-                        imageUrl: 'lib/assets/test/01.png',
+                        contactId: _contactId,
                         size: 50,
                       ),
                       Text(
