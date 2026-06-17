@@ -52,6 +52,8 @@ final Map<String, WidgetBuilder> routes = {
 
 // 全局Context
 final GlobalKey<NavigatorState> globalNavigatorKey = GlobalKey();
+// 观察者实例
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 // 根组件
 Widget getRootWidget() {
@@ -67,6 +69,7 @@ Widget getRootWidget() {
       return MaterialApp(
         // 隐藏调试时右上角显示的debug banner
         debugShowCheckedModeBanner: false,
+        navigatorObservers: [routeObserver],
         title: 'zchat',
         // 设置主题中的文本样式也支持适配
         theme: ThemeData(

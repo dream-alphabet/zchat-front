@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:zchat/common/animation.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/pages/my/my.dart';
-import 'package:zchat/stores/user.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 
 // 页面头部组件
@@ -161,7 +159,7 @@ class _PageHeaderState extends State<PageHeader> {
     return GestureDetector(
       onTap: () {
         // 跳转到用户中心页面
-        Navigator.push(context, SlideRightRoute(page: MyPage()));
+        Navigator.push(context, SlideRightRoute(page: MyPage(), name: RoutePath.my));
       },
       child: ContactAvatar(contactId: widget.userId ?? '-1'),
     );

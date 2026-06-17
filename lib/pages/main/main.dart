@@ -9,6 +9,7 @@ import 'package:zchat/common/websocket.dart';
 import 'package:zchat/pages/chat/chat.dart';
 import 'package:zchat/pages/contact/contact.dart';
 import 'package:zchat/pages/discover/discover.dart';
+import 'package:zchat/pages/my/my.dart';
 import 'package:zchat/stores/contact.dart';
 import 'package:zchat/stores/message.dart';
 import 'package:zchat/stores/session.dart';
@@ -43,10 +44,12 @@ class _MainPageState extends State<MainPage> {
       text: '发现',
     ),
   ];
-  // 要展示的页面列表
-  final List<Widget> _pages = [ChatPage(), ContactPage(), DiscoverPage()];
   // 当前激活的tab栏索引
-  int _currentTabIndex = 0;
+  int _currentTabIndex = 1;
+  // 要展示的页面列表
+  final List<Widget> _pages = [];
+  // PageView控制器
+  final _pageController = PageController(initialPage: 1);
   // 用户信息store
   final _userController = Get.put(UserController());
   // 联系人store
@@ -151,48 +154,91 @@ class _MainPageState extends State<MainPage> {
       backgroundColor: Color.fromRGBO(247, 247, 247, 1),
       // 使用IndexedStack保持页面状态
       body: SafeArea(
-        child: IndexedStack(index: _currentTabIndex, children: _pages),
-      ),
-      // 底部导航栏
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: Color.fromRGBO(232, 232, 232, 1),
-              width: 1.w,
-            ),
-          ),
-        ),
-        child: Theme(
-          // 禁用涟漪效果
-          data: Theme.of(context).copyWith(
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            splashFactory: NoSplash.splashFactory,
-          ),
-          child: Obx(
-            () => BottomNavigationBar(
-              enableFeedback: true,
-              type: BottomNavigationBarType.fixed, // 固定样式，适合5个标签
-              onTap: (index) {
+        child: PageView(
+          controller: _pageController,
+          // 左右滑动切换时，更新index
+          onPageChanged: (index) {
+            setState(() {
+              _currentTabIndex = index;
+            });
+          },
+          physics: ClampingScrollPhysics(),
+          children: [
+            MyPage(
+              onBack: () {
+                _pageController.animateToPage(
+                  1,
+                  duration: Duration(milliseconds: 500),
+                  curve: Curves.easeInOut,
+                );
                 setState(() {
-                  _currentTabIndex = index;
+                  _currentTabIndex = 1;
                 });
               },
-              currentIndex: _currentTabIndex,
-              items: _buildTabItems(),
-              selectedItemColor: Colors.black,
-              unselectedItemColor: Color.fromRGBO(122, 122, 122, 1),
-              selectedFontSize: 12.sp,
-              unselectedFontSize: 12.sp,
-              selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
-              unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
-              backgroundColor: Color.fromRGBO(247, 247, 247, 1),
             ),
-          ),
+            ChatPage(),
+            ContactPage(),
+            DiscoverPage(),
+          ],
         ),
       ),
+      // 底部导航栏(如果是个人中心页面，不显示底部导航栏)
+      bottomNavigationBar: _currentTabIndex > 0
+          ? Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: Color.fromRGBO(232, 232, 232, 1),
+                    width: 1.w,
+                  ),
+                ),
+              ),
+              child: Theme(
+                // 禁用涟漪效果
+                data: Theme.of(context).copyWith(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  splashFactory: NoSplash.splashFactory,
+                ),
+                child: Obx(
+                  () => BottomNavigationBar(
+                    enableFeedback: true,
+                    type: BottomNavigationBarType.fixed, // 固定样式，适合5个标签
+                    onTap: (index) {
+                      // 带动画地切换页面
+                      _pageController.animateToPage(
+                        index+1,
+                        duration: Duration(milliseconds: 500),
+                        curve: Curves.easeInOut,
+                      );
+                      // 更新index
+                      setState(() {
+                        _currentTabIndex = index+1;
+                      });
+                    },
+                    currentIndex: _currentTabIndex - 1,
+                    items: _buildTabItems(),
+                    selectedItemColor: Colors.black,
+                    unselectedItemColor: Color.fromRGBO(122, 122, 122, 1),
+                    selectedFontSize: 12.sp,
+                    unselectedFontSize: 12.sp,
+                    selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
+                    unselectedLabelStyle: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    backgroundColor: Color.fromRGBO(247, 247, 247, 1),
+                  ),
+                ),
+              ),
+            )
+          : SizedBox(),
     );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 }
 

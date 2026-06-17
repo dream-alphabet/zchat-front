@@ -13,7 +13,9 @@ import 'package:zchat/widgets/contact_avatar.dart';
 
 // 用户中心页面
 class MyPage extends StatefulWidget {
-  const MyPage({super.key});
+  final void Function()? onBack;
+
+  const MyPage({super.key, this.onBack});
 
   @override
   State<MyPage> createState() => _MyPageState();
@@ -64,6 +66,21 @@ class _MyPageState extends State<MyPage> {
     ]);
   }
 
+  // 返回上一页
+  void _goBack() {
+    // 判断当前路由是个人中心还是主页
+    final routeName = ModalRoute.of(context)!.settings.name;
+    // 是个人中心页面，说明是跳转过来的
+    if (routeName == RoutePath.my) {
+      Navigator.pop(context);
+    } else {
+      // 不是说明是在main主页
+      if (widget.onBack != null) {
+        widget.onBack!();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,6 +94,7 @@ class _MyPageState extends State<MyPage> {
               contactId: _userController.userInfo.value?.userId ?? '-1',
             ),
             ElevatedButton(onPressed: _showUpdateSheet, child: Text('修改头像')),
+            ElevatedButton(onPressed: _goBack, child: Text('返回')),
           ],
         ),
       ),
