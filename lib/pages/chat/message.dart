@@ -315,8 +315,10 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   }
 
   // 发送个人名片
-  void _sendPersonCard() {
-    print('发送个人名片');
+  void _sendPersonCard() async {
+    // 跳转到联系人选择页面选择联系人, result就是用户选择的联系人id, 可能为空
+    final result = await Navigator.pushNamed(context, RoutePath.contactSelect);
+    print('选择的联系人: $result');
   }
 
   // 发起视频通话

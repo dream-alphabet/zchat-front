@@ -159,7 +159,13 @@ class _PageHeaderState extends State<PageHeader> {
     return GestureDetector(
       onTap: () {
         // 跳转到用户中心页面
-        Navigator.push(context, SlideRightRoute(page: MyPage(), name: RoutePath.my));
+        Navigator.push(
+          context,
+          RouteUtils.slideRight(
+            (ctx) => MyPage(),
+            settings: RouteSettings(name: RoutePath.my),
+          ),
+        );
       },
       child: ContactAvatar(contactId: widget.userId ?? '-1'),
     );
@@ -171,7 +177,7 @@ class _PageHeaderState extends State<PageHeader> {
       children: [
         Container(
           width: double.infinity,
-          height: 56.w,
+          height: 40.w,
           decoration: BoxDecoration(
             border: Border(
               bottom: widget.showBorder

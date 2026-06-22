@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:zchat/common/animation.dart';
 import 'package:zchat/pages/auth/login.dart';
 import 'package:zchat/pages/auth/register.dart';
 import 'package:zchat/pages/chat/message.dart';
@@ -9,6 +10,7 @@ import 'package:zchat/pages/chat/video_call.dart';
 import 'package:zchat/pages/chat/voice_call.dart';
 import 'package:zchat/pages/contact/add_contact.dart';
 import 'package:zchat/pages/contact/add_friend.dart';
+import 'package:zchat/pages/contact/contact_select.dart';
 import 'package:zchat/pages/contact/create_group.dart';
 import 'package:zchat/pages/contact/friend_setting.dart';
 import 'package:zchat/pages/contact/group_chat.dart';
@@ -47,7 +49,8 @@ final Map<String, WidgetBuilder> routes = {
   RoutePath.chatMessage: (ctx) => ChatMessagePage(),
   RoutePath.groupSetting: (ctx) => GroupSettingPage(),
   RoutePath.videoCall: (ctx) => VideoCallPage(),
-  RoutePath.voiceCall: (ctx) => VoiceCallPage()
+  RoutePath.voiceCall: (ctx) => VoiceCallPage(),
+  RoutePath.contactSelect: (ctx) => ContactSelectPage(),
 };
 
 // 全局Context
@@ -94,8 +97,19 @@ Widget getRootWidget() {
         ),
         navigatorKey: globalNavigatorKey,
         builder: FToastBuilder(), // FToast轻提示构建器
-        routes: routes,
         initialRoute: RoutePath.main,
+        onGenerateRoute: (settings) {
+          // 根据路由名获取对应的 WidgetBuilder
+          final builder = routes[settings.name];
+          if (builder == null) {
+            return null;
+          }
+          // 联系人选择页面使用SlideUp动画
+          if (settings.name == RoutePath.contactSelect) {
+            return RouteUtils.slideUp(builder, settings: settings);
+          }
+          return MaterialPageRoute(builder: builder, settings: settings);
+        },
         // 语言设置
         locale: Locale('zh'),
         localizationsDelegates: [

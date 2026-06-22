@@ -46,7 +46,7 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
     final contactInfo = await getContactInfoApi(_contactId);
     // 结果为空
     if (contactInfo == null) {
-      ToastUtils.showGlobalToast(msg: '没有查询到该联系人信息');
+      ToastUtils.showGlobalToast(msg: '用户/群聊不存在');
       Navigator.pop(context);
       return;
     }

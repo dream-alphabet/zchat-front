@@ -1,25 +1,47 @@
 // 自定义动画
 import 'package:flutter/material.dart';
 
-// 从左侧滑入的页面过渡动画
-class SlideRightRoute extends PageRouteBuilder {
-  // 要前往的页面
-  final Widget page;
-  // 页面名称
-  final String name;
+// 页面自定义动画工具类
+class RouteUtils {
+  // 从底部向上滑入
+  static Route<T> slideUp<T>(
+    WidgetBuilder builder, {
+    required RouteSettings settings,
+  }) {
+    return PageRouteBuilder<T>(
+      settings: settings,
+      pageBuilder: (context, animation, secondaryAnimation) => builder(context),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return SlideTransition(
+          position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+              .animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+              ),
+          child: child,
+        );
+      },
+      transitionDuration: Duration(milliseconds: 400)
+    );
+  }
 
-  SlideRightRoute({required this.page, required this.name})
-    : super(
-        settings: RouteSettings(name: name),
-        pageBuilder: (context, animation, secondaryAnimation) => page,
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(-1, 0),
-              end: Offset.zero,
-            ).chain(CurveTween(curve: Curves.easeInOut)).animate(animation),
-            child: child,
-          );
-        },
-      );
+  // 从左侧滑入
+  static Route<T> slideRight<T>(
+    WidgetBuilder builder, {
+    required RouteSettings settings,
+  }) {
+    return PageRouteBuilder<T>(
+      settings: settings,
+      pageBuilder: (context, animation, secondaryAnimation) => builder(context),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(-1, 0),
+            end: Offset.zero,
+          ).chain(CurveTween(curve: Curves.easeInOut)).animate(animation),
+          child: child,
+        );
+      },
+      transitionDuration: Duration(milliseconds: 400)
+    );
+  }
 }

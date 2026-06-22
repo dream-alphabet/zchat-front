@@ -386,7 +386,7 @@ class ChatMessage extends StatelessWidget {
   }
 }
 
-// 文本消息气泡左侧箭头绘制器
+// 消息气泡左/右侧箭头绘制器
 class BubbleArrowPainter extends CustomPainter {
   final bool isSelf;
   final Color color;

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:lpinyin/lpinyin.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:zchat/common/toast.dart';
+import 'package:zchat/model/contact.dart';
 import 'package:zchat/routes/index.dart';
 
 // 转换时间戳为字符串
@@ -125,4 +127,63 @@ void navigateToPage(String routePath, {Map<String, dynamic>? arguments}) {
     routePath,
     arguments: arguments,
   );
+}
+
+// 判断是否为英文字母
+bool isEnglish(String char) {
+  return RegExp(r'^[A-Za-z]$').hasMatch(char);
+}
+
+// 判断是否为中文字符（基本汉字 Unicode 范围）
+bool isChinese(String char) {
+  return RegExp(r'^[\u4e00-\u9fa5]$').hasMatch(char);
+}
+
+// 获取单个联系人的分组Key(A-Z, #)
+String getGroupKey(String name) {
+  // 空字符串
+  if (name.trim().isEmpty) {
+    return '#';
+  }
+  // 第一个字符
+  final firstChar = name.trim().substring(0, 1);
+  // 如果是英文，直接转大写
+  if (isEnglish(firstChar)) {
+    return firstChar.toUpperCase();
+  }
+  // 如果是中文，取拼音首字母大写
+  if (isChinese(firstChar)) {
+    // 获取首字母拼音
+    final pinyin = PinyinHelper.getFirstWordPinyin(firstChar);
+    if (pinyin.isNotEmpty) {
+      return pinyin.substring(0, 1).toUpperCase();
+    }
+    // 转换失败
+    return '#';
+  }
+  // 既不是中文也不是英文
+  return '#';
+}
+
+// 获取分组后的联系人列表
+Map<String, List<UserContactRes>> getGroupedContacts(List<UserContactRes> contacts) {
+  // 分组
+  Map<String, List<UserContactRes>> map = {};
+  for (final contact in contacts) {
+    final key = getGroupKey(contact.contactName);
+    map.putIfAbsent(key, () => []);
+    map[key]!.add(contact);
+  }
+  // 对key进行排序
+  final sortedKeys = map.keys.toList();
+  sortedKeys.sort((a, b) {
+    if (a == '#') return 1;
+    if (b == '#') return -1;
+    return a.compareTo(b);
+  });
+  Map<String, List<UserContactRes>> sortedGroups = {};
+  for (final key in sortedKeys) {
+    sortedGroups[key] = map[key]!;
+  }
+  return sortedGroups;
 }

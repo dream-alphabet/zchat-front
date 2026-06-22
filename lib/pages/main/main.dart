@@ -46,8 +46,6 @@ class _MainPageState extends State<MainPage> {
   ];
   // 当前激活的tab栏索引
   int _currentTabIndex = 1;
-  // 要展示的页面列表
-  final List<Widget> _pages = [];
   // PageView控制器
   final _pageController = PageController(initialPage: 1);
   // 用户信息store
