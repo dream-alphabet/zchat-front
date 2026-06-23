@@ -177,7 +177,7 @@ class _PageHeaderState extends State<PageHeader> {
       children: [
         Container(
           width: double.infinity,
-          height: 40.w,
+          height: 50.w,
           decoration: BoxDecoration(
             border: Border(
               bottom: widget.showBorder

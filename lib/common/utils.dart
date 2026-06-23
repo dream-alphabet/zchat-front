@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -166,7 +168,9 @@ String getGroupKey(String name) {
 }
 
 // 获取分组后的联系人列表
-Map<String, List<UserContactRes>> getGroupedContacts(List<UserContactRes> contacts) {
+Map<String, List<UserContactRes>> getGroupedContacts(
+  List<UserContactRes> contacts,
+) {
   // 分组
   Map<String, List<UserContactRes>> map = {};
   for (final contact in contacts) {
@@ -186,4 +190,22 @@ Map<String, List<UserContactRes>> getGroupedContacts(List<UserContactRes> contac
     sortedGroups[key] = map[key]!;
   }
   return sortedGroups;
+}
+
+// 防抖工具类
+class Debouncer {
+  final Duration timeout;
+  Timer? _timer;
+
+  Debouncer({required this.timeout});
+
+  void run(VoidCallback action) {
+    // 取消上一个定时器，保证在指定时间内只有最后一次调用有效
+    _timer?.cancel();
+    _timer = Timer(timeout, action);
+  }
+
+  void dispose() {
+    _timer?.cancel();
+  }
 }

@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:zchat/api/contact.dart';
+import 'package:zchat/common/toast.dart';
 import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/contact.dart';
 import 'package:zchat/stores/contact.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
+import 'package:zchat/widgets/highlight_text.dart';
 import 'package:zchat/widgets/ink_click.dart';
 import 'package:zchat/widgets/page_header.dart';
 
@@ -20,49 +23,12 @@ class ContactSelectPage extends StatefulWidget {
 class _ContactSelectPageState extends State<ContactSelectPage> {
   // 要搜索的内容
   String _searchText = '';
+  // 搜索结果
+  List<UserContactRes> _searchResult = [];
   // 搜索框控制器
   final _searchController = TextEditingController();
   // 联系人store
   final _contactStore = Get.find<UserContactController>();
-  // 测试数据
-  final List<UserContactRes> testContacts = [
-    // 中文姓名（覆盖多音字、生僻字）
-    UserContactRes(contactId: "1", contactName: "张三"),
-    UserContactRes(contactId: "2", contactName: "李四"),
-    UserContactRes(contactId: "3", contactName: "王五"),
-    UserContactRes(contactId: "4", contactName: "赵六"),
-    UserContactRes(contactId: "5", contactName: "重庆小面"), // “重”多音字，取 C
-    UserContactRes(contactId: "6", contactName: "长安汽车"), // “长”多音字，取 C
-    UserContactRes(contactId: "7", contactName: "曾小贤"), // “曾”多音字，取 Z（默认）
-    UserContactRes(contactId: "8", contactName: "陈真"),
-    UserContactRes(contactId: "9", contactName: "丁一"),
-    UserContactRes(contactId: "10", contactName: "欧阳菲菲"), // 复姓，取“欧” O
-    // 英文姓名（大小写混合）
-    UserContactRes(contactId: "11", contactName: "Alice"),
-    UserContactRes(contactId: "12", contactName: "Bob"),
-    UserContactRes(contactId: "13", contactName: "Charlie"),
-    UserContactRes(contactId: "14", contactName: "David"),
-    UserContactRes(contactId: "15", contactName: "Eva"),
-    UserContactRes(contactId: "16", contactName: "Frank"),
-    UserContactRes(contactId: "17", contactName: "Grace"),
-    UserContactRes(contactId: "18", contactName: "Henry"),
-    UserContactRes(contactId: "19", contactName: "iris"), // 小写开头，应归入 I
-    UserContactRes(contactId: "20", contactName: "jack"), // 小写开头，应归入 J
-    // 数字开头（归入 #）
-    UserContactRes(contactId: "21", contactName: "10086客服"),
-    UserContactRes(contactId: "22", contactName: "12345热线"),
-    UserContactRes(contactId: "23", contactName: "007特工"),
-
-    // 特殊字符开头（归入 #）
-    UserContactRes(contactId: "24", contactName: "_内部测试"),
-    UserContactRes(contactId: "25", contactName: "-连字符"),
-    UserContactRes(contactId: "26", contactName: "#管理员"),
-    UserContactRes(contactId: "27", contactName: "@At符号"),
-    UserContactRes(contactId: "28", contactName: "·中间点"), // 非标准字符，归入 #
-    // 纯数字/符号（归入 #）
-    UserContactRes(contactId: "29", contactName: "123"),
-    UserContactRes(contactId: "30", contactName: "---"),
-  ];
   // 联系人分组数据
   late final Map<String, List<UserContactRes>> _group;
   // 排序后的分组 Key 列表
@@ -73,14 +39,30 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
   final _indexBarKey = GlobalKey();
   // 记录上一次触摸的字母，防止重复跳转
   String? _lastTouchLetter;
+  // 防抖工具类
+  final _debouncer = Debouncer(timeout: Duration(milliseconds: 300));
 
   @override
   void initState() {
     super.initState();
     // 初始化
-    _group = getGroupedContacts(testContacts);
+    _group = getGroupedContacts(_contactStore.userList);
     _groupKeys = _group.keys.toList();
     _groupKeyMap = {for (final key in _groupKeys) key: GlobalKey()};
+  }
+
+  // 搜索联系人
+  void _searchContact() async {
+    // 关键词不能为空
+    if (_searchText.trim().isEmpty) {
+      return ToastUtils.showGlobalToast(msg: '搜索内容不能为空');
+    }
+    // 搜索关键词
+    final keywords = _searchText.trim();
+    _searchResult = await searchContactApi(
+      SearchContactReq(keywords: keywords),
+    );
+    setState(() {});
   }
 
   // 构建搜索框
@@ -91,12 +73,16 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
       padding: EdgeInsets.only(bottom: 10.w, left: 15.w, right: 15.w),
       child: TextField(
         onChanged: (value) {
-          setState(() {
-            _searchText = value;
+          _searchText = value;
+          // 使用防抖来调用工具方法
+          _debouncer.run(() {
+            if (_searchText.trim().isNotEmpty) {
+              _searchContact();
+            }
           });
         },
         onSubmitted: (value) {
-          print('搜索: $_searchText');
+          _searchContact();
         },
         autofocus: false,
         controller: _searchController,
@@ -121,6 +107,7 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
                         _searchText = '';
                         // 清空输入框内容
                         _searchController.clear();
+                        _searchResult.clear();
                       });
                     },
                     child: Container(
@@ -156,7 +143,10 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
   }
 
   // 构建联系人列表项
-  Widget _buildContactItem(UserContactRes data) {
+  Widget _buildContactItem(
+    UserContactRes data, {
+    List<HighlightRange>? highlightRanges,
+  }) {
     return InkClick(
       backgroundColor: Colors.white,
       onTap: () {
@@ -182,10 +172,23 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
                 child: Container(
                   height: 40.w,
                   alignment: Alignment.centerLeft,
-                  child: Text(
-                    data.contactName,
-                    style: TextStyle(color: Colors.black, fontSize: 15.w),
-                  ),
+                  child: highlightRanges != null && highlightRanges.isNotEmpty
+                      ? HighlightText(
+                          text: data.contactName,
+                          normalStyle: TextStyle(
+                            color: Colors.black,
+                            fontSize: 15.w,
+                          ),
+                          highlightStyle: TextStyle(
+                            color: Color.fromRGBO(20, 134, 237, 1),
+                            fontSize: 15.w,
+                          ),
+                          ranges: highlightRanges,
+                        )
+                      : Text(
+                          data.contactName,
+                          style: TextStyle(color: Colors.black, fontSize: 15.w),
+                        ),
                 ),
               ),
             ),
@@ -339,6 +342,23 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
     );
   }
 
+  // 构建搜索结果区域
+  Widget _buildSearchResult() {
+    // 搜索关键词
+    final keyword = _searchText.trim();
+    return Column(
+      children: List.generate(_searchResult.length, (index) {
+        final item = _searchResult[index];
+        // 计算高亮范围
+        final ranges = HighlightHelper.computeHighlightRanges(
+          item.contactName,
+          keyword,
+        );
+        return _buildContactItem(item, highlightRanges: ranges);
+      }),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -373,24 +393,32 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
             ),
             _buildSearch(),
             Expanded(
-              child: Stack(
-                children: [
-                  _buildContactList(),
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
-                    child: GestureDetector(
-                      behavior: .opaque, // 覆盖所有索引栏区域, 拦截事件
-                      child: _buildIndexBar(),
-                    ),
-                  ),
-                ],
-              ),
+              child: _searchText.trim().isEmpty
+                  ? Stack(
+                      children: [
+                        _buildContactList(),
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          bottom: 0,
+                          child: GestureDetector(
+                            behavior: .opaque, // 覆盖所有索引栏区域, 拦截事件
+                            child: _buildIndexBar(),
+                          ),
+                        ),
+                      ],
+                    )
+                  : _buildSearchResult(),
             ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _debouncer.dispose();
   }
 }

@@ -50,3 +50,14 @@ Future<List<UserContactRes>> getContactListApi(int contactType) async {
     (index) => UserContactRes.fromJson(list[index]),
   );
 }
+
+// 搜索联系人
+Future<List<UserContactRes>> searchContactApi(SearchContactReq req) async {
+  final list = List.from(
+    await request.get(Api.searchContact, params: req.toJson()),
+  );
+  return List.generate(
+    list.length,
+    (index) => UserContactRes.fromJson(list[index]),
+  );
+}

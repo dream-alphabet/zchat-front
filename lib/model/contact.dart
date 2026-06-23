@@ -141,3 +141,16 @@ class UserContactRes {
     "contactName": contactName,
   };
 }
+
+// 搜索联系人请求参数
+class SearchContactReq {
+  final String keywords;
+
+  SearchContactReq({
+    required this.keywords
+  });
+
+  Map<String, dynamic> toJson() => {
+    'keywords': keywords
+  };
+}
