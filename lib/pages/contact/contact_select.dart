@@ -14,7 +14,10 @@ import 'package:zchat/widgets/page_header.dart';
 
 // 联系人选择
 class ContactSelectPage extends StatefulWidget {
-  const ContactSelectPage({super.key});
+  // 选中联系人事件
+  final Future<bool> Function(UserContactRes contact)? onSelect;
+
+  const ContactSelectPage({super.key, this.onSelect});
 
   @override
   State<ContactSelectPage> createState() => _ContactSelectPageState();
@@ -149,8 +152,17 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
   }) {
     return InkClick(
       backgroundColor: Colors.white,
-      onTap: () {
-        Navigator.pop(context, data.contactId);
+      onTap: () async {
+        // 如果上一个页面传递了onSelect就执行
+        if (widget.onSelect != null) {
+          final shouldPop = await widget.onSelect!(data);
+          // 判断是否要退回上一页
+          if (shouldPop) {
+            Navigator.pop(context, data.contactId);
+          }
+        } else {
+          Navigator.pop(context, data);
+        }
       },
       child: Container(
         padding: EdgeInsets.only(left: 15.w),

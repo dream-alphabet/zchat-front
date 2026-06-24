@@ -9,6 +9,7 @@ import 'package:get/get.dart' hide MultipartFile;
 import 'package:image_picker/image_picker.dart';
 import 'package:zchat/api/chat.dart';
 import 'package:zchat/api/contact.dart';
+import 'package:zchat/common/animation.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/emoji.dart';
 import 'package:zchat/common/event_bus.dart';
@@ -21,10 +22,11 @@ import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/chat.dart';
 import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/pages/chat/widgets/chat_message.dart';
+import 'package:zchat/pages/contact/contact_select.dart';
 import 'package:zchat/stores/message.dart';
 import 'package:zchat/stores/session.dart';
 import 'package:zchat/stores/user.dart';
-import 'package:zchat/widgets/bottom_sheet.dart';
+import 'package:zchat/widgets/modal.dart';
 import 'package:zchat/widgets/page_header.dart';
 
 // 聊天消息页面
@@ -315,10 +317,32 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   }
 
   // 发送个人名片
-  void _sendPersonCard() async {
-    // 跳转到联系人选择页面选择联系人, result就是用户选择的联系人id, 可能为空
-    final result = await Navigator.pushNamed(context, RoutePath.contactSelect);
-    print('选择的联系人: $result');
+  Future<void> _sendPersonCard(UserContactRes contact) async {
+    // TODO 实现发送个人名片消息
+    print('发送个人名片: ${contact.toJson()}');
+  }
+
+  // 选择联系人
+  void _selectContact() async {
+    // 跳转到联系人选择页面选择联系人
+    Navigator.push(
+      context,
+      RouteUtils.slideUp(
+        (ctx) => ContactSelectPage(
+          onSelect: (contact) async {
+            final receiver = UserContactRes(contactId: _contactId, contactName: _contactInfo?.contactName ?? '');
+            final result = await showSendConfirmModal(context, receiver, contact);
+            // 用户是否点击发送按钮
+            final confirm = result != null && result;
+            // 用户点击了确认发送
+            if (confirm) {
+              await _sendPersonCard(contact);
+            }
+            return confirm;
+          },
+        ),
+      ),
+    );
   }
 
   // 发起视频通话
@@ -747,7 +771,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       ),
       if (_contactType == UserContactTypeEnum.user)
         MoreItem(name: '视频通话', icon: MyIcon.video, onTap: _videoCall),
-      MoreItem(name: '个人名片', icon: MyIcon.personCard, onTap: _sendPersonCard),
+      MoreItem(name: '个人名片', icon: MyIcon.personCard, onTap: _selectContact),
       MoreItem(name: '文件', icon: MyIcon.file, onTap: _sendFile),
     ];
 

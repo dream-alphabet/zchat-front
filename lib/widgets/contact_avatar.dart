@@ -24,8 +24,15 @@ class AvatarGlobal {
 class ContactAvatar extends StatelessWidget {
   final String contactId;
   final int size;
+  // 头像形状，默认圆形
+  final BoxShape shape;
 
-  const ContactAvatar({super.key, required this.contactId, this.size = 40});
+  const ContactAvatar({
+    super.key,
+    required this.contactId,
+    this.size = 40,
+    this.shape = .circle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +40,9 @@ class ContactAvatar extends StatelessWidget {
       valueListenable: AvatarGlobal.getNotifier(contactId),
       builder: (ctx, version, child) {
         return ClipRRect(
-          borderRadius: .circular((size / 2).r),
+          borderRadius: .circular(
+            shape == BoxShape.circle ? (size / 2).r : 5.r,
+          ),
           clipBehavior: Clip.antiAlias,
           child: Image.network(
             '${GlobalConstants.avatarUrl}/$contactId.jpg',

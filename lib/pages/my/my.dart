@@ -8,7 +8,7 @@ import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/model/user.dart';
 import 'package:zchat/stores/user.dart';
-import 'package:zchat/widgets/bottom_sheet.dart';
+import 'package:zchat/widgets/modal.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 
 // 用户中心页面

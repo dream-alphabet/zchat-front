@@ -6,7 +6,7 @@ class RouteUtils {
   // 从底部向上滑入
   static Route<T> slideUp<T>(
     WidgetBuilder builder, {
-    required RouteSettings settings,
+    RouteSettings? settings,
   }) {
     return PageRouteBuilder<T>(
       settings: settings,
@@ -27,7 +27,7 @@ class RouteUtils {
   // 从左侧滑入
   static Route<T> slideRight<T>(
     WidgetBuilder builder, {
-    required RouteSettings settings,
+    RouteSettings? settings,
   }) {
     return PageRouteBuilder<T>(
       settings: settings,

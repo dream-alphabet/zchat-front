@@ -15,7 +15,7 @@ import 'package:zchat/pages/chat/widgets/video_preview.dart';
 import 'package:zchat/stores/user.dart';
 import 'package:zchat/model/chat.dart';
 import 'package:zchat/model/enums/chat.dart';
-import 'package:zchat/widgets/bottom_sheet.dart';
+import 'package:zchat/widgets/modal.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 
 // 聊天消息组件
