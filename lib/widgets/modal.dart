@@ -4,6 +4,51 @@ import 'package:zchat/model/contact.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/ink_click.dart';
 
+// 个人卡片组件
+class PersonCard extends StatelessWidget {
+  final UserContactRes contact;
+
+  const PersonCard({super.key, required this.contact});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 250.w,
+      padding: .all(10.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: .circular(5.r),
+      ),
+      child: Column(
+        crossAxisAlignment: .start,
+        spacing: 10.w,
+        children: [
+          Row(
+            spacing: 10.w,
+            children: [
+              ContactAvatar(contactId: contact.contactId, shape: .rectangle),
+              Expanded(
+                child: Text(
+                  contact.contactName,
+                  style: TextStyle(fontSize: 16.sp, color: Colors.black),
+                  overflow: .ellipsis,
+                ),
+              ),
+            ],
+          ),
+          Text(
+            '个人名片',
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: Color.fromRGBO(110, 110, 108, 1),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // 弹出是否确认发送个人卡片
 Future<bool?> showSendConfirmModal(
   BuildContext context,
@@ -37,46 +82,7 @@ Future<bool?> showSendConfirmModal(
                   ],
                 ),
                 // 个人名片
-                Container(
-                  width: 250.w,
-                  padding: .all(10.w),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: .circular(5.r),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: .start,
-                    spacing: 10.w,
-                    children: [
-                      Row(
-                        spacing: 10.w,
-                        children: [
-                          ContactAvatar(
-                            contactId: contact.contactId,
-                            shape: .rectangle,
-                          ),
-                          Expanded(
-                            child: Text(
-                              contact.contactName,
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                color: Colors.black,
-                              ),
-                              overflow: .ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Text(
-                        '个人名片',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: Color.fromRGBO(110, 110, 108, 1),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                PersonCard(contact: contact),
                 Row(
                   mainAxisAlignment: .center,
                   spacing: 15.w,

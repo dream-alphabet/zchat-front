@@ -11,7 +11,9 @@ enum MessageTypeEnum {
   // webrtc信令消息
   rtcSignal(type: 4, messageContent: ''),
   // 系统通知
-  systemNotice(type: 5, messageContent: '');
+  systemNotice(type: 5, messageContent: ''),
+  // 个人卡片
+  personCard(type: 6, messageContent: '[个人卡片]');
 
   const MessageTypeEnum({required this.type, required this.messageContent});
 

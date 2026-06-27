@@ -35,6 +35,7 @@ class SendMsgReq {
   int messageType;
   String messageContent;
   MultipartFile? file;
+  String? data;
 
   SendMsgReq({
     required this.contactId,
@@ -42,6 +43,7 @@ class SendMsgReq {
     required this.messageType,
     required this.messageContent,
     this.file,
+    this.data
   });
 
   factory SendMsgReq.fromJson(Map<String, dynamic> json) => SendMsgReq(
@@ -50,6 +52,7 @@ class SendMsgReq {
     messageType: json["messageType"],
     messageContent: json["messageContent"],
     file: json["file"],
+    data: json['data']
   );
 
   Map<String, dynamic> toJson() {
@@ -58,6 +61,7 @@ class SendMsgReq {
       "contactType": contactType,
       "messageType": messageType,
       "messageContent": messageContent,
+      'data': data
     };
     if (file != null) {
       map['file'] = file ?? '';
@@ -105,6 +109,7 @@ class ChatMessageRes {
   int? fileType;
   int? fileSize;
   int status;
+  String? data;
 
   ChatMessageRes({
     required this.messageId,
@@ -122,6 +127,7 @@ class ChatMessageRes {
     required this.fileType,
     required this.fileSize,
     required this.status,
+    required this.data
   });
 
   factory ChatMessageRes.fromJson(Map<String, dynamic> json) => ChatMessageRes(
@@ -140,6 +146,7 @@ class ChatMessageRes {
     fileType: json["fileType"],
     fileSize: json["fileSize"],
     status: json["status"],
+    data: json['data']
   );
 
   @override
@@ -159,7 +166,8 @@ class ChatMessageRes {
         'fileName: $fileName, '
         'fileType: $fileType, '
         'fileSize: $fileSize, '
-        'status: $status'
+        'status: $status, '
+        'data: $data'
         '}';
   }
 }

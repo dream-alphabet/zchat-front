@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -10,6 +11,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/toast.dart';
+import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/pages/chat/widgets/video_preview.dart';
 import 'package:zchat/stores/user.dart';
@@ -320,6 +322,24 @@ class ChatMessage extends StatelessWidget {
     );
   }
 
+  // 构建个人卡片消息
+  Widget _buildPersonCard(BuildContext context) {
+    final contact = UserContactRes.fromJson(jsonDecode(message.data ?? ''));
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          RoutePath.contactInfo,
+          arguments: {'contactId': contact.contactId},
+        );
+      },
+      child: _buildMsgLayout(
+        child: PersonCard(contact: contact),
+        color: Colors.white,
+      ),
+    );
+  }
+
   // 构建消息内容
   Widget _buildMsgContent(BuildContext context) {
     // 消息类型
@@ -333,6 +353,9 @@ class ChatMessage extends StatelessWidget {
     } else if (messageType == MessageTypeEnum.systemNotice.type) {
       // 系统通知
       return _buildSystemNotice();
+    } else if (messageType == MessageTypeEnum.personCard.type) {
+      // 个人卡片
+      return _buildPersonCard(context);
     }
     return _buildTextMsg('未知消息类型');
   }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
@@ -318,8 +319,28 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
 
   // 发送个人名片
   Future<void> _sendPersonCard(UserContactRes contact) async {
-    // TODO 实现发送个人名片消息
-    print('发送个人名片: ${contact.toJson()}');
+    // 发送消息
+    final msg = await sendMessageApi(
+      SendMsgReq(
+        contactId: _contactId,
+        contactType: _contactType,
+        messageType: MessageTypeEnum.personCard.type,
+        messageContent: MessageTypeEnum.personCard.messageContent,
+        data: jsonEncode(contact.toJson()),
+      ),
+    );
+    setState(() {
+      // 添加到发送后的消息到列表
+      _msgList.insert(0, msg);
+    });
+    // 滚动到底部
+    _scrollToBottom();
+    // 更新会话的lastMessage和lastReceiveTime
+    _sessionStore.updateLastMessage(
+      _sessionId,
+      MessageTypeEnum.personCard.messageContent,
+      msg.sendTime,
+    );
   }
 
   // 选择联系人
@@ -330,8 +351,15 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       RouteUtils.slideUp(
         (ctx) => ContactSelectPage(
           onSelect: (contact) async {
-            final receiver = UserContactRes(contactId: _contactId, contactName: _contactInfo?.contactName ?? '');
-            final result = await showSendConfirmModal(context, receiver, contact);
+            final receiver = UserContactRes(
+              contactId: _contactId,
+              contactName: _contactInfo?.contactName ?? '',
+            );
+            final result = await showSendConfirmModal(
+              context,
+              receiver,
+              contact,
+            );
             // 用户是否点击发送按钮
             final confirm = result != null && result;
             // 用户点击了确认发送
