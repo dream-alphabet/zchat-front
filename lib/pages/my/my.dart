@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart' hide MultipartFile;
 import 'package:dio/dio.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:zchat/api/user.dart';
 import 'package:zchat/common/constants.dart';
@@ -30,26 +33,47 @@ class _MyPageState extends State<MyPage> {
     // 选择图片
     final picker = ImagePicker();
     final image = await picker.pickImage(source: source);
-    if (image != null) {
-      // 文件路径
-      final path = image.path;
-      // 文件名
-      final filename = image.name;
-      // 文件大小
-      final fileSize = await image.length();
-      // 校验文件大小
-      if (fileSize > GlobalConstants.imageMaxSize) {
-        return ToastUtils.showGlobalToast(
-          msg: '图片不能大于${GlobalConstants.imageMaxMB}MB',
-        );
-      }
-      // 封装multipart
-      final file = await MultipartFile.fromFile(path, filename: filename);
-      // 调用更新头像接口
-      await updateUserAvatarApi(UpdateAvatarReq(avatar: file));
-      // 刷新头像
-      AvatarGlobal.refresh(_userController.userInfo.value?.userId ?? '-1');
+    // 非空判断
+    if (image == null) {
+      return;
     }
+    // 让用户可以开始裁切图片
+    final croppedFile = await ImageCropper().cropImage(
+      sourcePath: image.path,
+      // 裁切页面设置
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: '裁剪头像',
+          toolbarColor: Colors.black,
+          toolbarWidgetColor: Colors.white,
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: true,
+        ),
+        IOSUiSettings(title: '裁剪头像'),
+      ],
+    );
+    // 裁切失败
+    if (croppedFile == null) {
+      return;
+    }
+    File avatar = File(croppedFile.path);
+    // 上传头像
+    // 文件路径
+    final path = avatar.path;
+    // 文件大小
+    final fileSize = await avatar.length();
+    // 校验文件大小
+    if (fileSize > GlobalConstants.imageMaxSize) {
+      return ToastUtils.showGlobalToast(
+        msg: '头像不能大于${GlobalConstants.imageMaxMB}MB',
+      );
+    }
+    // 封装multipart
+    final file = await MultipartFile.fromFile(path);
+    // 调用更新头像接口
+    await updateUserAvatarApi(UpdateAvatarReq(avatar: file));
+    // 刷新头像
+    AvatarGlobal.refresh(_userController.userInfo.value?.userId ?? '-1');
     // 关闭sheet
     Navigator.pop(context);
   }

@@ -43,17 +43,8 @@ class SendMsgReq {
     required this.messageType,
     required this.messageContent,
     this.file,
-    this.data
+    this.data,
   });
-
-  factory SendMsgReq.fromJson(Map<String, dynamic> json) => SendMsgReq(
-    contactId: json["contactId"],
-    contactType: json["contactType"],
-    messageType: json["messageType"],
-    messageContent: json["messageContent"],
-    file: json["file"],
-    data: json['data']
-  );
 
   Map<String, dynamic> toJson() {
     final map = {
@@ -127,7 +118,7 @@ class ChatMessageRes {
     required this.fileType,
     required this.fileSize,
     required this.status,
-    required this.data
+    required this.data,
   });
 
   factory ChatMessageRes.fromJson(Map<String, dynamic> json) => ChatMessageRes(
@@ -146,7 +137,7 @@ class ChatMessageRes {
     fileType: json["fileType"],
     fileSize: json["fileSize"],
     status: json["status"],
-    data: json['data']
+    data: json['data'],
   );
 
   @override

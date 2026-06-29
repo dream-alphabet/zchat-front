@@ -166,7 +166,7 @@ class _MainPageState extends State<MainPage> {
               onBack: () {
                 _pageController.animateToPage(
                   1,
-                  duration: Duration(milliseconds: 500),
+                  duration: Duration(milliseconds: 400),
                   curve: Curves.easeInOut,
                 );
                 setState(() {
@@ -206,7 +206,7 @@ class _MainPageState extends State<MainPage> {
                       // 带动画地切换页面
                       _pageController.animateToPage(
                         index+1,
-                        duration: Duration(milliseconds: 500),
+                        duration: Duration(milliseconds: 400),
                         curve: Curves.easeInOut,
                       );
                       // 更新index

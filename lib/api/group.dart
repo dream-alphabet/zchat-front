@@ -4,5 +4,5 @@ import 'package:zchat/model/group.dart';
 
 // 创建群聊
 Future<void> createGroupApi(CreateGroupReq data) async {
-  await request.post(Api.createGroup, data: data.toJson());
+  await request.post(Api.createGroup, data: data.toJson(), isFormData: true);
 }
