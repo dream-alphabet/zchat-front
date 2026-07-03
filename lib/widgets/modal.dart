@@ -7,8 +7,9 @@ import 'package:zchat/widgets/ink_click.dart';
 // 个人卡片组件
 class PersonCard extends StatelessWidget {
   final UserContactRes contact;
+  final String type;
 
-  const PersonCard({super.key, required this.contact});
+  const PersonCard({super.key, required this.contact, required this.type});
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +38,7 @@ class PersonCard extends StatelessWidget {
             ],
           ),
           Text(
-            '个人名片',
+            type,
             style: TextStyle(
               fontSize: 14.sp,
               color: Color.fromRGBO(110, 110, 108, 1),
@@ -53,8 +54,9 @@ class PersonCard extends StatelessWidget {
 Future<bool?> showSendConfirmModal(
   BuildContext context,
   UserContactRes receiver,
-  UserContactRes contact,
-) {
+  UserContactRes contact, {
+  String type = '个人名片',
+}) {
   return showModalBottomSheet<bool>(
     backgroundColor: Color.fromRGBO(237, 237, 237, 1),
     context: context,
@@ -82,7 +84,7 @@ Future<bool?> showSendConfirmModal(
                   ],
                 ),
                 // 个人名片
-                PersonCard(contact: contact),
+                PersonCard(contact: contact, type: type),
                 Row(
                   mainAxisAlignment: .center,
                   spacing: 15.w,

@@ -334,7 +334,7 @@ class ChatMessage extends StatelessWidget {
         );
       },
       child: _buildMsgLayout(
-        child: PersonCard(contact: contact),
+        child: PersonCard(contact: contact, type: '个人名片'),
         color: Colors.white,
       ),
     );

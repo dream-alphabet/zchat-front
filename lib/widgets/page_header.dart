@@ -51,11 +51,11 @@ class _PageHeaderState extends State<PageHeader> {
                   // 跳转到搜索联系人页面
                   Navigator.pushNamed(context, RoutePath.searchContact);
                 },
-                child: Icon(MyIcon.search, size: 22.w),
+                child: Icon(MyIcon.search, size: 25.w),
               ),
               PopupMenuButton<String>(
                 // 自定义图标
-                icon: Icon(MyIcon.add, size: 22.w),
+                icon: Icon(MyIcon.add, size: 25.w),
                 // 弹出位置
                 offset: Offset(0, 40.w),
                 // 圆角
@@ -199,7 +199,7 @@ class _PageHeaderState extends State<PageHeader> {
           Positioned(
             top: 0,
             bottom: 0,
-            left: 20.w,
+            left: 25.w,
             child: Center(child: _buildLeftBackIcon()),
           ),
         if (widget.showLeftAvatar)
@@ -213,7 +213,7 @@ class _PageHeaderState extends State<PageHeader> {
           Positioned(
             top: 0,
             bottom: 0,
-            right: 20.w,
+            right: 25.w,
             child: Center(child: _buildIconList()),
           ),
       ],

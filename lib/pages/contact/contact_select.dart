@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:zchat/api/contact.dart';
+import 'package:zchat/api/group.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/contact.dart';
@@ -33,25 +34,44 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
   // 联系人store
   final _contactStore = Get.find<UserContactController>();
   // 联系人分组数据
-  late final Map<String, List<UserContactRes>> _group;
+  Map<String, List<UserContactRes>> _group = {};
   // 排序后的分组 Key 列表
-  late List<String> _groupKeys;
+  List<String> _groupKeys = [];
   // 每个分组对应的 GlobalKey
-  late Map<String, GlobalKey> _groupKeyMap;
+  Map<String, GlobalKey> _groupKeyMap = {};
   // 索引栏key, 用于获取尺寸
   final _indexBarKey = GlobalKey();
   // 记录上一次触摸的字母，防止重复跳转
   String? _lastTouchLetter;
   // 防抖工具类
   final _debouncer = Debouncer(timeout: Duration(milliseconds: 300));
+  // 是否是查询群聊成员
+  bool _isSearchGroupMember = false;
+  // 群聊id
+  String _groupId = '';
 
   @override
   void initState() {
     super.initState();
-    // 初始化
-    _group = getGroupedContacts(_contactStore.userList);
-    _groupKeys = _group.keys.toList();
-    _groupKeyMap = {for (final key in _groupKeys) key: GlobalKey()};
+    Future.microtask(() {
+      List<UserContactRes> contactList = _contactStore.userList;
+      if (ModalRoute.of(context) != null) {
+        final params =
+            ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+        // 如果传递了contactList
+        if (params != null && params['contactList'] != null) {
+          contactList = params['contactList'];
+          _groupId = params['groupId'];
+          _isSearchGroupMember = true;
+        }
+      }
+      print('开始初始化');
+      // 初始化
+      _group = getGroupedContacts(contactList);
+      _groupKeys = _group.keys.toList();
+      _groupKeyMap = {for (final key in _groupKeys) key: GlobalKey()};
+      setState(() {});
+    });
   }
 
   // 搜索联系人
@@ -62,9 +82,14 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
     }
     // 搜索关键词
     final keywords = _searchText.trim();
-    _searchResult = await searchContactApi(
-      SearchContactReq(keywords: keywords),
-    );
+    if (_isSearchGroupMember) {
+      // 搜索群成员
+      _searchResult = await searchGroupMemberApi(_groupId, keywords);
+    } else {
+      _searchResult = await searchContactApi(
+        SearchContactReq(keywords: keywords),
+      );
+    }
     setState(() {});
   }
 
@@ -81,6 +106,11 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
           _debouncer.run(() {
             if (_searchText.trim().isNotEmpty) {
               _searchContact();
+            } else {
+              // 清空搜索结果
+              setState(() {
+                _searchResult = [];
+              });
             }
           });
         },
@@ -374,6 +404,7 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         toolbarHeight: 0,
         backgroundColor: Color.fromRGBO(237, 237, 237, 1),

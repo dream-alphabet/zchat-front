@@ -110,7 +110,6 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     }
     // 后缀名
     final ext = filePath.substring(index + 1);
-    print('文件后缀:$ext');
     if (GlobalConstants.imageFormats.contains(ext)) {
       return FileTypeEnum.image;
     } else if (GlobalConstants.videoFormats.contains(ext)) {
@@ -569,13 +568,14 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
             (_msgList[index].sendTime - _msgList[index + 1].sendTime) >
                 5 * 60 * 1000) {
           return Column(
+            spacing: 10.w,
             children: [
               Text(
                 formatTimestamp(_msgList[index].sendTime),
                 textAlign: .center,
                 style: TextStyle(
                   color: Color.fromRGBO(123, 123, 128, 1),
-                  fontSize: 16.sp,
+                  fontSize: 14.sp,
                 ),
               ),
               ChatMessage(message: _msgList[index]),
@@ -962,7 +962,11 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                         Navigator.pushNamed(context, RoutePath.friendSetting);
                       } else if (_contactType == UserContactTypeEnum.group) {
                         // 如果是群聊，跳转到群聊设置页面
-                        Navigator.pushNamed(context, RoutePath.groupSetting);
+                        Navigator.pushNamed(
+                          context,
+                          RoutePath.groupSetting,
+                          arguments: {'groupId': _contactInfo?.contactId},
+                        );
                       }
                     },
                     child: Icon(
