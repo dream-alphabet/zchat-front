@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,6 +9,8 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/toast.dart';
+import 'package:zchat/model/common.dart';
+import 'package:zchat/widgets/dialog.dart';
 
 // 扫一扫
 class ScanPage extends StatefulWidget {
@@ -16,8 +21,10 @@ class ScanPage extends StatefulWidget {
 }
 
 class _ScanPageState extends State<ScanPage>
-    with SingleTickerProviderStateMixin {
-  MobileScannerController cameraController = MobileScannerController();
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+  MobileScannerController cameraController = MobileScannerController(
+    autoStart: false,
+  );
   late AnimationController _animationController;
 
   // 使用响应式尺寸变量
@@ -32,18 +39,48 @@ class _ScanPageState extends State<ScanPage>
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
+    // 注册生命周期观察者
+    WidgetsBinding.instance.addObserver(this);
     _checkPermission();
   }
 
   // 检查权限
   Future<void> _checkPermission() async {
-    // 查看相机权限状态
     final status = await Permission.camera.request();
     // 如果是已拒绝
     if (status.isDenied) {
+      if (!mounted) return;
       ToastUtils.showGlobalToast(msg: '您已拒绝授予相机权限');
       Navigator.pop(context);
       return;
+    }
+
+    // 权限获取成功后，主动启动相机（避免组件提前渲染时相机未启动）
+    if (status.isGranted && mounted) {
+      await cameraController.start();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // 如果相机没有权限，不要尝试操作它，否则会报错
+    if (!cameraController.value.hasCameraPermission) {
+      return;
+    }
+
+    switch (state) {
+      case .resumed:
+        // 切回前台：重启相机
+        unawaited(cameraController.start());
+        break;
+      case .paused:
+      case .detached:
+      case .hidden:
+        // 切到后台：停止相机，释放资源（省电）
+        unawaited(cameraController.stop());
+        break;
+      default:
+        break;
     }
   }
 
@@ -64,6 +101,8 @@ class _ScanPageState extends State<ScanPage>
 
   @override
   void dispose() {
+    // 移除生命周期观察者
+    WidgetsBinding.instance.removeObserver(this);
     cameraController.dispose();
     _animationController.dispose();
     super.dispose();
@@ -308,7 +347,7 @@ class _ScanPageState extends State<ScanPage>
                   gradient: LinearGradient(
                     colors: [
                       Colors.transparent,
-                      Color.fromRGBO(20, 134, 237, 0.8), // 微信绿色
+                      Color.fromRGBO(20, 134, 237, 1),
                       Colors.transparent,
                     ],
                     stops: const [0.0, 0.5, 1.0],
@@ -371,10 +410,32 @@ class _ScanPageState extends State<ScanPage>
     // 振动反馈
     HapticFeedback.mediumImpact();
 
-    // TODO 处理二维码
-    print('处理二维码: $code');
-
-    // TODO 如果解析二维码失败，提示用户并继续扫描
+    try {
+      // 处理二维码
+      // 1.json解析数据
+      final data = QrCodeData.fromJson(jsonDecode(code));
+      // 根据二维码类型，执行操作
+      if (data.type == QrCodeType.person.type) {
+        // 个人二维码，跳转到联系人信息页面
+        Navigator.popAndPushNamed(
+          context,
+          RoutePath.contactInfo,
+          arguments: {'contactId': data.data},
+        );
+      } else {
+        throw '未知的二维码类型';
+      }
+    } catch (e) {
+      // 如果处理二维码失败，提示用户并继续扫描
+      print('处理二维码失败：$e');
+      showPromptDialog(
+        context,
+        '解析二维码失败',
+        onConfirm: () {
+          cameraController.start();
+        },
+      );
+    }
   }
 
   // 切换闪光灯

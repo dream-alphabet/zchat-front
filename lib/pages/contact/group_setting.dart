@@ -19,8 +19,8 @@ import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/model/group.dart';
 import 'package:zchat/pages/contact/contact_select.dart';
 import 'package:zchat/stores/session.dart';
-import 'package:zchat/stores/user.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
+import 'package:zchat/widgets/dialog.dart';
 import 'package:zchat/widgets/modal.dart';
 import 'package:zchat/widgets/page_header.dart';
 
@@ -117,7 +117,7 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
             if (confirm) {
               await _sendGroupCard(receiver, groupInfo);
               // 提示已发送
-              ToastUtils.showGlobalToast(msg: '已发送');
+              await showPromptDialog(context, '已发送');
             }
             return confirm;
           },

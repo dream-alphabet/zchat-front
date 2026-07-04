@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,6 +8,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/utils.dart';
+import 'package:zchat/model/common.dart';
 import 'package:zchat/stores/user.dart';
 import 'package:zchat/widgets/page_header.dart';
 
@@ -112,7 +115,12 @@ class _AddFriendPageState extends State<AddFriendPage> {
 
   // 二维码
   Widget _buildQrCode() {
-    return QrImageView(data: "12344354353454", size: 200.w);
+    // 二维码数据
+    final data = QrCodeData(
+      type: QrCodeType.person.type,
+      data: _userController.userInfo.value?.userId ?? '',
+    );
+    return QrImageView(data: jsonEncode(data.toJson()), size: 200.w);
   }
 
   // 构建下半部分
@@ -162,18 +170,18 @@ class _AddFriendPageState extends State<AddFriendPage> {
       ),
       backgroundColor: Colors.white,
       body: Column(
-          children: [
-            PageHeader(
-              title: '添加朋友',
-              showLeftBackIcon: true,
-              showRightIcon: false,
-              showBorder: false,
-              backgroundColor: Colors.white,
-            ),
-            _buildTop(),
-            Expanded(child: _buildBottom()),
-          ],
-        ),
+        children: [
+          PageHeader(
+            title: '添加朋友',
+            showLeftBackIcon: true,
+            showRightIcon: false,
+            showBorder: false,
+            backgroundColor: Colors.white,
+          ),
+          _buildTop(),
+          Expanded(child: _buildBottom()),
+        ],
+      ),
     );
   }
 }
