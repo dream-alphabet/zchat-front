@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/common.dart';
 import 'package:zchat/stores/user.dart';
 import 'package:zchat/widgets/page_header.dart';
+import 'package:zchat/widgets/qrcode.dart';
 
 // 添加朋友
 class AddFriendPage extends StatefulWidget {
@@ -120,7 +120,7 @@ class _AddFriendPageState extends State<AddFriendPage> {
       type: QrCodeType.person.type,
       data: _userController.userInfo.value?.userId ?? '',
     );
-    return QrImageView(data: jsonEncode(data.toJson()), size: 200.w);
+    return Qrcode(data: jsonEncode(data.toJson()), size: 240);
   }
 
   // 构建下半部分

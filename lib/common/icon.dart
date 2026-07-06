@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-// 自定义图标
+// 自定义
 class MyIcon {
   // 右箭头
   static const arrowRight = IconData(
@@ -8,31 +8,31 @@ class MyIcon {
     fontFamily: 'MyIcon',
     matchTextDirection: true,
   );
-  // 扫一扫图标
+  // 扫一扫
   static const scan = IconData(
     0xe602,
     fontFamily: 'MyIcon',
     matchTextDirection: true,
   );
-  // 朋友圈图标
+  // 朋友圈
   static const moments = IconData(
     0xe6e9,
     fontFamily: 'MyIcon',
     matchTextDirection: true,
   );
-  // 发现图标
+  // 发现
   static const discover = IconData(
     0xe605,
     fontFamily: 'MyIcon',
     matchTextDirection: true,
   );
-  // 搜索图标
+  // 搜索
   static const search = IconData(
     0xe63b,
     fontFamily: 'MyIcon',
     matchTextDirection: true,
   );
-  // 添加图标
+  // 添加
   static const add = IconData(
     0xe62b,
     fontFamily: 'MyIcon',
@@ -122,9 +122,15 @@ class MyIcon {
     fontFamily: 'MyIcon',
     matchTextDirection: true,
   );
-  // 文件消息图标
+  // 文件消息
   static const fileMsg = IconData(
     0xe718,
+    fontFamily: 'MyIcon',
+    matchTextDirection: true,
+  );
+  // 我的二维码
+  static const myQrCode = IconData(
+    0xe63a,
     fontFamily: 'MyIcon',
     matchTextDirection: true,
   );

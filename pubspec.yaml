@@ -59,6 +59,7 @@ dependencies:
   lpinyin: ^2.0.3
   image_cropper: ^12.2.1
   dashed_border: ^1.0.2
+  device_info_plus: ^12.4.0
 
 dev_dependencies:
   flutter_test:

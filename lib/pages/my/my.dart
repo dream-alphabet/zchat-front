@@ -118,6 +118,12 @@ class _MyPageState extends State<MyPage> {
               contactId: _userController.userInfo.value?.userId ?? '-1',
             ),
             ElevatedButton(onPressed: _showUpdateSheet, child: Text('修改头像')),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, RoutePath.myQRCode);
+              },
+              child: Text('我的二维码'),
+            ),
             ElevatedButton(onPressed: _goBack, child: Text('返回')),
           ],
         ),

@@ -1,22 +1,25 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gal/gal.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Response;
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/toast.dart';
+import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/pages/chat/widgets/video_preview.dart';
 import 'package:zchat/stores/user.dart';
 import 'package:zchat/model/chat.dart';
 import 'package:zchat/model/enums/chat.dart';
+import 'package:zchat/widgets/dialog.dart';
 import 'package:zchat/widgets/modal.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 
@@ -269,12 +272,25 @@ class ChatMessage extends StatelessWidget {
 
   // 保存到相册
   void _saveImageToGallery(BuildContext context, String imageUrl) async {
-    final imagePath = '${Directory.systemTemp.path}/image.jpg';
-    await Dio().download(imageUrl, imagePath);
-    await Gal.putImage(imagePath);
-    ToastUtils.showGlobalToastAsync(msg: '已保存到系统相册').then((_) {
-      Navigator.pop(context);
-    });
+    // 检查相册权限
+    final status = await requestGalleryPermission();
+    if (status.isDenied) {
+      return showPromptDialog(context, '没有权限, 请重试');
+    }
+    Response<List<int>> response = await Dio().get(
+      imageUrl,
+      options: Options(responseType: ResponseType.bytes),
+    );
+    final data = response.data;
+    if (data == null) {
+      return ToastUtils.showGlobalToast(msg: '图片获取失败');
+    }
+    // 将 List<int> 转换为 Uint8List
+    Uint8List imageData = Uint8List.fromList(data);
+    // 保存到相册
+    await Gal.putImageBytes(imageData);
+    await ToastUtils.showGlobalToastAsync(msg: '已保存到系统相册');
+    Navigator.pop(context);
   }
 
   // 预览图片

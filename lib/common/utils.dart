@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -120,6 +122,23 @@ Future<void> requestNotificationPermission() async {
   } else {
     print('用户没授权');
   }
+}
+
+// 请求相册权限
+Future<PermissionStatus> requestGalleryPermission() async {
+  // 判断是否有相册权限
+  if (Platform.isAndroid) {
+    // 根据android版本判断
+    final deviceInfo = await DeviceInfoPlugin().androidInfo;
+    final perm = deviceInfo.version.sdkInt <= 32
+        ? Permission.storage
+        : Permission.photos;
+    final status = await perm.request();
+    return status;
+  }
+  // 其他平台
+  final status = await Permission.photos.request();
+  return status;
 }
 
 // 全局页面跳转
