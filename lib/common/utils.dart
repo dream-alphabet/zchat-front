@@ -150,6 +150,11 @@ void navigateToPage(String routePath, {Map<String, dynamic>? arguments}) {
   );
 }
 
+// 获取状态栏高度
+double getStatusBarHeight() {
+  return MediaQuery.of(globalNavigatorKey.currentState!.context).padding.top;
+}
+
 // 判断是否为英文字母
 bool isEnglish(String char) {
   return RegExp(r'^[A-Za-z]$').hasMatch(char);

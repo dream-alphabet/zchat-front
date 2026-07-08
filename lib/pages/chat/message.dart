@@ -451,7 +451,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         setState(() {
           _msgList.insert(0, msg);
         });
-        // 如果滚动offset大于50，说明当前用户正在浏览历史消息，不应滚动到底部
+        // 如果滚动offset大于200，说明当前用户正在浏览历史消息，不应滚动到底部
         if (_msgListController.offset < 200.w) {
           _scrollToBottom();
         }
@@ -578,11 +578,17 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                   fontSize: 14.sp,
                 ),
               ),
-              ChatMessage(message: _msgList[index]),
+              ChatMessage(
+                message: _msgList[index],
+                scrollController: _msgListController,
+              ),
             ],
           );
         }
-        return ChatMessage(message: _msgList[index]);
+        return ChatMessage(
+          message: _msgList[index],
+          scrollController: _msgListController,
+        );
       },
     );
   }
@@ -994,6 +1000,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     _streamSubscription.cancel();
     _messageController.dispose();
     _messageFocusNode.dispose();
+    // 销毁ScrollController
+    _msgListController.dispose();
     super.dispose();
   }
 }

@@ -78,8 +78,8 @@ Widget getRootWidget() {
         theme: ThemeData(
           fontFamily: 'Inter',
           textSelectionTheme: TextSelectionThemeData(
-            selectionColor: Color.fromRGBO(20, 134, 237, 1),
-            selectionHandleColor: Color.fromRGBO(20, 134, 237, 1),
+            selectionColor: Colors.blue,
+            selectionHandleColor: Colors.orange,
             cursorColor: Color.fromRGBO(20, 134, 237, 1),
           ),
           textTheme: TextTheme(
