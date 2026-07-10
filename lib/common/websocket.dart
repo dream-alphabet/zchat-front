@@ -15,6 +15,7 @@ import 'package:zchat/stores/message.dart';
 import 'package:zchat/stores/session.dart';
 import 'package:zchat/stores/contact.dart';
 import 'package:zchat/stores/token.dart';
+import 'package:zchat/stores/user.dart';
 
 /// WebSocket状态
 enum SocketStatus {
@@ -43,7 +44,6 @@ class WebSocketUtility {
   SocketStatus _socketStatus = SocketStatus.socketStatusClosed;
   Timer? _heartBeat; // 心跳定时器
   final int _heartInterval = 3000; // 心跳间隔
-  final int _reconnectCount = 5; // 最大重连次数
   int _reconnectTimes = 0; // 当前重连次数
   final int _reconnectInterval = 3000; // 重连间隔3秒
   Timer? _reconnectTimer; // 重连定时器
@@ -213,13 +213,8 @@ class WebSocketUtility {
 
   /// 重连机制
   void reconnect() {
-    // 如果已经在重连中，或者超过最大次数，则不再重连
-    if (_reconnectTimer != null || _reconnectTimes >= _reconnectCount) {
-      if (_reconnectTimes >= _reconnectCount) {
-        print('重连次数超过最大次数($_reconnectCount)，停止重连');
-        _reconnectTimer?.cancel();
-        _reconnectTimer = null;
-      }
+    // 正在重连中
+    if (_reconnectTimer != null) {
       return;
     }
 
@@ -253,7 +248,7 @@ void _handleChatMsg(dynamic msg) {
     MessageTypeEnum.text.type,
     MessageTypeEnum.file.type,
     MessageTypeEnum.systemNotice.type,
-    MessageTypeEnum.personCard.type
+    MessageTypeEnum.personCard.type,
   ].contains(message.messageType)) {
     // 联系人类型
     final contactType = message.contactType;
@@ -264,7 +259,8 @@ void _handleChatMsg(dynamic msg) {
     // 消息类型
     final messageType = message.messageType;
     // 如果是群聊，需要再做一下处理
-    if (contactType == UserContactTypeEnum.group && messageType != MessageTypeEnum.systemNotice.type) {
+    if (contactType == UserContactTypeEnum.group &&
+        messageType != MessageTypeEnum.systemNotice.type) {
       messageContent = '${message.sendUserNickname}: $messageContent';
     }
     // 不是正在活跃的会话，消息提示和新增消息未读数量
@@ -357,6 +353,69 @@ void _handleUnreadCount(List<dynamic> msg) {
   }
 }
 
+// 处理撤回消息
+void _handleRecallMessage(dynamic msg) {
+  final message = ChatMessageRes.fromJson(msg);
+  final userController = Get.find<UserController>();
+  // 消息store
+  final messageStore = Get.find<MessageController>();
+  // 会话store
+  final sessionStore = Get.find<ChatSessionStore>();
+  // 如果是自己发送的消息，不需要处理
+  if (message.sendUserId == userController.userInfo.value?.userId) {
+    return;
+  }
+  // 会话id
+  final sessionId = message.sessionId;
+  // 当前时间
+  final now = DateTime.now().millisecondsSinceEpoch;
+  // 如果用户在聊天消息页面
+  if (activeSessionId == sessionId) {
+    // 通知聊天消息页面
+    eventBus.fire(
+      ServerMsgEvent(type: ServerMsgType.recallMessage, msg: message),
+    );
+  } else {
+    // 不在聊天消息页面，发送一条通知
+    // 联系人类型
+    final contactType = message.contactType;
+    // 会话id
+    final sessionId = message.sessionId;
+    final contactId = contactType == UserContactTypeEnum.group
+        ? message.contactId
+        : message.sendUserId;
+    final contactName = contactType == UserContactTypeEnum.group
+        ? message.contactName
+        : message.sendUserNickname;
+    // 新增未读数量
+    messageStore.addSessionUnreadCount(sessionId);
+    // 展示消息提示
+    MessageUtils.show(
+      contactId: contactId ?? '',
+      contactName: contactName ?? '...',
+      msg: '${message.sendUserNickname}已撤回一条消息',
+      sendTime: now,
+      onTap: () {
+        // 跳转到聊天消息页面
+        navigateToPage(
+          RoutePath.chatMessage,
+          arguments: {
+            'contactId': contactId,
+            'contactType': contactType,
+            'sessionId': sessionId,
+          },
+        );
+      },
+    );
+  }
+  // 更新会话lastMessage
+  sessionStore.updateLastMessage(
+    sessionId,
+    '${message.sendUserNickname}已撤回一条消息',
+    now,
+  );
+}
+
 // 处理服务器推送的消息
 void _handleServerMsg(dynamic msg) {
   final serverMsg = ServerMsgEvent.fromJson(jsonDecode(msg));
@@ -373,6 +432,9 @@ void _handleServerMsg(dynamic msg) {
   } else if (serverMsg.type == ServerMsgType.unreadCount) {
     // 更新消息未读数量
     _handleUnreadCount(serverMsg.msg);
+  } else if (serverMsg.type == ServerMsgType.recallMessage) {
+    // 撤回消息
+    _handleRecallMessage(serverMsg.msg);
   }
 }
 

@@ -21,6 +21,18 @@ enum MessageTypeEnum {
   final String messageContent;
 }
 
+// 消息状态枚举
+enum MessageStatusEnum {
+  sending(status: 0, desc: '发送中'),
+  sent(status: 1, desc: '已发送'),
+  recalled(status: 2, desc: '已撤回');
+
+  const MessageStatusEnum({required this.status, required this.desc});
+
+  final int status;
+  final String desc;
+}
+
 // 文件类型枚举
 enum FileTypeEnum {
   // 图片

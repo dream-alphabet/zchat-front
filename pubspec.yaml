@@ -60,6 +60,7 @@ dependencies:
   image_cropper: ^12.2.1
   dashed_border: ^1.0.2
   device_info_plus: ^12.4.0
+  unicode_emojis: ^0.5.1
 
 dev_dependencies:
   flutter_test:
@@ -104,3 +105,11 @@ flutter:
     - family: MyIcon
       fonts:
         - asset: lib/assets/fonts/iconfont.ttf
+    # emoji
+    - family: MyEmoji
+      fonts:
+        - asset: lib/assets/fonts/NotoColorEmoji.ttf
+    # 正文字体
+    - family: MyInter
+      fonts:
+        - asset: lib/assets/fonts/Inter_18pt-Medium.ttf

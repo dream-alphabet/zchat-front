@@ -68,6 +68,7 @@ class _MessageOverlay extends StatefulWidget {
   final String contactName;
   final int sendTime;
   final GestureTapCallback? onTap;
+
   const _MessageOverlay({
     required this.message,
     required this.contactId,
@@ -108,7 +109,7 @@ class _MessageOverlayState extends State<_MessageOverlay>
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      top: 20.w,
+      top: 15.w,
       left: 0,
       right: 0,
       child: SlideTransition(
@@ -120,7 +121,7 @@ class _MessageOverlayState extends State<_MessageOverlay>
               margin: EdgeInsets.all(10.w),
               padding: EdgeInsets.all(15.w),
               decoration: BoxDecoration(
-                color: Color.fromRGBO(255, 255, 255, 0.9),
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Row(

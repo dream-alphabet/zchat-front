@@ -96,6 +96,9 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   // 消息列表滚动控制器
   final _msgListController = ScrollController();
 
+  // 滚动加载防抖
+  final _scrollDebouncer = Debouncer(timeout: Duration(milliseconds: 200));
+
   // 监听websocket服务器推送的消息
   late StreamSubscription<ServerMsgEvent> _streamSubscription;
 
@@ -432,14 +435,28 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
           _scrollToBottom();
         });
         _msgListController.addListener(() {
-          if (_msgListController.offset >= 70.w) {
-            _getMsgList();
+          // 当用户滚动到最旧的一条消息时才加载更多历史消息
+          // reverse列表中 extentAfter=0 意味着已经滑到底部(最旧消息)
+          if (_msgListController.position.extentAfter < 1) {
+            _scrollDebouncer.run(_getMsgList);
           }
         });
       }
     });
     // 监听服务器推送消息事件
     _streamSubscription = eventBus.on<ServerMsgEvent>().listen((event) {
+      // 有消息撤回
+      if (event.type == ServerMsgType.recallMessage) {
+        final message = _msgList.firstWhereOrNull(
+          (msg) => msg.messageId == event.msg.messageId,
+        );
+        if (message != null) {
+          setState(() {
+            message.status = MessageStatusEnum.recalled.status;
+          });
+        }
+        return;
+      }
       // 消息类型不是聊天消息，直接返回
       if (event.type != ServerMsgType.chat) {
         return;
@@ -682,7 +699,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
           width: double.infinity,
           height: 200.w,
           child: GridView.builder(
-            itemCount: supportEmojiList.length,
+            itemCount: unicodeEmojis.length,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 8,
               crossAxisSpacing: 5.w,
@@ -691,18 +708,19 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
             itemBuilder: (context, index) => GestureDetector(
               onTap: () {
                 setState(() {
-                  _messageController.text += supportEmojiList[index];
-                  _msg += supportEmojiList[index];
+                  _messageController.text += unicodeEmojis[index];
+                  _msg += unicodeEmojis[index];
                 });
               },
               child: Text(
-                supportEmojiList[index],
+                unicodeEmojis[index],
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16.sp),
               ),
             ),
           ),
         ),
+        // 删除最后一个字符图标
         Positioned(
           right: 0,
           bottom: 0,
@@ -1002,6 +1020,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     _messageFocusNode.dispose();
     // 销毁ScrollController
     _msgListController.dispose();
+    _scrollDebouncer.dispose();
     super.dispose();
   }
 }

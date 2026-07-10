@@ -1,9 +1,7 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gal/gal.dart';
@@ -11,6 +9,7 @@ import 'package:get/get.dart' hide Response;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:zchat/api/chat.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/toast.dart';
@@ -18,6 +17,7 @@ import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/pages/chat/widgets/video_preview.dart';
+import 'package:zchat/stores/session.dart';
 import 'package:zchat/stores/user.dart';
 import 'package:zchat/model/chat.dart';
 import 'package:zchat/model/enums/chat.dart';
@@ -45,6 +45,9 @@ class ChatMessage extends StatefulWidget {
 class _ChatMessageState extends State<ChatMessage> {
   // 用户信息store
   final _userController = Get.find<UserController>();
+
+  // 会话store
+  final sessionStore = Get.find<ChatSessionStore>();
 
   // 选中的文本
   String _selectedText = '';
@@ -361,9 +364,9 @@ class _ChatMessageState extends State<ChatMessage> {
   }
 
   // 构建系统通知消息
-  Widget _buildSystemNotice() {
+  Widget _buildSystemNotice(String text) {
     return Text(
-      widget.message.messageContent,
+      text,
       textAlign: .center,
       style: TextStyle(
         color: const Color.fromRGBO(123, 123, 128, 1),
@@ -447,6 +450,35 @@ class _ChatMessageState extends State<ChatMessage> {
     return dy > (getStatusBarHeight() + 50.w);
   }
 
+  // 撤回消息
+  void _recallMessage() {
+    // 隐藏上下文菜单
+    _hideContextMenu();
+    // 弹出确认框
+    showPromptDialog(
+      context,
+      '是否要撤回该消息?',
+      showCancel: true,
+      onConfirm: () async {
+        await recallMessageApi(widget.message.messageId);
+        ToastUtils.showGlobalToast(
+          msg: '已撤回',
+          duration: Duration(milliseconds: 1500),
+        );
+        setState(() {
+          final message = widget.message;
+          message.status = MessageStatusEnum.recalled.status;
+          // 更新会话lastMessage
+          sessionStore.updateLastMessage(
+            message.sessionId,
+            '已撤回一条消息',
+            DateTime.now().millisecondsSinceEpoch,
+          );
+        });
+      },
+    );
+  }
+
   // 显示上下文菜单
   void _showContextMenu() {
     // 防止重复弹出
@@ -481,14 +513,11 @@ class _ChatMessageState extends State<ChatMessage> {
           print('转发');
         },
       ),
-      if (_isSelf)
-        ContextMenuItem(
-          icon: Icons.delete,
-          text: '撤回',
-          onTap: () {
-            print('撤回');
-          },
-        ),
+      // 发送后五分钟之内才可以撤回
+      if (_isSelf &&
+          DateTime.now().millisecondsSinceEpoch - widget.message.sendTime <
+              5 * 60 * 1000)
+        ContextMenuItem(icon: Icons.delete, text: '撤回', onTap: _recallMessage),
     ];
     // 上下文菜单水平偏移量: 消息内容宽度的一半-菜单宽度的一半
     final menuWidth = 30.w + 28.sp * items.length + 15.w * (items.length - 1);
@@ -540,9 +569,6 @@ class _ChatMessageState extends State<ChatMessage> {
     } else if (messageType == MessageTypeEnum.file.type) {
       // 媒体文件
       return _buildFileMsg();
-    } else if (messageType == MessageTypeEnum.systemNotice.type) {
-      // 系统通知
-      return _buildSystemNotice();
     } else if (messageType == MessageTypeEnum.personCard.type) {
       // 个人卡片
       return _buildPersonCard();
@@ -597,6 +623,21 @@ class _ChatMessageState extends State<ChatMessage> {
     );
   }
 
+  // 构建主体内容
+  Widget _buildMain() {
+    final status = widget.message.status;
+    if (status == MessageStatusEnum.sent.status) {
+      return widget.message.messageType != MessageTypeEnum.systemNotice.type
+          ? _buildMsg()
+          : _buildSystemNotice(widget.message.messageContent);
+    } else if (status == MessageStatusEnum.recalled.status) {
+      return _buildSystemNotice(
+        _isSelf ? '已撤回一条消息' : '${widget.message.sendUserNickname}已撤回一条消息',
+      );
+    }
+    return _buildSystemNotice('发送中');
+  }
+
   // 是否是当前用户发送的消息
   bool get _isSelf =>
       _userController.userInfo.value?.userId == widget.message.sendUserId;
@@ -605,9 +646,7 @@ class _ChatMessageState extends State<ChatMessage> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsetsGeometry.only(left: 10.w, right: 10.w, bottom: 10.w),
-      child: widget.message.messageType != MessageTypeEnum.systemNotice.type
-          ? _buildMsg()
-          : _buildSystemNotice(),
+      child: _buildMain(),
     );
   }
 

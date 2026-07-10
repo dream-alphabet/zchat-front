@@ -76,7 +76,6 @@ Widget getRootWidget() {
         title: 'zchat',
         // 设置主题中的文本样式也支持适配
         theme: ThemeData(
-          fontFamily: 'Inter',
           textSelectionTheme: TextSelectionThemeData(
             selectionColor: Colors.blue,
             selectionHandleColor: Colors.orange,
@@ -84,7 +83,12 @@ Widget getRootWidget() {
           ),
           textTheme: TextTheme(
             // 设置默认文本样式能自动响应字体缩放
-            bodyMedium: TextStyle(fontSize: 16.sp),
+            // 字体回退链：正文使用Inter渲染，emoji使用NotoColorEmoji渲染
+            bodyMedium: TextStyle(
+              fontFamily: 'MyInter',
+              fontFamilyFallback: ['MyEmoji'],
+              fontSize: 16.sp,
+            ),
           ),
           appBarTheme: AppBarTheme(surfaceTintColor: Colors.transparent),
           // 配置页面过渡主题: android和ios都配置为ios的滑动效果

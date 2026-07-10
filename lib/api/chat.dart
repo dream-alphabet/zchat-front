@@ -25,3 +25,8 @@ Future<PageRes> getMessageListApi(GetMsgListReq data) async {
     await request.get(Api.getMsgList, params: data.toMap()),
   );
 }
+
+// 撤回消息
+Future<void> recallMessageApi(int messageId) async {
+  await request.get(Api.recallMessage + messageId.toString());
+}

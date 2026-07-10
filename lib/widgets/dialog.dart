@@ -6,6 +6,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 Future<dynamic> showPromptDialog(
   BuildContext context,
   String content, {
+  bool showCancel = false,
+  VoidCallback? onCancel,
   VoidCallback? onConfirm,
 }) {
   return showDialog(
@@ -17,6 +19,22 @@ Future<dynamic> showPromptDialog(
           style: TextStyle(fontSize: 18.sp, color: Colors.black),
         ),
         actions: [
+          if (showCancel)
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              if (onCancel != null) {
+                onCancel();
+              }
+            },
+            child: Text(
+              '取消',
+              style: TextStyle(
+                fontSize: 16.sp,
+                color: Colors.red,
+              ),
+            ),
+          ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);

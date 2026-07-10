@@ -31,6 +31,8 @@ class ServerMsgType {
   static final addContact = 'addContact';
   // 更新消息未读数量
   static final unreadCount = 'unreadCount';
+  // 撤回消息
+  static final recallMessage = 'recallMessage';
 }
 
 // 全局事件总线
