@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 // 弹出确认dialog
-Future<dynamic> showPromptDialog(
+Future<bool?> showPromptDialog(
   BuildContext context,
   String content, {
   bool showCancel = false,
   VoidCallback? onCancel,
   VoidCallback? onConfirm,
 }) {
-  return showDialog(
+  return showDialog<bool>(
     context: context,
     builder: (context) {
       return CupertinoAlertDialog(
@@ -22,7 +22,7 @@ Future<dynamic> showPromptDialog(
           if (showCancel)
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context, false);
               if (onCancel != null) {
                 onCancel();
               }
@@ -37,7 +37,7 @@ Future<dynamic> showPromptDialog(
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context, true);
               if (onConfirm != null) {
                 onConfirm();
               }

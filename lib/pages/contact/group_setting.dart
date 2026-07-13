@@ -102,6 +102,7 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
           onSelect: (receiver) async {
             final groupInfo = UserContactRes(
               contactId: _groupId,
+              contactType: UserContactTypeEnum.group,
               contactName: _group?.groupName ?? '',
             );
             final result = await showSendConfirmModal(

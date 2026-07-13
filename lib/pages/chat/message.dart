@@ -355,6 +355,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
           onSelect: (contact) async {
             final receiver = UserContactRes(
               contactId: _contactId,
+              contactType: _contactType,
               contactName: _contactInfo?.contactName ?? '',
             );
             final result = await showSendConfirmModal(
@@ -570,6 +571,33 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     );
   }
 
+  // 转发消息
+  void _shareMessage(ChatMessageRes message, UserContactRes contact) async {
+    final msg = await shareMessageApi(
+      ShareMsgReq(
+        messageId: message.messageId,
+        contactId: contact.contactId,
+        contactType: contact.contactType,
+      ),
+    );
+    // 如果是当前会话的消息，就执行和其他方法一样的操作
+    if (msg.sessionId == _sessionId) {
+      setState(() {
+        // 添加到发送后的消息到列表
+        _msgList.insert(0, msg);
+        // 滚动到底部
+        _scrollToBottom();
+      });
+    }
+    // 更新会话的lastMessage和lastReceiveTime
+    _sessionStore.updateLastMessage(
+      msg.sessionId,
+      msg.messageContent,
+      msg.sendTime,
+    );
+    ToastUtils.showGlobalToast(msg: '发送成功');
+  }
+
   // 消息列表
   Widget _buildMessageList() {
     return ListView.builder(
@@ -598,6 +626,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
               ChatMessage(
                 message: _msgList[index],
                 scrollController: _msgListController,
+                onShareMessage: _shareMessage,
               ),
             ],
           );
@@ -605,6 +634,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         return ChatMessage(
           message: _msgList[index],
           scrollController: _msgListController,
+          onShareMessage: _shareMessage,
         );
       },
     );

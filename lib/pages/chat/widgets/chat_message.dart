@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:zchat/api/chat.dart';
+import 'package:zchat/common/animation.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/toast.dart';
@@ -17,6 +18,7 @@ import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/pages/chat/widgets/video_preview.dart';
+import 'package:zchat/pages/contact/contact_select.dart';
 import 'package:zchat/stores/session.dart';
 import 'package:zchat/stores/user.dart';
 import 'package:zchat/model/chat.dart';
@@ -31,11 +33,14 @@ class ChatMessage extends StatefulWidget {
   final ChatMessageRes message;
   // 列表滚动控制器
   final ScrollController scrollController;
+  // 转发消息事件
+  final void Function(ChatMessageRes, UserContactRes) onShareMessage;
 
   const ChatMessage({
     super.key,
     required this.message,
     required this.scrollController,
+    required this.onShareMessage
   });
 
   @override
@@ -312,7 +317,8 @@ class _ChatMessageState extends State<ChatMessage> {
     // 检查相册权限
     final status = await requestGalleryPermission();
     if (status.isDenied) {
-      return showPromptDialog(context, '没有权限, 请重试');
+      showPromptDialog(context, '没有权限, 请重试');
+      return;
     }
     Response<List<int>> response = await Dio().get(
       imageUrl,
@@ -389,7 +395,11 @@ class _ChatMessageState extends State<ChatMessage> {
         );
       },
       child: _buildMsgLayout(
-        child: PersonCard(key: _contentKey, contact: contact, type: '个人名片'),
+        child: PersonCard(
+          key: _contentKey,
+          contact: contact,
+          type: contact.contactType == UserContactTypeEnum.user ? '个人名片' : '群聊',
+        ),
         color: Colors.white,
       ),
     );
@@ -398,12 +408,13 @@ class _ChatMessageState extends State<ChatMessage> {
   // 构建菜单项
   Widget _buildContextMenuItems(List<ContextMenuItem> items) {
     return Row(
-      spacing: 15.w,
       children: List.generate(
         items.length,
         (index) => GestureDetector(
           onTap: items[index].onTap,
-          child: Column(
+          child: Padding(
+            padding: .symmetric(horizontal: 5.w, vertical: 12.w),
+            child: Column(
             spacing: 5.w,
             children: [
               Icon(items[index].icon, color: Colors.white, size: 20.sp),
@@ -418,6 +429,7 @@ class _ChatMessageState extends State<ChatMessage> {
               ),
             ],
           ),
+          ),
         ),
       ),
     );
@@ -428,7 +440,7 @@ class _ChatMessageState extends State<ChatMessage> {
     return CustomPaint(
       painter: ContextMenuArrowPainter(topVisible: topVisible),
       child: Container(
-        padding: .all(15.w),
+        padding: .symmetric(horizontal: 15.w),
         decoration: BoxDecoration(
           color: Color.fromRGBO(75, 75, 75, 1),
           borderRadius: .circular(8.r),
@@ -493,9 +505,10 @@ class _ChatMessageState extends State<ChatMessage> {
     Offset offset = contentBox.localToGlobal(Offset.zero);
     Size size = contentBox.size;
     final width = size.width;
+    final message = widget.message;
     // 上下文菜单项列表
     List<ContextMenuItem> items = [
-      if (widget.message.messageType == MessageTypeEnum.text.type)
+      if (message.messageType == MessageTypeEnum.text.type)
         ContextMenuItem(
           icon: Icons.copy,
           text: '复制',
@@ -506,17 +519,47 @@ class _ChatMessageState extends State<ChatMessage> {
             _hideContextMenu();
           },
         ),
-      ContextMenuItem(
-        icon: Icons.share,
-        text: '转发',
-        onTap: () {
-          print('转发');
-        },
-      ),
+      // 只有文本，媒体文件，个人卡片可以转发
+      if ([
+        MessageTypeEnum.text.type,
+        MessageTypeEnum.file.type,
+        MessageTypeEnum.personCard.type,
+      ].contains(message.messageType))
+        ContextMenuItem(
+          icon: Icons.share,
+          text: '转发',
+          onTap: () {
+            // 隐藏上下文菜单
+            _hideContextMenu();
+            // 跳转到选择联系人页面
+            Navigator.push(
+              context, 
+              RouteUtils.slideUp(
+                (ctx) => ContactSelectPage(
+                  onSelect: (contact) async {
+                    final res = await showPromptDialog(context, '是否确定向${contact.contactName}转发此消息?', showCancel: true);
+                    // 用户取消转发
+                    if (res == null || !res) {
+                      return false;
+                    }
+                    // 用户确认转发
+                    widget.onShareMessage(message, contact);
+                    return true;
+                  },
+                ),
+                settings: RouteSettings(
+                  arguments: {
+                    'searchAll': true
+                  }
+                )
+              ),
+            );
+          },
+        ),
       // 发送后五分钟之内才可以撤回
       if (_isSelf &&
-          DateTime.now().millisecondsSinceEpoch - widget.message.sendTime <
-              5 * 60 * 1000)
+          DateTime.now().millisecondsSinceEpoch - message.sendTime <
+              GlobalConstants.recallLimit)
         ContextMenuItem(icon: Icons.delete, text: '撤回', onTap: _recallMessage),
     ];
     // 上下文菜单水平偏移量: 消息内容宽度的一半-菜单宽度的一半

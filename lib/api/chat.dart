@@ -15,7 +15,7 @@ Future<List<ChatSessionRes>> getChatSessionListApi() async {
 // 发送消息
 Future<ChatMessageRes> sendMessageApi(SendMsgReq data) async {
   return ChatMessageRes.fromJson(
-    await request.post(Api.sendMessage, data: data.toJson(), isFormData: true)
+    await request.post(Api.sendMessage, data: data.toJson(), isFormData: true),
   );
 }
 
@@ -29,4 +29,11 @@ Future<PageRes> getMessageListApi(GetMsgListReq data) async {
 // 撤回消息
 Future<void> recallMessageApi(int messageId) async {
   await request.get(Api.recallMessage + messageId.toString());
+}
+
+// 转发消息
+Future<ChatMessageRes> shareMessageApi(ShareMsgReq data) async {
+  return ChatMessageRes.fromJson(
+    await request.post(Api.shareMessage, data: data.toJson()),
+  );
 }

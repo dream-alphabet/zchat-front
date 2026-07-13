@@ -243,6 +243,8 @@ void _handleChatMsg(dynamic msg) {
   final messageStore = Get.find<MessageController>();
   // 会话store
   final sessionStore = Get.find<ChatSessionStore>();
+  // 用户store
+  final userController = Get.find<UserController>();
   // 类型为文本或媒体文件, 如果不是当前活跃会话的消息，弹出消息提示
   if ([
     MessageTypeEnum.text.type,
@@ -264,7 +266,8 @@ void _handleChatMsg(dynamic msg) {
       messageContent = '${message.sendUserNickname}: $messageContent';
     }
     // 不是正在活跃的会话，消息提示和新增消息未读数量
-    if (message.sessionId != activeSessionId) {
+    if (message.sessionId != activeSessionId &&
+        message.sendUserId != userController.userInfo.value?.userId) {
       final contactId = contactType == UserContactTypeEnum.group
           ? message.contactId
           : message.sendUserId;

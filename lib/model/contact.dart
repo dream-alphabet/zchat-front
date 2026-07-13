@@ -13,7 +13,7 @@ class ContactInfoRes {
     required this.contactStatus,
     required this.contactType,
     required this.memberCount,
-    required this.sessionId
+    required this.sessionId,
   });
 
   factory ContactInfoRes.fromJson(Map<String, dynamic> json) => ContactInfoRes(
@@ -22,7 +22,7 @@ class ContactInfoRes {
     contactStatus: json["contactStatus"],
     contactType: json["contactType"],
     memberCount: json['memberCount'],
-    sessionId: json['sessionId']
+    sessionId: json['sessionId'],
   );
 
   Map<String, dynamic> toJson() => {
@@ -30,7 +30,7 @@ class ContactInfoRes {
     "contactName": contactName,
     "contactStatus": contactStatus,
     "contactType": contactType,
-    'sessionId': sessionId
+    'sessionId': sessionId,
   };
 }
 
@@ -127,17 +127,24 @@ class HandleApplyReq {
 // 联系人响应对象
 class UserContactRes {
   String contactId;
+  int contactType;
   String contactName;
 
-  UserContactRes({required this.contactId, required this.contactName});
+  UserContactRes({
+    required this.contactId,
+    required this.contactType,
+    required this.contactName,
+  });
 
   factory UserContactRes.fromJson(Map<String, dynamic> json) => UserContactRes(
     contactId: json["contactId"],
+    contactType: json['contactType'],
     contactName: json["contactName"],
   );
 
   Map<String, dynamic> toJson() => {
     "contactId": contactId,
+    'contactType': contactType,
     "contactName": contactName,
   };
 }
@@ -145,12 +152,12 @@ class UserContactRes {
 // 搜索联系人请求参数
 class SearchContactReq {
   final String keywords;
+  final int? contactType;
 
-  SearchContactReq({
-    required this.keywords
-  });
+  SearchContactReq({required this.keywords, this.contactType});
 
   Map<String, dynamic> toJson() => {
-    'keywords': keywords
+    'keywords': keywords,
+    'contactType': contactType,
   };
 }

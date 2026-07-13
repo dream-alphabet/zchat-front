@@ -52,7 +52,7 @@ class SendMsgReq {
       "contactType": contactType,
       "messageType": messageType,
       "messageContent": messageContent,
-      'data': data
+      'data': data,
     };
     if (file != null) {
       map['file'] = file ?? '';
@@ -161,4 +161,31 @@ class ChatMessageRes {
         'data: $data'
         '}';
   }
+}
+
+// 转发消息请求参数
+class ShareMsgReq {
+  int messageId;
+  String contactId;
+  int contactType;
+
+  ShareMsgReq({
+    required this.messageId,
+    required this.contactId,
+    required this.contactType,
+  });
+
+  factory ShareMsgReq.fromJson(Map<String, dynamic> json) {
+    return ShareMsgReq(
+      messageId: json['messageId'],
+      contactId: json['contactId'],
+      contactType: json['contactType'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'messageId': messageId,
+    'contactId': contactId,
+    'contactType': contactType,
+  };
 }

@@ -35,19 +35,22 @@ class _MyQrcodePageState extends State<MyQrcodePage> {
     // 判断是否有相册权限
     final status = await requestGalleryPermission();
     if (status.isDenied) {
-      return showPromptDialog(context, '没有权限, 请重试');
+      showPromptDialog(context, '没有权限, 请重试');
+      return;
     }
     final boundry =
         _qrcodeKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
     // 没有获取到二维码widget
     if (boundry == null) {
-      return showPromptDialog(context, '保存失败');
+      showPromptDialog(context, '保存失败');
+      return;
     }
     // 转换成图片
     final image = await boundry.toImage();
     final byteData = await image.toByteData(format: .png);
     if (byteData == null) {
-      return showPromptDialog(context, '保存失败');
+      showPromptDialog(context, '保存失败');
+      return;
     }
     // 保存图片
     await Gal.putImageBytes(byteData.buffer.asUint8List());

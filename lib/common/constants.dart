@@ -34,6 +34,8 @@ class GlobalConstants {
   static const imageFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
   // 视频格式
   static const videoFormats = ['mp4'];
+  // 撤回时间限制(5分钟)
+  static const recallLimit = 5 * 60 * 1000;
 }
 
 // api请求路径常量
@@ -54,6 +56,7 @@ class Api {
   static const sendMessage = '/chat/send';
   static const recallMessage = '/chat/message/recall/';
   static const getMsgList = '/chat/message/list';
+  static const shareMessage = '/chat/message/share';
   static const createGroup = '/group/create';
   static const getGroupSettings = '/group/settings/';
   static const searchGroupMember = '/group/searchMember';

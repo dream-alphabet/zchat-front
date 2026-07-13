@@ -7,6 +7,7 @@ import 'package:zchat/api/group.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/contact.dart';
+import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/stores/contact.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/highlight_text.dart';
@@ -29,6 +30,8 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
   String _searchText = '';
   // 搜索结果
   List<UserContactRes> _searchResult = [];
+  // 要查找的联系人类型(默认为好友)
+  int? _contactType = UserContactTypeEnum.user;
   // 搜索框控制器
   final _searchController = TextEditingController();
   // 联系人store
@@ -54,18 +57,23 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      List<UserContactRes> contactList = _contactStore.userList;
+      List<UserContactRes> contactList = [..._contactStore.userList];
       if (ModalRoute.of(context) != null) {
         final params =
             ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-        // 如果传递了contactList
-        if (params != null && params['contactList'] != null) {
+        // 如果是查找群成员
+        if (params != null && params['groupId'] != null) {
           contactList = params['contactList'];
           _groupId = params['groupId'];
           _isSearchGroupMember = true;
         }
+        // 如果是查找所有
+        if (params != null && params['searchAll'] == true) {
+          _contactType = null;
+          // 拼接群聊列表
+          contactList.addAll(_contactStore.groupList);
+        }
       }
-      print('开始初始化');
       // 初始化
       _group = getGroupedContacts(contactList);
       _groupKeys = _group.keys.toList();
@@ -87,7 +95,7 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
       _searchResult = await searchGroupMemberApi(_groupId, keywords);
     } else {
       _searchResult = await searchContactApi(
-        SearchContactReq(keywords: keywords),
+        SearchContactReq(keywords: keywords, contactType: _contactType),
       );
     }
     setState(() {});
@@ -461,7 +469,7 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
 
   @override
   void dispose() {
-    super.dispose();
     _debouncer.dispose();
+    super.dispose();
   }
 }
