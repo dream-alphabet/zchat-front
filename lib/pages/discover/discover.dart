@@ -16,7 +16,10 @@ class DiscoverPage extends StatefulWidget {
   State<DiscoverPage> createState() => _DiscoverPageState();
 }
 
-class _DiscoverPageState extends State<DiscoverPage> {
+class _DiscoverPageState extends State<DiscoverPage> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   // 用户store
   final _userController = Get.find<UserController>();
 
@@ -43,7 +46,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
             SizedBox(width: 10.w),
             Icon(
               MyIcon.arrowRight,
-              color: Color.fromRGBO(179, 179, 179, 1),
+              color: const Color.fromRGBO(179, 179, 179, 1),
               size: 15.w,
             ),
           ],
@@ -67,14 +70,14 @@ class _DiscoverPageState extends State<DiscoverPage> {
             Icon(
               MyIcon.scan,
               size: 20.w,
-              color: Color.fromRGBO(20, 134, 237, 1),
+              color: const Color.fromRGBO(20, 134, 237, 1),
             ),
             SizedBox(width: 20.w),
             Expanded(child: Text('扫一扫')),
             SizedBox(width: 10.w),
             Icon(
               MyIcon.arrowRight,
-              color: Color.fromRGBO(179, 179, 179, 1),
+              color: const Color.fromRGBO(179, 179, 179, 1),
               size: 15.w,
             ),
           ],
@@ -90,8 +93,9 @@ class _DiscoverPageState extends State<DiscoverPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
-      backgroundColor: Color.fromRGBO(237, 237, 237, 1),
+      backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
       body: Column(
         children: [
           Obx(() => PageHeader(title: '发现', showLeftAvatar: true, userId: _userController.userInfo.value?.userId)),

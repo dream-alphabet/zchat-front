@@ -139,7 +139,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
             padding: EdgeInsetsGeometry.only(left: 15.w),
             child: Text(
               '群封面',
-              style: TextStyle(color: Color.fromRGBO(108, 109, 109, 1)),
+              style: TextStyle(color: const Color.fromRGBO(108, 109, 109, 1)),
             ),
           ),
           // 上传区域
@@ -152,13 +152,13 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                       width: 140.w,
                       height: 140.w,
                       decoration: BoxDecoration(
-                        color: Color.fromRGBO(247, 247, 247, 1),
+                        color: const Color.fromRGBO(247, 247, 247, 1),
                         borderRadius: .circular(8.r),
                       ),
                       alignment: .center,
                       child: Icon(
                         Icons.upload,
-                        color: Color.fromRGBO(178, 178, 178, 1),
+                        color: const Color.fromRGBO(178, 178, 178, 1),
                         size: 50.w,
                       ),
                     )
@@ -191,7 +191,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
             padding: EdgeInsetsGeometry.only(left: 15.w),
             child: Text(
               '群名称',
-              style: TextStyle(color: Color.fromRGBO(108, 109, 109, 1)),
+              style: TextStyle(color: const Color.fromRGBO(108, 109, 109, 1)),
             ),
           ),
           TextField(
@@ -207,13 +207,13 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                   required currentLength,
                   required isFocused,
                   required maxLength,
-                }) => SizedBox(),
+                }) => const SizedBox.shrink(),
             decoration: InputDecoration(
               filled: true,
-              fillColor: Color.fromRGBO(247, 247, 247, 1),
+              fillColor: const Color.fromRGBO(247, 247, 247, 1),
               hintText: '请输入群名称',
               hintStyle: TextStyle(
-                color: Color.fromRGBO(178, 178, 178, 1),
+                color: const Color.fromRGBO(178, 178, 178, 1),
                 fontSize: 16.sp,
               ),
               contentPadding: EdgeInsets.symmetric(
@@ -244,7 +244,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
             padding: EdgeInsetsGeometry.only(left: 15.w),
             child: Text(
               '群公告',
-              style: TextStyle(color: Color.fromRGBO(108, 109, 109, 1)),
+              style: TextStyle(color: const Color.fromRGBO(108, 109, 109, 1)),
             ),
           ),
           TextField(
@@ -260,13 +260,13 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                   required currentLength,
                   required isFocused,
                   required maxLength,
-                }) => SizedBox(),
+                }) => const SizedBox.shrink(),
             decoration: InputDecoration(
               filled: true,
-              fillColor: Color.fromRGBO(247, 247, 247, 1),
+              fillColor: const Color.fromRGBO(247, 247, 247, 1),
               hintText: '请输入群公告',
               hintStyle: TextStyle(
-                color: Color.fromRGBO(178, 178, 178, 1),
+                color: const Color.fromRGBO(178, 178, 178, 1),
                 fontSize: 16.sp,
               ),
               contentPadding: EdgeInsets.symmetric(
@@ -293,7 +293,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
         width: 100.w,
         padding: EdgeInsets.symmetric(vertical: 12.w),
         decoration: BoxDecoration(
-          color: Color.fromRGBO(20, 134, 237, 1),
+          color: const Color.fromRGBO(20, 134, 237, 1),
           borderRadius: BorderRadius.circular(8.r),
         ),
         alignment: Alignment.center,

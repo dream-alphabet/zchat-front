@@ -291,7 +291,7 @@ class _ScanPageState extends State<ScanPage>
       child: Container(
         width: width,
         height: height,
-        color: Color.fromRGBO(0, 0, 0, 0.6),
+        color: const Color.fromRGBO(0, 0, 0, 0.6),
       ),
     );
   }
@@ -347,14 +347,14 @@ class _ScanPageState extends State<ScanPage>
                   gradient: LinearGradient(
                     colors: [
                       Colors.transparent,
-                      Color.fromRGBO(20, 134, 237, 1),
+                      const Color.fromRGBO(20, 134, 237, 1),
                       Colors.transparent,
                     ],
                     stops: const [0.0, 0.5, 1.0],
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Color.fromRGBO(20, 134, 237, 0.5),
+                      color: const Color.fromRGBO(20, 134, 237, 0.5),
                       blurRadius: 4.w,
                       spreadRadius: 2.w,
                     ),
@@ -380,7 +380,7 @@ class _ScanPageState extends State<ScanPage>
           width: 56.w,
           height: 56.w,
           decoration: BoxDecoration(
-            color: Color.fromRGBO(0, 0, 0, 0.4),
+            color: const Color.fromRGBO(0, 0, 0, 0.4),
             shape: BoxShape.circle,
           ),
           child: IconButton(
@@ -455,10 +455,13 @@ class _ScanPageState extends State<ScanPage>
       final capture = await cameraController.analyzeImage(image.path);
       if (capture != null && capture.barcodes.isNotEmpty) {
         final String? code = capture.barcodes.first.rawValue;
-        print('从相册选择图片 扫描结果: $code');
-      } else {
-        ToastUtils.showGlobalToast(msg: '没有解析出二维码');
+        // 解析出二维码了
+        if (code != null && code.isNotEmpty) {
+          _onQRCodeScanned(code);
+          return;
+        }
       }
+      ToastUtils.showGlobalToast(msg: '没有解析出二维码');
     }
   }
 
@@ -487,7 +490,7 @@ class _CornerPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // 绘制扫描框角落
     final paint = Paint()
-      ..color = Color.fromRGBO(20, 134, 237, 1)
+      ..color = const Color.fromRGBO(20, 134, 237, 1)
       ..strokeWidth = 4.w
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;

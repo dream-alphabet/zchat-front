@@ -31,7 +31,7 @@ class _AddFriendPageState extends State<AddFriendPage> {
       padding: EdgeInsets.symmetric(vertical: 5.w),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(6.w),
-        color: Color.fromRGBO(241, 241, 241, 1),
+        color: const Color.fromRGBO(241, 241, 241, 1),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -40,13 +40,13 @@ class _AddFriendPageState extends State<AddFriendPage> {
           Icon(
             MyIcon.search,
             size: 16.sp,
-            color: Color.fromRGBO(169, 169, 169, 1),
+            color: const Color.fromRGBO(169, 169, 169, 1),
           ),
           Text(
             '搜索 邮箱/用户id/群id',
             style: TextStyle(
               fontSize: 16.sp,
-              color: Color.fromRGBO(169, 169, 169, 1),
+              color: const Color.fromRGBO(169, 169, 169, 1),
             ),
           ),
         ],
@@ -59,7 +59,7 @@ class _AddFriendPageState extends State<AddFriendPage> {
     return Row(
       spacing: 25.w,
       children: [
-        Icon(MyIcon.scan, size: 25.w, color: Color.fromRGBO(20, 134, 237, 1)),
+        Icon(MyIcon.scan, size: 25.w, color: const Color.fromRGBO(20, 134, 237, 1)),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,7 +73,7 @@ class _AddFriendPageState extends State<AddFriendPage> {
                 '扫描二维码名片',
                 style: TextStyle(
                   fontSize: 12.sp,
-                  color: Color.fromRGBO(172, 172, 172, 1),
+                  color: const Color.fromRGBO(172, 172, 172, 1),
                 ),
               ),
             ],
@@ -81,7 +81,7 @@ class _AddFriendPageState extends State<AddFriendPage> {
         ),
         Icon(
           MyIcon.arrowRight,
-          color: Color.fromRGBO(179, 179, 179, 1),
+          color: const Color.fromRGBO(179, 179, 179, 1),
           size: 15.w,
         ),
       ],

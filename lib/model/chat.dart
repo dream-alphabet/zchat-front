@@ -26,6 +26,24 @@ class ChatSessionRes {
     lastMessage: json["lastMessage"],
     lastReceiveTime: json["lastReceiveTime"],
   );
+
+  ChatSessionRes copyWith({
+    String? sessionId,
+    String? contactId,
+    int? contactType,
+    String? contactName,
+    String? lastMessage,
+    int? lastReceiveTime,
+  }) {
+    return ChatSessionRes(
+      sessionId: sessionId ?? this.sessionId,
+      contactId: contactId ?? this.contactId,
+      contactType: contactType ?? this.contactType,
+      contactName: contactName ?? this.contactName,
+      lastMessage: lastMessage ?? this.lastMessage,
+      lastReceiveTime: lastReceiveTime ?? this.lastReceiveTime,
+    );
+  }
 }
 
 // 发送消息请求参数

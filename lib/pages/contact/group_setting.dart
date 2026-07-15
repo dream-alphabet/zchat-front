@@ -150,7 +150,7 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
                 decoration: BoxDecoration(
                   color: Colors.transparent,
                   border: DashedBorder(
-                    color: Color.fromRGBO(175, 175, 175, 1), // 边框颜色
+                    color: const Color.fromRGBO(175, 175, 175, 1), // 边框颜色
                     width: 1.w, // 边框宽度
                     dashLength: 8.w, // 虚线线段长度
                     dashGap: 4.w, // 虚线间隔
@@ -161,7 +161,7 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
                 child: Icon(
                   Icons.add,
                   size: 25.w,
-                  color: Color.fromRGBO(175, 175, 175, 1),
+                  color: const Color.fromRGBO(175, 175, 175, 1),
                 ),
               ),
             );
@@ -237,13 +237,13 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
                     '更多群成员',
                     style: TextStyle(
                       fontSize: 16.sp,
-                      color: Color.fromRGBO(175, 175, 175, 1),
+                      color: const Color.fromRGBO(175, 175, 175, 1),
                     ),
                   ),
                   Icon(
                     MyIcon.arrowRight,
                     size: 16.sp,
-                    color: Color.fromRGBO(175, 175, 175, 1),
+                    color: const Color.fromRGBO(175, 175, 175, 1),
                   ),
                 ],
               ),
@@ -258,13 +258,13 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 0,
-        backgroundColor: Color.fromRGBO(247, 247, 247, 1),
+        backgroundColor: const Color.fromRGBO(247, 247, 247, 1),
         foregroundColor: Colors.black,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Color.fromRGBO(247, 247, 247, 1), // 顶部状态栏背景颜色
+          statusBarColor: const Color.fromRGBO(247, 247, 247, 1), // 顶部状态栏背景颜色
           statusBarBrightness: Brightness.light,
           statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: Color.fromRGBO(
+          systemNavigationBarColor: const Color.fromRGBO(
             247,
             247,
             247,
@@ -273,7 +273,7 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
           systemNavigationBarIconBrightness: Brightness.dark, // 底部导航栏图标颜色
         ),
       ),
-      backgroundColor: Color.fromRGBO(247, 247, 247, 1),
+      backgroundColor: const Color.fromRGBO(247, 247, 247, 1),
       body: SafeArea(
         child: ListView(
           children: [

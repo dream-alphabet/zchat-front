@@ -125,7 +125,6 @@ class _VideoPreviewState extends State<VideoPreview> {
               ),
               max: _totalDuration.inMilliseconds.toDouble(),
               onChangeStart: (value) {
-                print('开始拖动进度条, value: $value');
                 // 暂停视频播放
                 setState(() {
                   if (!_isDragging) {
@@ -135,7 +134,6 @@ class _VideoPreviewState extends State<VideoPreview> {
                 });
               },
               onChanged: (value) {
-                print('正在拖动进度条, value: $value');
                 setState(() {
                   // 更新当前进度
                   _currentPosition = Duration(milliseconds: value.toInt());
@@ -147,7 +145,6 @@ class _VideoPreviewState extends State<VideoPreview> {
                 });
               },
               onChangeEnd: (value) {
-                print('结束拖动进度条, value: $value');
                 _videoController.seekTo(Duration(milliseconds: value.toInt()));
                 setState(() {
                   _isDragging = false;
@@ -199,7 +196,6 @@ class _VideoPreviewState extends State<VideoPreview> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             _buildFunctionItem(Icons.share_sharp, () {
-              print('分享');
             }),
             _buildFunctionItem(Icons.save_alt_sharp, _saveVideoToGallery),
           ],
@@ -216,7 +212,7 @@ class _VideoPreviewState extends State<VideoPreview> {
         width: 30.w,
         height: 30.w,
         decoration: BoxDecoration(
-          color: Color.fromRGBO(53, 53, 53, 1),
+          color: const Color.fromRGBO(53, 53, 53, 1),
           borderRadius: .circular(15.w),
         ),
         alignment: .center,
@@ -285,7 +281,7 @@ class _VideoPreviewState extends State<VideoPreview> {
                     width: 40.w,
                     height: 40.w,
                     decoration: BoxDecoration(
-                      color: Color.fromRGBO(53, 53, 53, 1),
+                      color: const Color.fromRGBO(53, 53, 53, 1),
                       borderRadius: .circular(20.w),
                     ),
                     alignment: .center,

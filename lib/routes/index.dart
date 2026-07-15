@@ -79,7 +79,7 @@ Widget getRootWidget() {
           textSelectionTheme: TextSelectionThemeData(
             selectionColor: Colors.blue,
             selectionHandleColor: Colors.orange,
-            cursorColor: Color.fromRGBO(20, 134, 237, 1),
+            cursorColor: const Color.fromRGBO(20, 134, 237, 1),
           ),
           textTheme: TextTheme(
             // 设置默认文本样式能自动响应字体缩放

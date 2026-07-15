@@ -72,7 +72,7 @@ class _AddContactPageState extends State<AddContactPage> {
             padding: EdgeInsetsGeometry.only(left: 15.w),
             child: Text(
               '打招呼内容',
-              style: TextStyle(color: Color.fromRGBO(108, 109, 109, 1)),
+              style: TextStyle(color: const Color.fromRGBO(108, 109, 109, 1)),
             ),
           ),
           TextField(
@@ -88,13 +88,13 @@ class _AddContactPageState extends State<AddContactPage> {
                   required currentLength,
                   required isFocused,
                   required maxLength,
-                }) => SizedBox(),
+                }) => const SizedBox.shrink(),
             decoration: InputDecoration(
               filled: true,
-              fillColor: Color.fromRGBO(247, 247, 247, 1),
+              fillColor: const Color.fromRGBO(247, 247, 247, 1),
               hintText: '打个招呼吧...',
               hintStyle: TextStyle(
-                color: Color.fromRGBO(178, 178, 178, 1),
+                color: const Color.fromRGBO(178, 178, 178, 1),
                 fontSize: 16.sp,
               ),
               contentPadding: EdgeInsets.symmetric(
@@ -121,7 +121,7 @@ class _AddContactPageState extends State<AddContactPage> {
         width: 100.w,
         padding: EdgeInsets.symmetric(vertical: 12.w),
         decoration: BoxDecoration(
-          color: Color.fromRGBO(20, 134, 237, 1),
+          color: const Color.fromRGBO(20, 134, 237, 1),
           borderRadius: BorderRadius.circular(8.r),
         ),
         alignment: Alignment.center,

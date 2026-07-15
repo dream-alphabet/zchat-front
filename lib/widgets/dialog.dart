@@ -46,7 +46,7 @@ Future<bool?> showPromptDialog(
               '确定',
               style: TextStyle(
                 fontSize: 16.sp,
-                color: Color.fromRGBO(20, 134, 237, 1),
+                color: const Color.fromRGBO(20, 134, 237, 1),
               ),
             ),
           ),

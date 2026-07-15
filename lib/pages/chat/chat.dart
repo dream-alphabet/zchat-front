@@ -24,7 +24,7 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
   // 会话store
   final _chatSessionStore = Get.find<ChatSessionStore>();
   // 消息store
@@ -42,7 +42,6 @@ class _ChatPageState extends State<ChatPage> {
     _streamSubscription = eventBus.on<ServerMsgEvent<ChatMessageRes>>().listen((
       event,
     ) {
-      print('chat页面收到服务器推送的消息:${event.msg}');
     });
   }
 
@@ -72,7 +71,7 @@ class _ChatPageState extends State<ChatPage> {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: Color.fromRGBO(232, 232, 232, 1),
+              color: const Color.fromRGBO(232, 232, 232, 1),
               width: 1.w,
             ),
           ),
@@ -104,7 +103,7 @@ class _ChatPageState extends State<ChatPage> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Color.fromRGBO(122, 122, 122, 1),
+                      color: const Color.fromRGBO(122, 122, 122, 1),
                       fontSize: 12.sp,
                     ),
                   ),
@@ -116,7 +115,7 @@ class _ChatPageState extends State<ChatPage> {
               child: Text(
                 formatTimestamp(session.lastReceiveTime),
                 style: TextStyle(
-                  color: Color.fromRGBO(122, 122, 122, 1),
+                  color: const Color.fromRGBO(122, 122, 122, 1),
                   fontSize: 12.sp,
                 ),
               ),
@@ -130,17 +129,21 @@ class _ChatPageState extends State<ChatPage> {
   // 构建会话列表
   Widget _buildSessionList() {
     return ListView.builder(
-      shrinkWrap: true,
       itemCount: _chatSessionStore.sessionList.length,
       itemBuilder: (context, index) =>
           _buildSessionItem(_chatSessionStore.sessionList[index]),
     );
   }
 
+  // 需要保活
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
-      backgroundColor: Color.fromRGBO(237, 237, 237, 1),
+      backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
       body: Column(
         children: [
           Obx(() => PageHeader(title: '聊天', showLeftAvatar: true, userId: _userController.userInfo.value?.userId)),

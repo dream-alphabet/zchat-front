@@ -43,7 +43,7 @@ class WebSocketUtility {
   WebSocketChannel? _webSocket; // WebSocket
   SocketStatus _socketStatus = SocketStatus.socketStatusClosed;
   Timer? _heartBeat; // 心跳定时器
-  final int _heartInterval = 3000; // 心跳间隔
+  final int _heartInterval = 5 * 1000; // 心跳间隔
   int _reconnectTimes = 0; // 当前重连次数
   final int _reconnectInterval = 3000; // 重连间隔3秒
   Timer? _reconnectTimer; // 重连定时器
@@ -68,7 +68,6 @@ class WebSocketUtility {
   void openSocket() {
     final token = tokenManager.getToken();
     if (token.isEmpty) {
-      print('Token为空，无法连接WebSocket');
       return;
     }
 
@@ -78,7 +77,6 @@ class WebSocketUtility {
     _socketStatus = SocketStatus.socketStatusConnecting;
 
     final url = '$websocketUrl?token=$token';
-    print('WebSocket连接中: $url');
 
     try {
       _webSocket = WebSocketChannel.connect(Uri.parse(url));
@@ -86,7 +84,6 @@ class WebSocketUtility {
       // 监听连接就绪
       _webSocket!.ready
           .then((_) {
-            print('WebSocket连接成功');
             _socketStatus = SocketStatus.socketStatusConnected;
             _reconnectTimes = 0; // 重置重连计数
 
@@ -106,28 +103,21 @@ class WebSocketUtility {
                 _onMessage?.call(data);
               },
               onError: (error) {
-                print('WebSocket错误: $error');
                 webSocketOnError(error);
               },
               onDone: webSocketOnDone,
             );
           })
           .catchError((error) {
-            print('WebSocket连接失败: $error');
             webSocketOnError(error);
           });
     } catch (e) {
-      print('WebSocket连接异常: $e');
       webSocketOnError(e);
     }
   }
 
   /// WebSocket关闭连接回调
   void webSocketOnDone() {
-    print(
-      'WebSocket连接关闭: code=${_webSocket?.closeCode}, reason=${_webSocket?.closeReason}',
-    );
-
     // 只有当前是连接状态才标记为关闭并重连（避免重复重连）
     if (_socketStatus == SocketStatus.socketStatusConnected) {
       _socketStatus = SocketStatus.socketStatusClosed;
@@ -150,14 +140,12 @@ class WebSocketUtility {
   void initHeartBeat() {
     destroyHeartBeat(); // 先销毁旧的心跳
 
-    print('启动心跳，间隔: ${_heartInterval}ms');
     _heartBeat = Timer.periodic(Duration(milliseconds: _heartInterval), (
       timer,
     ) {
       if (_socketStatus == SocketStatus.socketStatusConnected) {
         sentHeart();
       } else {
-        print('连接已断开，停止心跳');
         destroyHeartBeat();
       }
     });
@@ -165,14 +153,12 @@ class WebSocketUtility {
 
   /// 发送心跳
   void sentHeart() {
-    print('发送心跳');
     sendMessage('heartbeat');
   }
 
   /// 销毁心跳
   void destroyHeartBeat() {
     if (_heartBeat != null) {
-      print('销毁心跳定时器');
       _heartBeat?.cancel();
       _heartBeat = null;
     }
@@ -180,8 +166,6 @@ class WebSocketUtility {
 
   /// 关闭WebSocket
   void closeSocket() {
-    print('主动关闭WebSocket连接');
-
     // 销毁心跳
     destroyHeartBeat();
 
@@ -204,7 +188,6 @@ class WebSocketUtility {
     }
 
     try {
-      print('发送消息: $message');
       _webSocket?.sink.add(message);
     } catch (e) {
       print('发送消息异常: $e');
@@ -219,7 +202,7 @@ class WebSocketUtility {
     }
 
     _reconnectTimes++;
-    print('准备第 $_reconnectTimes 次重连，${_reconnectInterval}ms后重试...');
+    print('准备第 $_reconnectTimes 次重连');
 
     // 使用一次性Timer，而不是periodic！
     _reconnectTimer = Timer(Duration(milliseconds: _reconnectInterval), () {
@@ -422,7 +405,6 @@ void _handleRecallMessage(dynamic msg) {
 // 处理服务器推送的消息
 void _handleServerMsg(dynamic msg) {
   final serverMsg = ServerMsgEvent.fromJson(jsonDecode(msg));
-  print('服务器推送的消息: $serverMsg');
   // 聊天消息
   if (serverMsg.type == ServerMsgType.chat) {
     _handleChatMsg(serverMsg.msg);
@@ -444,9 +426,7 @@ void _handleServerMsg(dynamic msg) {
 // 初始化websocket
 void initWebSocket() {
   _utility.initWebSocket(
-    onOpen: () {
-      print('WebSocket已开启');
-    },
+    onOpen: () {},
     onMessage: _handleServerMsg,
     onError: (e) {
       print('WebSocket错误: $e');

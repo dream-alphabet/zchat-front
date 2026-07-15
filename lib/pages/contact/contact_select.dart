@@ -104,7 +104,7 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
   // 构建搜索框
   Widget _buildSearch() {
     return Container(
-      color: Color.fromRGBO(237, 237, 237, 1),
+      color: const Color.fromRGBO(237, 237, 237, 1),
       alignment: .center,
       padding: EdgeInsets.only(bottom: 10.w, left: 15.w, right: 15.w),
       child: TextField(
@@ -135,7 +135,7 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
             child: Icon(
               Icons.search_outlined,
               size: 22.w,
-              color: Color.fromRGBO(131, 131, 136, 1),
+              color: const Color.fromRGBO(131, 131, 136, 1),
             ),
           ),
           prefixIconConstraints: BoxConstraints(),
@@ -156,14 +156,14 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
                       height: 22.w,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Color.fromRGBO(178, 178, 178, 1),
+                        color: const Color.fromRGBO(178, 178, 178, 1),
                       ),
                       alignment: Alignment.center,
                       child: Icon(Icons.close, color: Colors.white, size: 15.w),
                     ),
                   ),
                 )
-              : SizedBox(),
+              : const SizedBox.shrink(),
           suffixIconConstraints: BoxConstraints(),
           contentPadding: EdgeInsets.symmetric(vertical: 6.w),
           isDense: true,
@@ -171,7 +171,7 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
           fillColor: Colors.white,
           hintText: '搜索',
           hintStyle: TextStyle(
-            color: Color.fromRGBO(178, 178, 178, 1),
+            color: const Color.fromRGBO(178, 178, 178, 1),
             fontSize: 16.sp,
           ),
           border: OutlineInputBorder(
@@ -214,7 +214,7 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
-                      color: Color.fromRGBO(232, 232, 232, 1),
+                      color: const Color.fromRGBO(232, 232, 232, 1),
                       width: 1.w,
                     ),
                   ),
@@ -230,7 +230,7 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
                             fontSize: 15.w,
                           ),
                           highlightStyle: TextStyle(
-                            color: Color.fromRGBO(20, 134, 237, 1),
+                            color: const Color.fromRGBO(20, 134, 237, 1),
                             fontSize: 15.w,
                           ),
                           ranges: highlightRanges,
@@ -261,7 +261,7 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
             key,
             style: TextStyle(
               fontSize: 16.sp,
-              color: Color.fromRGBO(114, 114, 114, 1),
+              color: const Color.fromRGBO(114, 114, 114, 1),
             ),
           ),
         ),
@@ -371,7 +371,7 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
                       width: 36.w,
                       height: 36.w,
                       decoration: BoxDecoration(
-                        color: Color.fromRGBO(204, 204, 204, 1),
+                        color: const Color.fromRGBO(204, 204, 204, 1),
                         shape: .circle,
                       ),
                       child: Text(
@@ -415,13 +415,13 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         toolbarHeight: 0,
-        backgroundColor: Color.fromRGBO(237, 237, 237, 1),
+        backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
         foregroundColor: Colors.black,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Color.fromRGBO(237, 237, 237, 1), // 顶部状态栏背景颜色
+          statusBarColor: const Color.fromRGBO(237, 237, 237, 1), // 顶部状态栏背景颜色
           statusBarBrightness: Brightness.light,
           statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: Color.fromRGBO(
+          systemNavigationBarColor: const Color.fromRGBO(
             237,
             237,
             237,
@@ -436,7 +436,7 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
           children: [
             PageHeader(
               title: '选择联系人',
-              backgroundColor: Color.fromRGBO(237, 237, 237, 1),
+              backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
               showLeftAvatar: false,
               showRightIcon: false,
               showLeftBackIcon: true,

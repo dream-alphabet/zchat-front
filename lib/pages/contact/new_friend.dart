@@ -119,7 +119,7 @@ class _NewFriendPageState extends State<NewFriendPage> {
             },
             child: Container(
               decoration: BoxDecoration(
-                color: Color.fromRGBO(242, 242, 242, 1),
+                color: const Color.fromRGBO(242, 242, 242, 1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 8.w),
@@ -133,7 +133,7 @@ class _NewFriendPageState extends State<NewFriendPage> {
             ContactApplyStatusEnum.getStatusText(apply.status),
             style: TextStyle(
               fontSize: 16.sp,
-              color: Color.fromRGBO(119, 119, 119, 1),
+              color: const Color.fromRGBO(119, 119, 119, 1),
             ),
           );
   }
@@ -156,7 +156,7 @@ class _NewFriendPageState extends State<NewFriendPage> {
                 border: Border(
                   bottom: showBorder
                       ? BorderSide(
-                          color: Color.fromRGBO(232, 232, 232, 1),
+                          color: const Color.fromRGBO(232, 232, 232, 1),
                           width: 1.w,
                         )
                       : BorderSide.none,
@@ -179,7 +179,7 @@ class _NewFriendPageState extends State<NewFriendPage> {
                           apply.groupName ?? '',
                           style: TextStyle(
                             fontSize: 16.sp,
-                            color: Color.fromRGBO(20, 134, 237, 1),
+                            color: const Color.fromRGBO(20, 134, 237, 1),
                           ),
                         ),
                       Text(
@@ -190,7 +190,7 @@ class _NewFriendPageState extends State<NewFriendPage> {
                         apply.applyInfo,
                         style: TextStyle(
                           fontSize: 14.sp,
-                          color: Color.fromRGBO(119, 119, 119, 1),
+                          color: const Color.fromRGBO(119, 119, 119, 1),
                         ),
                       ),
                     ],
@@ -234,18 +234,18 @@ class _NewFriendPageState extends State<NewFriendPage> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 0,
-        backgroundColor: Color.fromRGBO(247, 247, 247, 1),
+        backgroundColor: const Color.fromRGBO(247, 247, 247, 1),
         foregroundColor: Colors.black,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Color.fromRGBO(247, 247, 247, 1),
+          statusBarColor: const Color.fromRGBO(247, 247, 247, 1),
           statusBarBrightness: Brightness.light,
           statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: Color.fromRGBO(247, 247, 247, 1),
+          systemNavigationBarColor: const Color.fromRGBO(247, 247, 247, 1),
           // 底部导航栏背景
           systemNavigationBarIconBrightness: Brightness.dark, // 底部导航栏图标颜色
         ),
       ),
-      backgroundColor: Color.fromRGBO(247, 247, 247, 1),
+      backgroundColor: const Color.fromRGBO(247, 247, 247, 1),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [

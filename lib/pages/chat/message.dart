@@ -167,9 +167,6 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         final filename = file.name;
         // 文件类型
         final fileType = _getFileType(filePath);
-        print(
-          '文件名:$filename, 文件路径:$filePath, 文件大小:$fileSize, 文件类型:${fileType.type}',
-        );
         // 校验文件大小
         if (!_validateFileSize(fileType, fileSize)) {
           return;
@@ -223,9 +220,6 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       final filename = media.name;
       // 文件类型
       final fileType = _getFileType(filePath);
-      print(
-        '文件名:$filename, 文件路径:$filePath, 文件大小:$fileSize, 文件类型:${fileType.type}',
-      );
       // 校验文件大小
       if (!_validateFileSize(fileType, fileSize)) {
         return;
@@ -285,7 +279,6 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       final filename = media.name;
       // 文件类型
       final fileType = _getFileType(filePath);
-      print('文件名:$filename, 文件路径:$filePath, 文件大小:$fileSize, 文件类型:$fileType');
       // 校验文件大小
       if (!_validateFileSize(fileType, fileSize)) {
         return;
@@ -506,7 +499,6 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     );
     final list = res.list.map((msg) => ChatMessageRes.fromJson(msg)).toList();
     if (list.isEmpty) {
-      print('没有更多数据了');
       _hasMore = false;
       return;
     }
@@ -604,7 +596,6 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       controller: _msgListController,
       itemCount: _msgList.length,
       padding: EdgeInsets.only(top: 10.w),
-      shrinkWrap: true,
       reverse: true,
       itemBuilder: (ctx, index) {
         // 第一条消息显示发送时间，因为顺序翻转，所以_msgList.length-1是第一条消息
@@ -619,7 +610,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                 formatTimestamp(_msgList[index].sendTime),
                 textAlign: .center,
                 style: TextStyle(
-                  color: Color.fromRGBO(123, 123, 128, 1),
+                  color: const Color.fromRGBO(123, 123, 128, 1),
                   fontSize: 14.sp,
                 ),
               ),
@@ -687,7 +678,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
             required currentLength,
             required isFocused,
             required maxLength,
-          }) => SizedBox(),
+          }) => const SizedBox.shrink(),
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
@@ -710,7 +701,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 5.w, horizontal: 12.w),
         decoration: BoxDecoration(
-          color: Color.fromRGBO(20, 134, 237, 1),
+          color: const Color.fromRGBO(20, 134, 237, 1),
           borderRadius: BorderRadius.circular(8.r),
         ),
         child: Text(
@@ -778,7 +769,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                 MyIcon.backspace,
                 color: _msg.isNotEmpty
                     ? Colors.black
-                    : Color.fromRGBO(237, 237, 237, 1),
+                    : const Color.fromRGBO(237, 237, 237, 1),
                 size: 25.w,
               ),
             ),
@@ -811,7 +802,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
             item.name,
             style: TextStyle(
               fontSize: 10.sp,
-              color: Color.fromRGBO(144, 144, 144, 1),
+              color: const Color.fromRGBO(144, 144, 144, 1),
             ),
           ),
         ],
@@ -862,9 +853,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       height: 200.w,
       child: Center(
         child: GridView.count(
-          shrinkWrap: true,
           // 让GridView根据内容调整高度
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           // 禁止滚动
           crossAxisCount: 4,
           mainAxisSpacing: 10.w,
@@ -902,7 +892,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.w),
-      color: Color.fromRGBO(247, 247, 247, 1),
+      color: const Color.fromRGBO(247, 247, 247, 1),
       child: Column(
         children: [
           Row(
@@ -986,18 +976,18 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       child: Scaffold(
         appBar: AppBar(
           toolbarHeight: 0,
-          backgroundColor: Color.fromRGBO(237, 237, 237, 1),
+          backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
           foregroundColor: Colors.black,
           systemOverlayStyle: SystemUiOverlayStyle(
-            statusBarColor: Color.fromRGBO(237, 237, 237, 1),
+            statusBarColor: const Color.fromRGBO(237, 237, 237, 1),
             statusBarBrightness: Brightness.light,
             statusBarIconBrightness: Brightness.dark,
-            systemNavigationBarColor: Color.fromRGBO(247, 247, 247, 1),
+            systemNavigationBarColor: const Color.fromRGBO(247, 247, 247, 1),
             // 底部导航栏背景
             systemNavigationBarIconBrightness: Brightness.dark, // 底部导航栏图标颜色
           ),
         ),
-        backgroundColor: Color.fromRGBO(237, 237, 237, 1),
+        backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
         body: SafeArea(
           child: Column(
             children: [
@@ -1007,7 +997,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                     ? _contactInfo?.contactName ?? ''
                     : '${_contactInfo?.contactName}(${_contactInfo?.memberCount})',
                 showLeftBackIcon: true,
-                backgroundColor: Color.fromRGBO(237, 237, 237, 1),
+                backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
                 rightIconList: [
                   GestureDetector(
                     onTap: () {

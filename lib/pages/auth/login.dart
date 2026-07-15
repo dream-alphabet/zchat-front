@@ -71,7 +71,6 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
       // 存储token
-      print('存储token:${res.token}');
       tokenManager.setToken(res.token);
       ToastUtils.showGlobalToast(msg: '登录成功');
       // 跳转到主页
@@ -90,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
         height: 48.w,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24.w),
-          color: Color.fromRGBO(0, 95, 255, 1),
+          color: const Color.fromRGBO(0, 95, 255, 1),
         ),
         alignment: Alignment.center,
         child: Text(
@@ -115,10 +114,10 @@ class _LoginPageState extends State<LoginPage> {
             controller: _captchaController,
             decoration: InputDecoration(
               filled: true,
-              fillColor: Color.fromRGBO(242, 242, 242, 1),
+              fillColor: const Color.fromRGBO(242, 242, 242, 1),
               hintText: '请输入验证码',
               hintStyle: TextStyle(
-                color: Color.fromRGBO(122, 122, 122, 1),
+                color: const Color.fromRGBO(122, 122, 122, 1),
                 fontSize: 16.sp,
               ),
               border: OutlineInputBorder(
@@ -174,10 +173,10 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _emailController,
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: Color.fromRGBO(242, 242, 242, 1),
+                        fillColor: const Color.fromRGBO(242, 242, 242, 1),
                         hintText: '请输入邮箱',
                         hintStyle: TextStyle(
-                          color: Color.fromRGBO(122, 122, 122, 1),
+                          color: const Color.fromRGBO(122, 122, 122, 1),
                           fontSize: 16.sp,
                         ),
                         border: OutlineInputBorder(
@@ -193,10 +192,10 @@ class _LoginPageState extends State<LoginPage> {
                       obscureText: true,
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: Color.fromRGBO(242, 242, 242, 1),
+                        fillColor: const Color.fromRGBO(242, 242, 242, 1),
                         hintText: '请输入密码',
                         hintStyle: TextStyle(
-                          color: Color.fromRGBO(122, 122, 122, 1),
+                          color: const Color.fromRGBO(122, 122, 122, 1),
                           fontSize: 16.sp,
                         ),
                         border: OutlineInputBorder(
@@ -218,7 +217,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: Text(
                           '没有账号?',
                           style: TextStyle(
-                            color: Color.fromRGBO(0, 95, 255, 1),
+                            color: const Color.fromRGBO(0, 95, 255, 1),
                             fontSize: 16.sp,
                           ),
                         ),

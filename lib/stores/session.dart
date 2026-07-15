@@ -13,15 +13,12 @@ class ChatSessionStore extends GetxController {
     String lastMessage,
     int lastReceiveTime,
   ) {
-    // 查找对应的session
-    final session = sessionList.firstWhereOrNull(
-      (session) => session.sessionId == sessionId,
-    );
-    if (session != null) {
-      session.lastMessage = lastMessage;
-      session.lastReceiveTime = lastReceiveTime;
-      // 刷新会话列表，触发更新
-      sessionList.refresh();
+    final index = sessionList.indexWhere((s) => s.sessionId == sessionId);
+    if (index != -1) {
+      sessionList[index] = sessionList[index].copyWith(
+        lastMessage: lastMessage,
+        lastReceiveTime: lastReceiveTime,
+      );
     }
   }
 

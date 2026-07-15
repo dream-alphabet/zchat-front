@@ -36,6 +36,8 @@ class ContactAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 计算cacheSize, 让flutter不需要在内存中保存全分辨率的大图
+    final cacheSize = (size.w * MediaQuery.devicePixelRatioOf(context)).round();
     return ValueListenableBuilder(
       valueListenable: AvatarGlobal.getNotifier(contactId),
       builder: (ctx, version, child) {
@@ -49,8 +51,11 @@ class ContactAvatar extends StatelessWidget {
             key: ValueKey('avatar_$contactId$version'),
             width: size.w,
             height: size.w,
+            cacheWidth: cacheSize,
+            cacheHeight: cacheSize,
+            fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) {
-              // 用户头像加载失败，使用默认头像
+              // 用户头像显示失败，使用默认头像
               return Image.asset(
                 GlobalConstants.defaultAvatar,
                 key: ValueKey('avatar_$contactId$version'),

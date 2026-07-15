@@ -19,7 +19,6 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
     super.initState();
     initRenderers();
     navigator.mediaDevices.ondevicechange = (event) async {
-      print('++++++ ondevicechange ++++++');
       _mediaDevicesList = await navigator.mediaDevices.enumerateDevices();
     };
   }

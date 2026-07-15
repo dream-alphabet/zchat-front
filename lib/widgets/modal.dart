@@ -41,7 +41,7 @@ class PersonCard extends StatelessWidget {
             type,
             style: TextStyle(
               fontSize: 14.sp,
-              color: Color.fromRGBO(110, 110, 108, 1),
+              color: const Color.fromRGBO(110, 110, 108, 1),
             ),
           ),
         ],
@@ -58,7 +58,7 @@ Future<bool?> showSendConfirmModal(
   String type = '个人名片',
 }) {
   return showModalBottomSheet<bool>(
-    backgroundColor: Color.fromRGBO(237, 237, 237, 1),
+    backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
     context: context,
     builder: (context) {
       return SafeArea(
@@ -96,7 +96,7 @@ Future<bool?> showSendConfirmModal(
                       child: Container(
                         width: 100.w,
                         decoration: BoxDecoration(
-                          color: Color.fromRGBO(247, 247, 247, 1),
+                          color: const Color.fromRGBO(247, 247, 247, 1),
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                         padding: EdgeInsets.symmetric(vertical: 10.w),
@@ -117,7 +117,7 @@ Future<bool?> showSendConfirmModal(
                       child: Container(
                         width: 100.w,
                         decoration: BoxDecoration(
-                          color: Color.fromRGBO(20, 134, 237, 1),
+                          color: const Color.fromRGBO(20, 134, 237, 1),
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                         padding: EdgeInsets.symmetric(vertical: 10.w),
@@ -146,7 +146,7 @@ Future<bool?> showSendConfirmModal(
 void showMyBottomSheet(BuildContext context, List<SheetItem> items) {
   // 显示BottomSheet
   showModalBottomSheet(
-    backgroundColor: Color.fromRGBO(237, 237, 237, 1),
+    backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
     context: context,
     builder: (ctx) {
       return SafeArea(
@@ -190,7 +190,7 @@ Widget _buildSheetItem(SheetItem item) {
         border: Border(
           bottom: BorderSide(
             width: 1.w,
-            color: Color.fromRGBO(237, 237, 237, 1),
+            color: const Color.fromRGBO(237, 237, 237, 1),
           ),
         ),
       ),

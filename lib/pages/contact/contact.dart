@@ -20,7 +20,10 @@ class ContactPage extends StatefulWidget {
   State<ContactPage> createState() => _ContactPageState();
 }
 
-class _ContactPageState extends State<ContactPage> {
+class _ContactPageState extends State<ContactPage> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   // 联系人store
   final _userContactController = Get.find<UserContactController>();
   // 消息store
@@ -60,7 +63,7 @@ class _ContactPageState extends State<ContactPage> {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8.w),
-                  color: Color.fromRGBO(20, 134, 237, 1),
+                  color: const Color.fromRGBO(20, 134, 237, 1),
                 ),
                 child: Icon(data.leftIcon, color: Colors.white, size: 26.w),
               ),
@@ -72,7 +75,7 @@ class _ContactPageState extends State<ContactPage> {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8.w),
-              color: Color.fromRGBO(20, 134, 237, 1),
+              color: const Color.fromRGBO(20, 134, 237, 1),
             ),
             child: Icon(data.leftIcon, color: Colors.white, size: 26.w),
           );
@@ -105,7 +108,7 @@ class _ContactPageState extends State<ContactPage> {
                   border: Border(
                     bottom: showBorder
                         ? BorderSide(
-                            color: Color.fromRGBO(232, 232, 232, 1),
+                            color: const Color.fromRGBO(232, 232, 232, 1),
                             width: 1.w,
                           )
                         : BorderSide.none,
@@ -162,8 +165,9 @@ class _ContactPageState extends State<ContactPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
-      backgroundColor: Color.fromRGBO(237, 237, 237, 1),
+      backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
       body: ListView(
         children: [
           Obx(() => PageHeader(title: '通讯录', showLeftAvatar: true, userId: _userController.userInfo.value?.userId)),
@@ -176,7 +180,7 @@ class _ContactPageState extends State<ContactPage> {
             child: Text(
               '联系人',
               style: TextStyle(
-                color: Color.fromRGBO(97, 97, 97, 1),
+                color: const Color.fromRGBO(97, 97, 97, 1),
                 fontSize: 14.sp,
               ),
             ),

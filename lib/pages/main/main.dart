@@ -106,7 +106,6 @@ class _MainPageState extends State<MainPage> {
     // 初始化token管理器
     await tokenManager.init();
     final token = tokenManager.getToken();
-    print('本地存储的token:$token');
     // 如果token为空，跳转到登录页面
     if (token.isEmpty) {
       // 关闭所有页面并跳转到登录页面
@@ -134,13 +133,13 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 0,
-        backgroundColor: Color.fromRGBO(247, 247, 247, 1),
+        backgroundColor: const Color.fromRGBO(247, 247, 247, 1),
         foregroundColor: Colors.black,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Color.fromRGBO(247, 247, 247, 1), // 顶部状态栏背景颜色
+          statusBarColor: const Color.fromRGBO(247, 247, 247, 1), // 顶部状态栏背景颜色
           statusBarBrightness: Brightness.light,
           statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: Color.fromRGBO(
+          systemNavigationBarColor: const Color.fromRGBO(
             247,
             247,
             247,
@@ -149,7 +148,7 @@ class _MainPageState extends State<MainPage> {
           systemNavigationBarIconBrightness: Brightness.dark, // 底部导航栏图标颜色
         ),
       ),
-      backgroundColor: Color.fromRGBO(247, 247, 247, 1),
+      backgroundColor: const Color.fromRGBO(247, 247, 247, 1),
       // 使用IndexedStack保持页面状态
       body: SafeArea(
         child: PageView(
@@ -160,7 +159,7 @@ class _MainPageState extends State<MainPage> {
               _currentTabIndex = index;
             });
           },
-          physics: ClampingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           children: [
             MyPage(
               onBack: () {
@@ -186,7 +185,7 @@ class _MainPageState extends State<MainPage> {
               decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(
-                    color: Color.fromRGBO(232, 232, 232, 1),
+                    color: const Color.fromRGBO(232, 232, 232, 1),
                     width: 1.w,
                   ),
                 ),
@@ -217,19 +216,19 @@ class _MainPageState extends State<MainPage> {
                     currentIndex: _currentTabIndex - 1,
                     items: _buildTabItems(),
                     selectedItemColor: Colors.black,
-                    unselectedItemColor: Color.fromRGBO(122, 122, 122, 1),
+                    unselectedItemColor: const Color.fromRGBO(122, 122, 122, 1),
                     selectedFontSize: 12.sp,
                     unselectedFontSize: 12.sp,
-                    selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
+                    selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
                     unselectedLabelStyle: TextStyle(
                       fontWeight: FontWeight.w600,
                     ),
-                    backgroundColor: Color.fromRGBO(247, 247, 247, 1),
+                    backgroundColor: const Color.fromRGBO(247, 247, 247, 1),
                   ),
                 ),
               ),
             )
-          : SizedBox(),
+          : const SizedBox.shrink(),
     );
   }
 

@@ -66,7 +66,7 @@ class _SearchContactPageState extends State<SearchContactPage> {
                   child: Icon(
                     Icons.search_outlined,
                     size: 22.w,
-                    color: Color.fromRGBO(131, 131, 136, 1),
+                    color: const Color.fromRGBO(131, 131, 136, 1),
                   ),
                 ),
                 prefixIconConstraints: BoxConstraints(),
@@ -86,7 +86,7 @@ class _SearchContactPageState extends State<SearchContactPage> {
                             height: 22.w,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Color.fromRGBO(178, 178, 178, 1),
+                              color: const Color.fromRGBO(178, 178, 178, 1),
                             ),
                             alignment: Alignment.center,
                             child: Icon(
@@ -97,7 +97,7 @@ class _SearchContactPageState extends State<SearchContactPage> {
                           ),
                         ),
                       )
-                    : SizedBox(),
+                    : const SizedBox.shrink(),
                 suffixIconConstraints: BoxConstraints(),
                 contentPadding: EdgeInsets.symmetric(vertical: 6.w),
                 isDense: true,
@@ -105,7 +105,7 @@ class _SearchContactPageState extends State<SearchContactPage> {
                 fillColor: Colors.white,
                 hintText: '搜索 邮箱/用户id/群id',
                 hintStyle: TextStyle(
-                  color: Color.fromRGBO(178, 178, 178, 1),
+                  color: const Color.fromRGBO(178, 178, 178, 1),
                   fontSize: 16.sp,
                 ),
                 border: OutlineInputBorder(
@@ -125,7 +125,7 @@ class _SearchContactPageState extends State<SearchContactPage> {
               '取消',
               style: TextStyle(
                 fontSize: 16.sp,
-                color: Color.fromRGBO(20, 134, 237, 1),
+                color: const Color.fromRGBO(20, 134, 237, 1),
               ),
             ),
           ),
@@ -147,7 +147,7 @@ class _SearchContactPageState extends State<SearchContactPage> {
             width: 40.w,
             height: 40.w,
             decoration: BoxDecoration(
-              color: Color.fromRGBO(20, 134, 237, 1),
+              color: const Color.fromRGBO(20, 134, 237, 1),
               borderRadius: BorderRadius.circular(4.r),
             ),
             child: Icon(MyIcon.newFriend, size: 20.w, color: Colors.white),
@@ -159,7 +159,7 @@ class _SearchContactPageState extends State<SearchContactPage> {
                   TextSpan(text: '搜索:'),
                   TextSpan(
                     text: _searchText,
-                    style: TextStyle(color: Color.fromRGBO(20, 134, 237, 1)),
+                    style: TextStyle(color: const Color.fromRGBO(20, 134, 237, 1)),
                   ),
                 ],
                 style: TextStyle(color: Colors.black, fontSize: 16.sp),
@@ -178,17 +178,17 @@ class _SearchContactPageState extends State<SearchContactPage> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 0,
-        backgroundColor: Color.fromRGBO(237, 237, 237, 1),
+        backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
         foregroundColor: Colors.black,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Color.fromRGBO(237, 237, 237, 1),
+          statusBarColor: const Color.fromRGBO(237, 237, 237, 1),
           statusBarBrightness: Brightness.light,
           statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: Color.fromRGBO(237, 237, 237, 1), // 底部导航栏背景
+          systemNavigationBarColor: const Color.fromRGBO(237, 237, 237, 1), // 底部导航栏背景
           systemNavigationBarIconBrightness: Brightness.dark, // 底部导航栏图标颜色
         ),
       ),
-      backgroundColor: Color.fromRGBO(237, 237, 237, 1),
+      backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
       body: Column(
         spacing: 10.w,
         crossAxisAlignment: CrossAxisAlignment.start,

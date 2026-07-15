@@ -164,7 +164,6 @@ class _ChatMessageState extends State<ChatMessage> {
             final dir = await getDownloadsDirectory();
             final fileUrl = _getFileUrl(fileId, fileName);
             final savePath = '${dir?.path ?? '/Downloads'}/zchat_app/$fileName';
-            print('已保存到: $savePath');
             await Dio().download(fileUrl, savePath);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -442,7 +441,7 @@ class _ChatMessageState extends State<ChatMessage> {
       child: Container(
         padding: .symmetric(horizontal: 15.w),
         decoration: BoxDecoration(
-          color: Color.fromRGBO(75, 75, 75, 1),
+          color: const Color.fromRGBO(75, 75, 75, 1),
           borderRadius: .circular(8.r),
         ),
         child: _buildContextMenuItems(items),
@@ -746,7 +745,7 @@ class ContextMenuArrowPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Color.fromRGBO(75, 75, 75, 1)
+      ..color = const Color.fromRGBO(75, 75, 75, 1)
       ..style = .fill;
 
     final path = Path();

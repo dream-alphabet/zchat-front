@@ -75,7 +75,7 @@ class _PageHeaderState extends State<PageHeader> {
                       children: [
                         Icon(
                           MyIcon.groupChat,
-                          color: Color.fromRGBO(0, 95, 255, 1),
+                          color: const Color.fromRGBO(0, 95, 255, 1),
                           size: 26.w,
                         ),
                         SizedBox(width: 12.w),
@@ -96,7 +96,7 @@ class _PageHeaderState extends State<PageHeader> {
                       children: [
                         Icon(
                           MyIcon.newFriend,
-                          color: Color.fromRGBO(0, 95, 255, 1),
+                          color: const Color.fromRGBO(0, 95, 255, 1),
                           size: 26.w,
                         ),
                         SizedBox(width: 12.w),
@@ -117,7 +117,7 @@ class _PageHeaderState extends State<PageHeader> {
                       children: [
                         Icon(
                           MyIcon.scan,
-                          color: Color.fromRGBO(0, 95, 255, 1),
+                          color: const Color.fromRGBO(0, 95, 255, 1),
                           size: 26.w,
                         ),
                         SizedBox(width: 12.w),
@@ -182,7 +182,7 @@ class _PageHeaderState extends State<PageHeader> {
             border: Border(
               bottom: widget.showBorder
                   ? BorderSide(
-                      color: Color.fromRGBO(232, 232, 232, 1),
+                      color: const Color.fromRGBO(232, 232, 232, 1),
                       width: 1.w,
                     )
                   : BorderSide.none,

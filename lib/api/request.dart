@@ -25,13 +25,11 @@ class DioRequest {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (request, handler) {
-          print('开始请求, url: ${request.uri.path}');
           final token = tokenManager.getToken();
           // 往请求头中写入token
           if (token.isNotEmpty) {
             request.headers['token'] = token;
           }
-          print('请求头: ${request.headers}');
           handler.next(request);
         },
         onResponse: (response, handler) {
@@ -39,7 +37,6 @@ class DioRequest {
           if (response.statusCode! >= 200 && response.statusCode! < 300) {
             return handler.next(response);
           }
-          print('response statusCode: ${response.statusCode}');
           // 响应失败
           handler.reject(
             DioException(
@@ -103,9 +100,8 @@ class DioRequest {
         requestOptions: res.requestOptions,
         message: result.msg,
       );
-    } catch (e) {
-      print('_handleResponse, error: ${(e as DioException).message}');
-      // 请求错误提示
+    } on DioException catch (e) {
+      print('请求错误: ${e.message}');
       ToastUtils.showGlobalToast(msg: e.message ?? '请求失败');
       rethrow;
     }

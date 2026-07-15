@@ -110,7 +110,6 @@ Future<void> requestNotificationPermission() async {
   var state = await Permission.notification.request();
   // 如果已经授权
   if (state.isGranted) {
-    print('用户授权了');
     return;
   }
   // 发送静默通知栏消息，如果失败请求通知栏权限
@@ -118,9 +117,7 @@ Future<void> requestNotificationPermission() async {
   // 请求通知栏权限
   state = await Permission.notification.request();
   if (state.isGranted) {
-    print('用户授权了');
   } else {
-    print('用户没授权');
   }
 }
 

@@ -91,7 +91,7 @@ class _MyQrcodePageState extends State<MyQrcodePage> {
               '扫一扫',
               style: TextStyle(
                 fontSize: 16.sp,
-                color: Color.fromRGBO(83, 106, 149, 1),
+                color: const Color.fromRGBO(83, 106, 149, 1),
               ),
             ),
           ),
@@ -104,7 +104,7 @@ class _MyQrcodePageState extends State<MyQrcodePage> {
               '保存到相册',
               style: TextStyle(
                 fontSize: 16.sp,
-                color: Color.fromRGBO(83, 106, 149, 1),
+                color: const Color.fromRGBO(83, 106, 149, 1),
               ),
             ),
           ),
@@ -132,7 +132,7 @@ class _MyQrcodePageState extends State<MyQrcodePage> {
               children: [
                 Icon(
                   MyIcon.myQrCode,
-                  color: Color.fromRGBO(20, 134, 237, 1),
+                  color: const Color.fromRGBO(20, 134, 237, 1),
                   size: 18.sp,
                 ),
                 Text('添加我为朋友'),
@@ -148,7 +148,7 @@ class _MyQrcodePageState extends State<MyQrcodePage> {
             Text(
               '扫二维码，添加我为朋友',
               style: TextStyle(
-                color: Color.fromRGBO(177, 177, 177, 1),
+                color: const Color.fromRGBO(177, 177, 177, 1),
                 fontSize: 14.sp,
               ),
             ),
@@ -166,13 +166,13 @@ class _MyQrcodePageState extends State<MyQrcodePage> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 0,
-        backgroundColor: Color.fromRGBO(247, 247, 247, 1),
+        backgroundColor: const Color.fromRGBO(247, 247, 247, 1),
         foregroundColor: Colors.black,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Color.fromRGBO(247, 247, 247, 1), // 顶部状态栏背景颜色
+          statusBarColor: const Color.fromRGBO(247, 247, 247, 1), // 顶部状态栏背景颜色
           statusBarBrightness: Brightness.light,
           statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: Color.fromRGBO(
+          systemNavigationBarColor: const Color.fromRGBO(
             247,
             247,
             247,
@@ -181,7 +181,7 @@ class _MyQrcodePageState extends State<MyQrcodePage> {
           systemNavigationBarIconBrightness: Brightness.dark, // 底部导航栏图标颜色
         ),
       ),
-      backgroundColor: Color.fromRGBO(247, 247, 247, 1),
+      backgroundColor: const Color.fromRGBO(247, 247, 247, 1),
       body: SafeArea(
         child: ListView(
           children: [

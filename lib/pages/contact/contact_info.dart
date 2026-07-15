@@ -118,7 +118,7 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
           name,
           style: TextStyle(
             fontSize: 18.sp,
-            color: Color.fromRGBO(20, 134, 237, 1),
+            color: const Color.fromRGBO(20, 134, 237, 1),
           ),
         ),
       ),
@@ -134,7 +134,7 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
       color: Colors.white,
       child: Text(
         info,
-        style: TextStyle(fontSize: 18.sp, color: Color.fromRGBO(97, 97, 97, 1)),
+        style: TextStyle(fontSize: 18.sp, color: const Color.fromRGBO(97, 97, 97, 1)),
       ),
     );
   }
@@ -205,7 +205,7 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
           systemNavigationBarIconBrightness: Brightness.dark, // 底部导航栏图标颜色
         ),
       ),
-      backgroundColor: Color.fromRGBO(237, 237, 237, 1),
+      backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

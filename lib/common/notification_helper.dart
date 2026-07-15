@@ -42,7 +42,6 @@ class NotificationHelper {
     if (payload == null) {
       return;
     }
-    print('payload: $payload');
   }
 
   //  显示通知

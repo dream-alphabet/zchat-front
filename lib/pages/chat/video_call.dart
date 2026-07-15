@@ -80,7 +80,6 @@ class _VideoCallPageState extends State<VideoCallPage> {
           final signal = jsonDecode(msg.messageContent);
           final signalType = signal['type'];
           final signalData = signal['data'];
-          print('接收信令, type: $signalType, data: $signalData');
           // 接收offer, 返回answer
           if (signalType == RTCSignalEnum.offer) {
             _sendAnswer(signalData);
@@ -160,38 +159,29 @@ class _VideoCallPageState extends State<VideoCallPage> {
       if (e.candidate != null) {
         // 发送candidate
         _sendRTCSignal(RTCSignalEnum.candidate, e.toMap());
-        print('收集到ICE候选: ${e.toMap()}');
       }
     };
     _peerConnection!.onIceConnectionState = (state) {
-      print('ICE 连接状态: $state');
     };
     _peerConnection!.onSignalingState = (state) {
-      print('信令状态: $state');
     };
     _peerConnection!.onIceGatheringState = (state) {
-      print('ICE 收集状态: $state');
       if (state == RTCIceGatheringState.RTCIceGatheringStateComplete) {
-        print('ICE 收集完成');
       }
     };
     // 监听ICE连接状态变化
     _peerConnection!.onConnectionState = (state) {
       switch (state) {
         case RTCPeerConnectionState.RTCPeerConnectionStateConnected:
-          print('连接成功');
           _isAccept = true;
           setState(() {});
           break;
         case RTCPeerConnectionState.RTCPeerConnectionStateClosed:
         case RTCPeerConnectionState.RTCPeerConnectionStateDisconnected:
-          print('连接断开');
           break;
         case RTCPeerConnectionState.RTCPeerConnectionStateFailed:
-          print('连接失败');
           break;
         default:
-          print('连接中...');
       }
     };
     // 当远程视频流加入时
@@ -231,18 +221,15 @@ class _VideoCallPageState extends State<VideoCallPage> {
 
   // 发送answer
   Future<void> _sendAnswer(dynamic offer) async {
-    print('接收offer: $offer');
 
     // 1. 先设置远程描述
     await _peerConnection!.setRemoteDescription(
       RTCSessionDescription(offer['sdp'], offer['type']),
     );
-    print('远程描述设置成功');
 
     // 2. 再创建 answer
     final answer = await _peerConnection!.createAnswer();
     await _peerConnection!.setLocalDescription(answer);
-    print('本地描述设置成功');
 
     // 3. 最后发送 answer
     await _sendRTCSignal(RTCSignalEnum.answer, answer.toMap());
@@ -253,12 +240,10 @@ class _VideoCallPageState extends State<VideoCallPage> {
     await _peerConnection!.addCandidate(
       RTCIceCandidate(data['candidate'], data['sdpMid'], data['sdpMLineIndex']),
     );
-    print('成功添加ICE候选');
   }
 
   // 接收answer
   Future<void> _receiveAnswer(dynamic answer) async {
-    print('收到answer: $answer');
     // 设置远程sdp
     await _peerConnection!.setRemoteDescription(
       RTCSessionDescription(answer['sdp'], answer['type']),

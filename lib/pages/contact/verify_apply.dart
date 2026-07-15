@@ -62,7 +62,7 @@ class _VerifyApplyPageState extends State<VerifyApplyPage> {
           child: Container(
             width: 100.w,
             decoration: BoxDecoration(
-              color: Color.fromRGBO(20, 134, 237, 1),
+              color: const Color.fromRGBO(20, 134, 237, 1),
               borderRadius: BorderRadius.circular(8.r),
             ),
             padding: EdgeInsets.symmetric(vertical: 12.w),
@@ -78,7 +78,7 @@ class _VerifyApplyPageState extends State<VerifyApplyPage> {
           child: Container(
             width: 100.w,
             decoration: BoxDecoration(
-              color: Color.fromRGBO(247, 247, 247, 1),
+              color: const Color.fromRGBO(247, 247, 247, 1),
               borderRadius: BorderRadius.circular(8.r),
             ),
             padding: EdgeInsets.symmetric(vertical: 12.w),
