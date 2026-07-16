@@ -61,3 +61,11 @@ Future<List<UserContactRes>> searchContactApi(SearchContactReq req) async {
     (index) => UserContactRes.fromJson(list[index]),
   );
 }
+
+// 删除联系人
+Future<void> delContactApi(String contactId, int contactType) async {
+  await request.get(
+    Api.delContact,
+    params: {'contactId': contactId, 'contactType': contactType},
+  );
+}

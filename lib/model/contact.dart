@@ -5,6 +5,7 @@ class ContactInfoRes {
   int contactStatus;
   int contactType;
   int? memberCount;
+  int? groupStatus;
   String sessionId;
 
   ContactInfoRes({
@@ -13,6 +14,7 @@ class ContactInfoRes {
     required this.contactStatus,
     required this.contactType,
     required this.memberCount,
+    required this.groupStatus,
     required this.sessionId,
   });
 
@@ -22,16 +24,9 @@ class ContactInfoRes {
     contactStatus: json["contactStatus"],
     contactType: json["contactType"],
     memberCount: json['memberCount'],
+    groupStatus: json['groupStatus'],
     sessionId: json['sessionId'],
   );
-
-  Map<String, dynamic> toJson() => {
-    "contactId": contactId,
-    "contactName": contactName,
-    "contactStatus": contactStatus,
-    "contactType": contactType,
-    'sessionId': sessionId,
-  };
 }
 
 // 发送添加好友申请请求参数

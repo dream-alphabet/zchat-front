@@ -7,8 +7,10 @@ import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/contact.dart';
+import 'package:zchat/model/enums/group.dart';
 import 'package:zchat/stores/user.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
+import 'package:zchat/widgets/dialog.dart';
 import 'package:zchat/widgets/ink_click.dart';
 
 // 联系人信息(用户/群聊)
@@ -47,6 +49,13 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
     // 结果为空
     if (contactInfo == null) {
       ToastUtils.showGlobalToast(msg: '用户/群聊不存在');
+      Navigator.pop(context);
+      return;
+    }
+    // 群聊状态为已解散
+    if (contactInfo.contactType == UserContactTypeEnum.group &&
+        contactInfo.groupStatus == GroupStatusEnum.dissolve) {
+      await showPromptDialog(context, '群聊已解散');
       Navigator.pop(context);
       return;
     }
@@ -134,7 +143,10 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
       color: Colors.white,
       child: Text(
         info,
-        style: TextStyle(fontSize: 18.sp, color: const Color.fromRGBO(97, 97, 97, 1)),
+        style: TextStyle(
+          fontSize: 18.sp,
+          color: const Color.fromRGBO(97, 97, 97, 1),
+        ),
       ),
     );
   }

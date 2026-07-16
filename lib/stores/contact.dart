@@ -28,4 +28,23 @@ class UserContactController extends GetxController {
       userList.add(contact);
     }
   }
+
+  // 删除联系人
+  void del(String contactId, int contactType) {
+    if (UserContactTypeEnum.group == contactType) {
+      delGroup(contactId);
+    } else if (UserContactTypeEnum.user == contactType) {
+      delContact(contactId);
+    }
+  }
+
+  // 删除好友
+  void delContact(String userId) {
+    userList.removeWhere((contact) => contact.contactId == userId);
+  }
+
+  // 删除群聊
+  void delGroup(String groupId) {
+    groupList.removeWhere((group) => group.contactId == groupId);
+  }
 }

@@ -7,19 +7,24 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:zchat/api/chat.dart';
+import 'package:zchat/api/contact.dart';
 import 'package:zchat/api/group.dart';
 import 'package:zchat/common/animation.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/icon.dart';
+import 'package:zchat/common/toast.dart';
 import 'package:zchat/model/chat.dart';
 import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/chat.dart';
 import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/model/group.dart';
 import 'package:zchat/pages/contact/contact_select.dart';
+import 'package:zchat/stores/contact.dart';
 import 'package:zchat/stores/session.dart';
+import 'package:zchat/stores/user.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/dialog.dart';
+import 'package:zchat/widgets/ink_click.dart';
 import 'package:zchat/widgets/modal.dart';
 import 'package:zchat/widgets/page_header.dart';
 
@@ -35,6 +40,12 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
   // 会话store
   final _sessionStore = Get.find<ChatSessionStore>();
 
+  // 联系人store
+  final _userContactController = Get.find<UserContactController>();
+
+  // 用户store
+  final _userController = Get.find<UserController>();
+
   // 成员列表
   List<UserContactRes> _memberList = [];
 
@@ -46,6 +57,10 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
 
   // 群聊信息
   Group? _group;
+
+  // 当前用户是否是群主
+  bool get isGroupOwner =>
+      _userController.userInfo.value?.userId == _group?.groupOwnerid;
 
   @override
   void initState() {
@@ -126,6 +141,36 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
     );
   }
 
+  // 解散/退出群聊
+  void _dissolveOrExitGroup() async {
+    // 弹出确认框
+    final confirm = await showPromptDialog(
+      context,
+      showCancel: true,
+      '是否${isGroupOwner ? '解散' : '退出'}该群聊',
+    );
+    // 取消操作
+    if (confirm == null || !confirm) {
+      return;
+    }
+    if (isGroupOwner) {
+      await dissolveGroupApi(_groupId);
+      ToastUtils.showGlobalToast(msg: '群聊已解散');
+      // 删除联系人列表和会话列表中的群聊
+      _sessionStore.delSession(_groupId);
+      _userContactController.delGroup(_groupId);
+      // 返回上一页并告知群聊已解散
+      Navigator.pop(context, UserContactStatusEnum.delete);
+    } else {
+      await delContactApi(_groupId, UserContactTypeEnum.group);
+      ToastUtils.showGlobalToast(msg: '退出成功');
+      // 删除联系人和会话
+      _userContactController.delGroup(_groupId);
+      _sessionStore.delSession(_groupId);
+      Navigator.pop(context, UserContactStatusEnum.delete);
+    }
+  }
+
   // 构建一行成员
   Widget _buildRow(int index) {
     // 开始索引
@@ -175,16 +220,27 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
                 arguments: {'contactId': _memberList[index].contactId},
               );
             },
-            child: Column(
-              spacing: 5.w,
-              children: [
-                ContactAvatar(
-                  contactId: _memberList[index].contactId,
-                  shape: .rectangle,
-                  size: 45,
-                ),
-                Text(_memberList[index].contactName),
-              ],
+            child: SizedBox(
+              height: 60.w + 14.sp,
+              width: 60.w,
+              child: Column(
+                mainAxisAlignment: .spaceBetween,
+                children: [
+                  ContactAvatar(
+                    contactId: _memberList[index].contactId,
+                    shape: .rectangle,
+                    size: 45,
+                  ),
+                  Text(
+                    _memberList[index].contactName,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: Colors.black,
+                      overflow: .ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         }),
@@ -253,6 +309,26 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
     );
   }
 
+  // 构建退出/解散群聊按钮
+  Widget _buildExitGroupBtn() {
+    return InkClick(
+      onTap: _dissolveOrExitGroup,
+      backgroundColor: Colors.white,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 10.w),
+        alignment: .center,
+        child: Text(
+          isGroupOwner ? '解散群聊' : '退出群聊',
+          style: TextStyle(
+            fontSize: 16.sp,
+            color: Color.fromRGBO(241, 90, 81, 1),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -313,6 +389,8 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
               showRightIcon: true,
             ),
             _buildGroupMemberList(),
+            SizedBox(height: 10.w),
+            _buildExitGroupBtn(),
           ],
         ),
       ),

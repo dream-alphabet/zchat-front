@@ -22,11 +22,14 @@ import 'package:zchat/model/chat.dart';
 import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/chat.dart';
 import 'package:zchat/model/enums/contact.dart';
+import 'package:zchat/model/enums/group.dart';
 import 'package:zchat/pages/chat/widgets/chat_message.dart';
 import 'package:zchat/pages/contact/contact_select.dart';
+import 'package:zchat/stores/contact.dart';
 import 'package:zchat/stores/message.dart';
 import 'package:zchat/stores/session.dart';
 import 'package:zchat/stores/user.dart';
+import 'package:zchat/widgets/dialog.dart';
 import 'package:zchat/widgets/modal.dart';
 import 'package:zchat/widgets/page_header.dart';
 
@@ -53,6 +56,9 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
 
   // 会话store
   final _sessionStore = Get.find<ChatSessionStore>();
+
+  // 联系人store
+  final _userContactController = Get.find<UserContactController>();
 
   // 联系人信息
   ContactInfoRes? _contactInfo;
@@ -439,6 +445,24 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     });
     // 监听服务器推送消息事件
     _streamSubscription = eventBus.on<ServerMsgEvent>().listen((event) {
+      // 群聊解散
+      if (event.type == ServerMsgType.dissolveGroup) {
+        final message = event.msg as ChatMessageRes;
+        // 不是当前会话
+        if (message.sessionId != _sessionId) {
+          return;
+        }
+        setState(() {
+          // 设置当前群聊状态为已解散
+          _contactInfo?.groupStatus = GroupStatusEnum.dissolve;
+          // 插入消息
+          _msgList.insert(0, message);
+        });
+        _scrollToBottom();
+        // 弹出提示
+        showPromptDialog(context, '当前群聊已解散');
+        return;
+      }
       // 有消息撤回
       if (event.type == ServerMsgType.recallMessage) {
         final message = _msgList.firstWhereOrNull(
@@ -520,6 +544,16 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     }
     _contactInfo = contactInfo;
     setState(() {});
+  }
+
+  // 删除好友/群聊
+  void _delContact() async {
+    await delContactApi(_contactId, _contactType);
+    ToastUtils.showGlobalToast(msg: '删除成功');
+    // 删除联系人和会话
+    _userContactController.del(_contactId, _contactType);
+    _sessionStore.delSession(_contactId);
+    Navigator.pop(context);
   }
 
   // 滚动到底部
@@ -1000,17 +1034,32 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                 backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
                 rightIconList: [
                   GestureDetector(
-                    onTap: () {
+                    onTap: () async {
                       // 如果双方是好友关系，跳转到好友设置页面
                       if (_contactType == UserContactTypeEnum.user) {
                         Navigator.pushNamed(context, RoutePath.friendSetting);
                       } else if (_contactType == UserContactTypeEnum.group) {
                         // 如果是群聊，跳转到群聊设置页面
-                        Navigator.pushNamed(
+                        // 群聊已解散，询问是否要删除该群聊
+                        if (_contactInfo?.groupStatus ==
+                            GroupStatusEnum.dissolve) {
+                          showPromptDialog(
+                            context,
+                            showCancel: true,
+                            '是否要删除该群聊',
+                            onConfirm: _delContact,
+                          );
+                          return;
+                        }
+                        final contactStatus = await Navigator.pushNamed(
                           context,
                           RoutePath.groupSetting,
                           arguments: {'groupId': _contactInfo?.contactId},
                         );
+                        // 群聊已解散/已退出群聊
+                        if (UserContactStatusEnum.delete == contactStatus) {
+                          Navigator.pop(context);
+                        }
                       }
                     },
                     child: Icon(
@@ -1022,7 +1071,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                 ],
               ),
               Expanded(child: _buildMessageList()),
-              _buildBottom(),
+              if (_contactInfo?.groupStatus != GroupStatusEnum.dissolve)
+                _buildBottom(),
             ],
           ),
         ),

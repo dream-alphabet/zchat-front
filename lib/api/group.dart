@@ -31,3 +31,8 @@ Future<List<UserContactRes>> searchGroupMemberApi(
     (index) => UserContactRes.fromJson(list[index]),
   );
 }
+
+// 解散群聊
+Future<void> dissolveGroupApi(String groupId) async {
+  await request.get(Api.dissolveGroup + groupId);
+}

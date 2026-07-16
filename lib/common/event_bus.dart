@@ -33,6 +33,8 @@ class ServerMsgType {
   static final unreadCount = 'unreadCount';
   // 撤回消息
   static final recallMessage = 'recallMessage';
+  // 群聊解散
+  static final dissolveGroup = 'dissolveGroup';
 }
 
 // 全局事件总线

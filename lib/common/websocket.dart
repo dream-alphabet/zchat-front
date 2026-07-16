@@ -229,6 +229,8 @@ void _handleChatMsg(dynamic msg) {
   // 用户store
   final userController = Get.find<UserController>();
   // 类型为文本或媒体文件, 如果不是当前活跃会话的消息，弹出消息提示
+  // 会话id
+  final sessionId = message.sessionId;
   if ([
     MessageTypeEnum.text.type,
     MessageTypeEnum.file.type,
@@ -237,8 +239,6 @@ void _handleChatMsg(dynamic msg) {
   ].contains(message.messageType)) {
     // 联系人类型
     final contactType = message.contactType;
-    // 会话id
-    final sessionId = message.sessionId;
     // 消息内容
     String messageContent = message.messageContent;
     // 消息类型
@@ -281,7 +281,10 @@ void _handleChatMsg(dynamic msg) {
     // 更新会话的lastMessage和lastReceiveTime
     sessionStore.updateLastMessage(sessionId, messageContent, message.sendTime);
   }
-  eventBus.fire(ServerMsgEvent(type: ServerMsgType.chat, msg: message));
+  // 如果是在当前活跃的会话
+  if (activeSessionId == sessionId) {
+    eventBus.fire(ServerMsgEvent(type: ServerMsgType.chat, msg: message));
+  }
 }
 
 // 处理联系人申请
@@ -402,6 +405,60 @@ void _handleRecallMessage(dynamic msg) {
   );
 }
 
+// 处理解散群聊
+void _handleDissolveGroup(dynamic msg) {
+  // 消息内容
+  final message = ChatMessageRes.fromJson(msg);
+  // 会话store
+  final sessionStore = Get.find<ChatSessionStore>();
+  // 消息store
+  final messageStore = Get.find<MessageController>();
+  // 用户store
+  final userController = Get.find<UserController>();
+  final sessionId = message.sessionId;
+  // 如果不存在对应会话或者是自己解散的群聊
+  if (!sessionStore.hasSession(sessionId) ||
+      userController.userInfo.value?.userId == message.sendUserId) {
+    return;
+  }
+  // 发送时间
+  final sendTime = message.sendTime;
+  // 消息内容
+  final messageContent = message.messageContent;
+  // 就在当前群聊
+  if (sessionId == activeSessionId) {
+    // 通知聊天消息页面
+    eventBus.fire(
+      ServerMsgEvent(type: ServerMsgType.dissolveGroup, msg: message),
+    );
+  } else {
+    final contactId = message.contactId;
+    final contactName = message.contactName;
+    // 新增未读数量
+    messageStore.addSessionUnreadCount(sessionId);
+    // 展示消息提示
+    MessageUtils.show(
+      contactId: contactId,
+      contactName: contactName,
+      msg: messageContent,
+      sendTime: sendTime,
+      onTap: () {
+        // 跳转到聊天消息页面
+        navigateToPage(
+          RoutePath.chatMessage,
+          arguments: {
+            'contactId': contactId,
+            'contactType': UserContactTypeEnum.group,
+            'sessionId': sessionId,
+          },
+        );
+      },
+    );
+  }
+  // 更新会话lastMessage
+  sessionStore.updateLastMessage(sessionId, messageContent, sendTime);
+}
+
 // 处理服务器推送的消息
 void _handleServerMsg(dynamic msg) {
   final serverMsg = ServerMsgEvent.fromJson(jsonDecode(msg));
@@ -420,6 +477,9 @@ void _handleServerMsg(dynamic msg) {
   } else if (serverMsg.type == ServerMsgType.recallMessage) {
     // 撤回消息
     _handleRecallMessage(serverMsg.msg);
+  } else if (serverMsg.type == ServerMsgType.dissolveGroup) {
+    // 解散群聊
+    _handleDissolveGroup(serverMsg.msg);
   }
 }
 

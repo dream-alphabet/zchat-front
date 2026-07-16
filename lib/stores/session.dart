@@ -31,4 +31,17 @@ class ChatSessionStore extends GetxController {
   void addSession(ChatSessionRes session) {
     sessionList.add(session);
   }
+
+  // 删除指定会话
+  void delSession(String contactId) {
+    sessionList.removeWhere((session) => session.contactId == contactId);
+  }
+
+  // 是否存在指定会话
+  bool hasSession(String sessionId) {
+    return sessionList.firstWhereOrNull(
+          (session) => session.sessionId == sessionId,
+        ) !=
+        null;
+  }
 }
