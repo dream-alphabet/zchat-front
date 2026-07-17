@@ -160,7 +160,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   // 发送文件消息
   void _sendFile() async {
     // 选择文件(可以选择多个)
-    final result = await FilePicker.platform.pickFiles(allowMultiple: true);
+    final result = await FilePicker.pickFiles();
     // 用户选择了文件
     if (result != null && result.files.isNotEmpty) {
       final files = result.files;
