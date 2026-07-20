@@ -110,4 +110,12 @@ class RoutePath {
   static const voiceCall = 'voiceCall';
   // 选择联系人
   static const contactSelect = 'contactSelect';
+  // 群名称
+  static const groupName = 'groupName';
+  // 群公告
+  static const groupNotice = 'groupNotice';
+  // 群备注
+  static const groupRemark = 'groupRemark';
+  // 群二维码
+  static const groupQrcode = 'groupQrcode';
 }

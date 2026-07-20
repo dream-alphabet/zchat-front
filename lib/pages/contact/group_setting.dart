@@ -60,7 +60,7 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
 
   // 当前用户是否是群主
   bool get isGroupOwner =>
-      _userController.userInfo.value?.userId == _group?.groupOwnerid;
+      _userController.userInfo.value?.userId == _group?.groupOwnerId;
 
   @override
   void initState() {
@@ -309,6 +309,152 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
     );
   }
 
+  // 群聊名称
+  Widget _buildGroupName() {
+    return Row(
+      mainAxisAlignment: .spaceBetween,
+      spacing: 10.w,
+      children: [
+        Text('群聊名称'),
+        Row(
+          spacing: 5.w,
+          children: [
+            Text(
+              _group?.groupName ?? '',
+              style: TextStyle(
+                color: Color.fromRGBO(174, 174, 174, 1),
+                overflow: .ellipsis,
+              ),
+            ),
+            Icon(
+              MyIcon.arrowRight,
+              size: 16.sp,
+              color: Color.fromRGBO(174, 174, 174, 1),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // 群二维码
+  Widget _buildGroupQrCode() {
+    return Row(
+      mainAxisAlignment: .spaceBetween,
+      spacing: 10.w,
+      children: [
+        Text('群二维码'),
+        Row(
+          spacing: 5.w,
+          children: [
+            Icon(
+              MyIcon.qrCode,
+              size: 20.sp,
+              color: Color.fromRGBO(174, 174, 174, 1),
+            ),
+            Icon(
+              MyIcon.arrowRight,
+              size: 16.sp,
+              color: Color.fromRGBO(174, 174, 174, 1),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // 群公告
+  Widget _buildGroupNotice() {
+    return Row(
+      mainAxisAlignment: .spaceBetween,
+      spacing: 10.w,
+      children: [
+        Text('群公告'),
+        Icon(
+          MyIcon.arrowRight,
+          size: 16.sp,
+          color: Color.fromRGBO(174, 174, 174, 1),
+        ),
+      ],
+    );
+  }
+
+  // 备注
+  Widget _buildRemark() {
+    return Row(
+      mainAxisAlignment: .spaceBetween,
+      spacing: 10.w,
+      children: [
+        Text('备注'),
+        Icon(
+          MyIcon.arrowRight,
+          size: 16.sp,
+          color: Color.fromRGBO(174, 174, 174, 1),
+        ),
+      ],
+    );
+  }
+
+  // 构建功能区域
+  Widget _buildFunction() {
+    // 功能列表
+    final functionList = [
+      _buildGroupName(),
+      _buildGroupQrCode(),
+      _buildGroupNotice(),
+      _buildRemark(),
+    ];
+    // 要跳转的页面
+    final paths = [
+      RoutePath.groupName,
+      RoutePath.groupQrcode,
+      RoutePath.groupNotice,
+      RoutePath.groupRemark,
+    ];
+
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      child: Column(
+        children: List.generate(
+          functionList.length,
+          (index) => InkClick(
+            onTap: () {
+              // 如果是群聊名称需要判断是否是群主
+              final onlyOwner = [RoutePath.groupName];
+              final path = paths[index];
+              if (onlyOwner.contains(path) && !isGroupOwner) {
+                showPromptDialog(context, '只有群主才可以修改', confirmText: '知道了');
+                return;
+              }
+              Navigator.pushNamed(
+                context,
+                paths[index],
+                arguments: {'group': _group},
+              );
+            },
+            child: Container(
+              width: double.infinity,
+              margin: EdgeInsets.symmetric(horizontal: 15.w),
+              padding: EdgeInsets.symmetric(vertical: 10.w),
+              decoration: BoxDecoration(
+                border: index < functionList.length - 1
+                    ? Border(
+                        bottom: BorderSide(
+                          color: Color.fromRGBO(247, 247, 247, 1),
+                          width: 1.w,
+                        ),
+                      )
+                    : null,
+              ),
+              child: functionList[index],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   // 构建退出/解散群聊按钮
   Widget _buildExitGroupBtn() {
     return InkClick(
@@ -389,6 +535,8 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
               showRightIcon: true,
             ),
             _buildGroupMemberList(),
+            SizedBox(height: 10.w),
+            _buildFunction(),
             SizedBox(height: 10.w),
             _buildExitGroupBtn(),
           ],

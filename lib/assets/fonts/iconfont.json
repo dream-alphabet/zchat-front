@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "26847627",
+      "name": "二维码",
+      "font_class": "erweima",
+      "unicode": "e661",
+      "unicode_decimal": 58977
+    },
+    {
       "icon_id": "7482534",
       "name": "我的二维码",
       "font_class": "wodeerweima",
@@ -123,13 +130,6 @@
       "font_class": "tianjia",
       "unicode": "e62b",
       "unicode_decimal": 58923
-    },
-    {
-      "icon_id": "1236933",
-      "name": "朋友圈",
-      "font_class": "iconfontzhizuobiaozhunbduan36",
-      "unicode": "e6e9",
-      "unicode_decimal": 59113
     },
     {
       "icon_id": "6762247",

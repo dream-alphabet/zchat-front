@@ -9,6 +9,7 @@ Future<bool?> showPromptDialog(
   bool showCancel = false,
   VoidCallback? onCancel,
   VoidCallback? onConfirm,
+  String confirmText = '确定'
 }) {
   return showDialog<bool>(
     context: context,
@@ -43,7 +44,7 @@ Future<bool?> showPromptDialog(
               }
             },
             child: Text(
-              '确定',
+              confirmText,
               style: TextStyle(
                 fontSize: 16.sp,
                 color: const Color.fromRGBO(20, 134, 237, 1),

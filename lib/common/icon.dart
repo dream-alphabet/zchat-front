@@ -14,12 +14,6 @@ class MyIcon {
     fontFamily: 'MyIcon',
     matchTextDirection: true,
   );
-  // 朋友圈
-  static const moments = IconData(
-    0xe6e9,
-    fontFamily: 'MyIcon',
-    matchTextDirection: true,
-  );
   // 发现
   static const discover = IconData(
     0xe605,
@@ -131,6 +125,12 @@ class MyIcon {
   // 我的二维码
   static const myQrCode = IconData(
     0xe63a,
+    fontFamily: 'MyIcon',
+    matchTextDirection: true,
+  );
+  // 二维码
+  static const qrCode = IconData(
+    0xe661,
     fontFamily: 'MyIcon',
     matchTextDirection: true,
   );

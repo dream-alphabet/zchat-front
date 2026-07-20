@@ -27,18 +27,18 @@ class CreateGroupReq {
 
 // 群聊实体类
 class Group {
-  String groupid;
+  String groupId;
   String groupName;
-  String groupOwnerid;
+  String groupOwnerId;
   String groupNotice;
   int joinType;
   int status;
   int createTime;
 
   Group({
-    required this.groupid,
+    required this.groupId,
     required this.groupName,
-    required this.groupOwnerid,
+    required this.groupOwnerId,
     required this.groupNotice,
     required this.joinType,
     required this.status,
@@ -47,9 +47,9 @@ class Group {
 
   factory Group.fromJson(Map<String, dynamic> json) {
     return Group(
-      groupid: json['groupId'],
+      groupId: json['groupId'],
       groupName: json['groupName'],
-      groupOwnerid: json['groupOwnerId'],
+      groupOwnerId: json['groupOwnerId'],
       groupNotice: json['groupNotice'],
       joinType: json['joinType'],
       status: json['status'],
@@ -58,9 +58,9 @@ class Group {
   }
 
   Map<String, dynamic> toJson() => {
-    'groupId': groupid,
+    'groupId': groupId,
     'groupName': groupName,
-    'groupOwnerId': groupOwnerid,
+    'groupOwnerId': groupOwnerId,
     'groupNotice': groupNotice,
     'joinType': joinType,
     'status': status,
