@@ -1,7 +1,7 @@
 // 全局常量类
 class GlobalConstants {
   // 主机地址
-  static const host = '192.168.2.101';
+  static const host = '192.168.2.103';
   // api请求基础地址
   static const baseUrl = 'http://$host/api';
   // ws连接地址
@@ -62,6 +62,7 @@ class Api {
   static const getGroupSettings = '/group/settings/';
   static const searchGroupMember = '/group/searchMember';
   static const dissolveGroup = '/group/dissolve/';
+  static const updateGroup = '/group/update/';
 }
 
 // 路由路径常量

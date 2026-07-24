@@ -80,12 +80,25 @@ class GetGroupSettingsRes {
       members: (json['members'] as List)
           .map((e) => UserContactRes.fromJson(e))
           .toList(),
-      group: Group.fromJson(json['group'])
+      group: Group.fromJson(json['group']),
     );
   }
 
   Map<String, dynamic> toJson() => {
     'members': members.map((e) => e.toJson()).toList(),
-    'group': group.toJson()
+    'group': group.toJson(),
+  };
+}
+
+// 更新群聊信息请求参数
+class UpdateGroupReq {
+  String groupName;
+  String groupNotice;
+
+  UpdateGroupReq({required this.groupName, required this.groupNotice});
+
+  Map<String, dynamic> toJson() => {
+    'groupName': groupName,
+    'groupNotice': groupNotice,
   };
 }

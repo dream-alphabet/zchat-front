@@ -24,17 +24,19 @@ class ServerMsgEvent<T> {
 // 服务器推送消息类型
 class ServerMsgType {
   // 聊天消息
-  static final chat = 'chat';
+  static const chat = 'chat';
   // 联系人申请
-  static final contactApply = 'contactApply';
+  static const contactApply = 'contactApply';
   // 新增联系人
-  static final addContact = 'addContact';
+  static const addContact = 'addContact';
   // 更新消息未读数量
-  static final unreadCount = 'unreadCount';
+  static const unreadCount = 'unreadCount';
   // 撤回消息
-  static final recallMessage = 'recallMessage';
+  static const recallMessage = 'recallMessage';
   // 群聊解散
-  static final dissolveGroup = 'dissolveGroup';
+  static const dissolveGroup = 'dissolveGroup';
+  // 更新群聊信息
+  static const updateGroup = 'updateGroup';
 }
 
 // 全局事件总线

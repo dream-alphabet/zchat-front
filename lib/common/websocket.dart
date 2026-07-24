@@ -411,8 +411,6 @@ void _handleDissolveGroup(dynamic msg) {
   final message = ChatMessageRes.fromJson(msg);
   // 会话store
   final sessionStore = Get.find<ChatSessionStore>();
-  // 消息store
-  final messageStore = Get.find<MessageController>();
   // 用户store
   final userController = Get.find<UserController>();
   final sessionId = message.sessionId;
@@ -421,6 +419,74 @@ void _handleDissolveGroup(dynamic msg) {
       userController.userInfo.value?.userId == message.sendUserId) {
     return;
   }
+  // 通知消息
+  _notifyMessage(message, sessionId, ServerMsgType.dissolveGroup);
+}
+
+// 处理更新群聊信息
+void _handleUpdateGroup(dynamic msg) {
+  // 联系人store
+  final contactStore = Get.find<UserContactController>();
+  // 会话store
+  final sessionStore = Get.find<ChatSessionStore>();
+  final groupId = msg['groupId'];
+  final sessionId = msg['sessionId'];
+  final groupName = msg['groupName'] as String;
+  final messageList = (msg['messageList'] as List)
+      .map((msg) => ChatMessageRes.fromJson(msg))
+      .toList();
+  // 更新了群名称
+  if (groupName.isNotEmpty) {
+    contactStore.updateGroupName(groupId, groupName);
+    sessionStore.updateContactName(sessionId, groupName);
+  }
+  // 通知消息
+  for (final message in messageList) {
+    _notifyMessage(message, sessionId, ServerMsgType.chat);
+  }
+  if (sessionId == activeSessionId && groupName.isNotEmpty) {
+    eventBus.fire(
+      ServerMsgEvent(type: ServerMsgType.updateGroup, msg: groupName),
+    );
+  }
+}
+
+// 处理服务器推送的消息
+void _handleServerMsg(dynamic msg) {
+  final serverMsg = ServerMsgEvent.fromJson(jsonDecode(msg));
+  print('服务器推送的消息: $serverMsg');
+  // 聊天消息
+  if (serverMsg.type == ServerMsgType.chat) {
+    _handleChatMsg(serverMsg.msg);
+  } else if (serverMsg.type == ServerMsgType.contactApply) {
+    // 联系人申请
+    _handleContactApply(serverMsg.msg);
+  } else if (serverMsg.type == ServerMsgType.addContact) {
+    // 新增联系人
+    _handleAddContact(serverMsg.msg);
+  } else if (serverMsg.type == ServerMsgType.unreadCount) {
+    // 更新消息未读数量
+    _handleUnreadCount(serverMsg.msg);
+  } else if (serverMsg.type == ServerMsgType.recallMessage) {
+    // 撤回消息
+    _handleRecallMessage(serverMsg.msg);
+  } else if (serverMsg.type == ServerMsgType.dissolveGroup) {
+    // 解散群聊
+    _handleDissolveGroup(serverMsg.msg);
+  } else if (serverMsg.type == ServerMsgType.updateGroup) {
+    // 更新群聊信息
+    _handleUpdateGroup(serverMsg.msg);
+  }
+}
+
+// 通知消息
+void _notifyMessage(ChatMessageRes message, String sessionId, String type) {
+  print('_notifyMessage: $message');
+  print('sessionId: $sessionId, activeSessionId: $activeSessionId');
+  // 会话store
+  final sessionStore = Get.find<ChatSessionStore>();
+  // 消息store
+  final messageStore = Get.find<MessageController>();
   // 发送时间
   final sendTime = message.sendTime;
   // 消息内容
@@ -428,9 +494,7 @@ void _handleDissolveGroup(dynamic msg) {
   // 就在当前群聊
   if (sessionId == activeSessionId) {
     // 通知聊天消息页面
-    eventBus.fire(
-      ServerMsgEvent(type: ServerMsgType.dissolveGroup, msg: message),
-    );
+    eventBus.fire(ServerMsgEvent(type: type, msg: message));
   } else {
     final contactId = message.contactId;
     final contactName = message.contactName;
@@ -459,34 +523,12 @@ void _handleDissolveGroup(dynamic msg) {
   sessionStore.updateLastMessage(sessionId, messageContent, sendTime);
 }
 
-// 处理服务器推送的消息
-void _handleServerMsg(dynamic msg) {
-  final serverMsg = ServerMsgEvent.fromJson(jsonDecode(msg));
-  // 聊天消息
-  if (serverMsg.type == ServerMsgType.chat) {
-    _handleChatMsg(serverMsg.msg);
-  } else if (serverMsg.type == ServerMsgType.contactApply) {
-    // 联系人申请
-    _handleContactApply(serverMsg.msg);
-  } else if (serverMsg.type == ServerMsgType.addContact) {
-    // 新增联系人
-    _handleAddContact(serverMsg.msg);
-  } else if (serverMsg.type == ServerMsgType.unreadCount) {
-    // 更新消息未读数量
-    _handleUnreadCount(serverMsg.msg);
-  } else if (serverMsg.type == ServerMsgType.recallMessage) {
-    // 撤回消息
-    _handleRecallMessage(serverMsg.msg);
-  } else if (serverMsg.type == ServerMsgType.dissolveGroup) {
-    // 解散群聊
-    _handleDissolveGroup(serverMsg.msg);
-  }
-}
-
 // 初始化websocket
 void initWebSocket() {
   _utility.initWebSocket(
-    onOpen: () {},
+    onOpen: () {
+      print('$websocketUrl连接成功...');
+    },
     onMessage: _handleServerMsg,
     onError: (e) {
       print('WebSocket错误: $e');

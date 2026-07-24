@@ -36,3 +36,8 @@ Future<List<UserContactRes>> searchGroupMemberApi(
 Future<void> dissolveGroupApi(String groupId) async {
   await request.get(Api.dissolveGroup + groupId);
 }
+
+// 更新群聊信息
+Future<void> updateGroupApi(String groupId, UpdateGroupReq data) async {
+  await request.post(Api.updateGroup + groupId, data: data.toJson());
+}

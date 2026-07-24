@@ -463,6 +463,14 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         showPromptDialog(context, '当前群聊已解散');
         return;
       }
+      // 更新群聊信息
+      if (event.type == ServerMsgType.updateGroup) {
+        // 修改群聊名称
+        setState(() {
+          _contactInfo?.contactName = event.msg;
+        });
+        return;
+      }
       // 有消息撤回
       if (event.type == ServerMsgType.recallMessage) {
         final message = _msgList.firstWhereOrNull(

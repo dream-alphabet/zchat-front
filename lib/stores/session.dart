@@ -7,6 +7,16 @@ class ChatSessionStore extends GetxController {
   // 会话列表
   final sessionList = (<ChatSessionRes>[]).obs;
 
+  // 更新contactName
+  void updateContactName(String sessionId, String contactName) {
+    final index = sessionList.indexWhere((s) => s.sessionId == sessionId);
+    if (index != -1) {
+      sessionList[index] = sessionList[index].copyWith(
+        contactName: contactName,
+      );
+    }
+  }
+
   // 更新会话的lastMessage和lastReceiveTime
   void updateLastMessage(
     String sessionId,

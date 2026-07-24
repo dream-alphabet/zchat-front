@@ -47,4 +47,14 @@ class UserContactController extends GetxController {
   void delGroup(String groupId) {
     groupList.removeWhere((group) => group.contactId == groupId);
   }
+
+  // 更新群名称
+  void updateGroupName(String groupId, String groupName) {
+    final index = groupList.indexOf((group) => group.contactId == groupId);
+    if (index != -1) {
+      final group = groupList[index];
+      group.contactName = groupName;
+      groupList[index] = group;
+    }
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:zchat/api/group.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/model/group.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
@@ -18,16 +19,13 @@ class _GroupNamePageState extends State<GroupNamePage> {
   // 群聊信息
   Group? _group;
 
-  // 群名称输入框控制器
-  final _groupNameController = TextEditingController();
-
   // 新群名称
   String _newGroupName = '';
 
   @override
   void initState() {
     super.initState();
-    // 接收群聊id参数
+    // 接收路由参数
     Future.microtask(() {
       if (ModalRoute.of(context) != null) {
         final params =
@@ -38,6 +36,21 @@ class _GroupNamePageState extends State<GroupNamePage> {
         });
       }
     });
+  }
+
+  // 更新群名称
+  void _updateGroupName() async {
+    final newGroupName = _newGroupName.trim();
+    if (newGroupName.isEmpty) {
+      ToastUtils.showGlobalToast(msg: '群名称不能为空');
+      return;
+    }
+    await updateGroupApi(
+      _group!.groupId,
+      UpdateGroupReq(groupName: newGroupName, groupNotice: ''),
+    );
+    ToastUtils.showGlobalToast(msg: '修改成功');
+    Navigator.pop(context);
   }
 
   // 构建提示
@@ -79,7 +92,7 @@ class _GroupNamePageState extends State<GroupNamePage> {
               decoration: InputDecoration(
                 hintText: _group?.groupName ?? '请输入群名称',
                 hintStyle: TextStyle(color: Color.fromRGBO(174, 174, 174, 1)),
-                border: InputBorder.none
+                border: InputBorder.none,
               ),
             ),
           ),
@@ -91,14 +104,7 @@ class _GroupNamePageState extends State<GroupNamePage> {
   // 完成按钮
   Widget _buildFinishBtn() {
     return GestureDetector(
-      onTap: () {
-        String newGroupName = _newGroupName.trim();
-        if (newGroupName.isEmpty) {
-          ToastUtils.showGlobalToast(msg: '群名称不能为空');
-          return;
-        }
-        print('完成修改: $newGroupName');
-      },
+      onTap: _updateGroupName,
       child: Container(
         width: 100.w,
         decoration: BoxDecoration(
@@ -153,11 +159,5 @@ class _GroupNamePageState extends State<GroupNamePage> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _groupNameController.dispose();
-    super.dispose();
   }
 }
