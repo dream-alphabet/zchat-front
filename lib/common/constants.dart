@@ -95,6 +95,8 @@ class RoutePath {
   static const myQRCode = 'myQRCode';
   // 用户中心
   static const my = 'my';
+  // 聊天信息
+  static const chatInfo = 'chatInfo';
   // 好友设置
   static const friendSetting = 'friendSetting';
   // 群聊设置

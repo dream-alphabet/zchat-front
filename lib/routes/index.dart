@@ -11,6 +11,7 @@ import 'package:zchat/pages/chat/video_call.dart';
 import 'package:zchat/pages/chat/voice_call.dart';
 import 'package:zchat/pages/contact/add_contact.dart';
 import 'package:zchat/pages/contact/add_friend.dart';
+import 'package:zchat/pages/contact/chat_info.dart';
 import 'package:zchat/pages/contact/contact_select.dart';
 import 'package:zchat/pages/contact/create_group.dart';
 import 'package:zchat/pages/contact/friend_setting.dart';
@@ -49,6 +50,7 @@ final Map<String, WidgetBuilder> routes = {
   RoutePath.myQRCode: (ctx) => MyQrcodePage(),
   RoutePath.my: (ctx) => MyPage(),
   RoutePath.friendSetting: (ctx) => FriendSettingPage(),
+  RoutePath.chatInfo: (ctx) => ChatInfoPage(),
   RoutePath.addContact: (ctx) => AddContactPage(),
   RoutePath.verifyApply: (ctx) => VerifyApplyPage(),
   RoutePath.chatMessage: (ctx) => ChatMessagePage(),

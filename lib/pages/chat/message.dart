@@ -1043,9 +1043,9 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                 rightIconList: [
                   GestureDetector(
                     onTap: () async {
-                      // 如果双方是好友关系，跳转到好友设置页面
+                      // 如果双方是好友关系，跳转到聊天信息页面
                       if (_contactType == UserContactTypeEnum.user) {
-                        Navigator.pushNamed(context, RoutePath.friendSetting);
+                        Navigator.pushNamed(context, RoutePath.chatInfo);
                       } else if (_contactType == UserContactTypeEnum.group) {
                         // 如果是群聊，跳转到群聊设置页面
                         // 群聊已解散，询问是否要删除该群聊
