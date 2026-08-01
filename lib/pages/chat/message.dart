@@ -487,7 +487,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       if (event.type != ServerMsgType.chat) {
         return;
       }
-      final msg = event.msg;
+      // 消息内容
+      final msg = event.msg as ChatMessageRes;
       // 如果是webrtc信令消息，不处理, 如果是当前用户发送的，也不处理
       if (msg.messageType != MessageTypeEnum.rtcSignal.type &&
           msg.sendUserId != _userController.userInfo.value?.userId) {
@@ -498,14 +499,6 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         if (_msgListController.offset < 200.w) {
           _scrollToBottom();
         }
-      }
-      // 如果是视频通话，跳转到视频通话页面
-      if (msg.messageType == MessageTypeEnum.videoCall.type) {
-        Navigator.pushNamed(
-          context,
-          RoutePath.videoCall,
-          arguments: {'isCaller': false, 'contactId': _contactId},
-        );
       }
     });
   }

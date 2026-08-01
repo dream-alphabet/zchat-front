@@ -8,6 +8,7 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:zchat/api/chat.dart';
 import 'package:zchat/api/contact.dart';
+import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/event_bus.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/model/chat.dart';
@@ -52,6 +53,9 @@ class _VideoCallPageState extends State<VideoCallPage> {
   // 监听websocket服务器推送的消息
   late StreamSubscription<ServerMsgEvent> _streamSubscription;
 
+  // 暂存接收到的 Offer SDP 数据
+  dynamic _pendingOffer;
+
   @override
   void initState() {
     super.initState();
@@ -68,33 +72,37 @@ class _VideoCallPageState extends State<VideoCallPage> {
       _initRenderer();
       _getUserMedia();
       // 监听服务器推送消息事件
-      _streamSubscription = eventBus.on<ServerMsgEvent<ChatMessageRes>>().listen((event) {
-        // 消息类型不是聊天消息，直接返回
-        if (event.type != ServerMsgType.chat) {
-          return;
-        }
-        final msg = event.msg;
-        // 如果是对方发送的信令
-        if (msg.messageType == MessageTypeEnum.rtcSignal.type) {
-          // 信令消息
-          final signal = jsonDecode(msg.messageContent);
-          final signalType = signal['type'];
-          final signalData = signal['data'];
-          // 接收offer, 返回answer
-          if (signalType == RTCSignalEnum.offer) {
-            _sendAnswer(signalData);
-          } else if (signalType == RTCSignalEnum.answer) {
-            // 接收answer
-            _receiveAnswer(signalData);
-          } else if (signalType == RTCSignalEnum.candidate) {
-            // 接收candidate
-            _receiveCandidate(signalData);
-          } else if (signalType == RTCSignalEnum.callEnd) {
-            // 对方已挂断
-            _beCallEnd();
-          }
-        }
-      });
+      _streamSubscription = eventBus
+          .on<ServerMsgEvent<ChatMessageRes>>()
+          .listen((event) {
+            // 消息类型不是聊天消息，直接返回
+            if (event.type != ServerMsgType.chat) {
+              return;
+            }
+            final msg = event.msg;
+            // 如果是对方发送的信令
+            if (msg.messageType == MessageTypeEnum.rtcSignal.type) {
+              // 信令消息
+              final signal = jsonDecode(msg.messageContent);
+              final signalType = signal['type'];
+              final signalData = signal['data'];
+              // 接收offer, 暂存offer sdp数据
+              if (signalType == RTCSignalEnum.offer) {
+                setState(() {
+                  _pendingOffer = signalData;
+                });
+              } else if (signalType == RTCSignalEnum.answer) {
+                // 接收answer
+                _receiveAnswer(signalData);
+              } else if (signalType == RTCSignalEnum.candidate) {
+                // 接收candidate
+                _receiveCandidate(signalData);
+              } else if (signalType == RTCSignalEnum.callEnd) {
+                // 对方已挂断
+                _beCallEnd();
+              }
+            }
+          });
     });
   }
 
@@ -131,20 +139,20 @@ class _VideoCallPageState extends State<VideoCallPage> {
     // 初始化PeerConnection
     _peerConnection = await createPeerConnection({
       'iceServers': [
-        {'urls': 'stun:10.128.108.185:3478'},
+        {'urls': 'stun:${GlobalConstants.host}:3478'},
         {
-          'urls': 'turn:10.128.108.185:3478',
+          'urls': 'turn:${GlobalConstants.host}:3478',
           'username': 'dream',
           'credential': '239856',
         },
         {
-          'urls': 'turn:10.128.108.185:3478?transport=tcp',
+          'urls': 'turn:${GlobalConstants.host}:3478?transport=tcp',
           'username': 'dream',
           'credential': '239856',
         },
       ],
       // 添加这些配置增强连通性
-      'iceTransportPolicy': 'all',  // 允许所有候选类型
+      'iceTransportPolicy': 'all', // 允许所有候选类型
       'bundlePolicy': 'max-bundle',
       'rtcpMuxPolicy': 'negotiate',
     });
@@ -161,16 +169,8 @@ class _VideoCallPageState extends State<VideoCallPage> {
         _sendRTCSignal(RTCSignalEnum.candidate, e.toMap());
       }
     };
-    _peerConnection!.onIceConnectionState = (state) {
-    };
-    _peerConnection!.onSignalingState = (state) {
-    };
-    _peerConnection!.onIceGatheringState = (state) {
-      if (state == RTCIceGatheringState.RTCIceGatheringStateComplete) {
-      }
-    };
     // 监听ICE连接状态变化
-    _peerConnection!.onConnectionState = (state) {
+    _peerConnection!.onConnectionState = (state) async {
       switch (state) {
         case RTCPeerConnectionState.RTCPeerConnectionStateConnected:
           _isAccept = true;
@@ -178,6 +178,8 @@ class _VideoCallPageState extends State<VideoCallPage> {
           break;
         case RTCPeerConnectionState.RTCPeerConnectionStateClosed:
         case RTCPeerConnectionState.RTCPeerConnectionStateDisconnected:
+          await ToastUtils.showGlobalToastAsync(msg: '已断开连接');
+          Navigator.pop(context);
           break;
         case RTCPeerConnectionState.RTCPeerConnectionStateFailed:
           break;
@@ -191,6 +193,10 @@ class _VideoCallPageState extends State<VideoCallPage> {
         setState(() {});
       }
     };
+    // 如果是呼叫方，主动发起offer
+    if (_isCaller) {
+      _sendOffer();
+    }
     setState(() {});
   }
 
@@ -221,7 +227,6 @@ class _VideoCallPageState extends State<VideoCallPage> {
 
   // 发送answer
   Future<void> _sendAnswer(dynamic offer) async {
-
     // 1. 先设置远程描述
     await _peerConnection!.setRemoteDescription(
       RTCSessionDescription(offer['sdp'], offer['type']),
@@ -275,6 +280,8 @@ class _VideoCallPageState extends State<VideoCallPage> {
       msg: '对方已挂断',
       duration: Duration(seconds: 1),
     );
+    // 清空暂存的offer
+    _pendingOffer = null;
     Navigator.pop(context);
   }
 
@@ -287,13 +294,23 @@ class _VideoCallPageState extends State<VideoCallPage> {
       msg: '已挂断',
       duration: Duration(seconds: 1),
     );
+    // 清空暂存的offer
+    _pendingOffer = null;
     Navigator.pop(context);
   }
 
   // 构建同意接听按钮
   Widget _buildAgreeCallBtn() {
     return GestureDetector(
-      onTap: _sendOffer,
+      onTap: () {
+        // 正常流程：如果呼叫方已经发送了offer, 那么可以发送answer
+        if (_pendingOffer != null) {
+          _sendAnswer(_pendingOffer);
+        } else {
+          // 容错处理：如果没收到 Offer 却点了接听，则作为发起方发送 Offer
+          _sendOffer();
+        }
+      },
       child: Container(
         width: 50.w,
         height: 50.w,
@@ -370,10 +387,7 @@ class _VideoCallPageState extends State<VideoCallPage> {
                     spacing: 10.w,
                     crossAxisAlignment: .center,
                     children: [
-                      ContactAvatar(
-                        contactId: _contactId,
-                        size: 50,
-                      ),
+                      ContactAvatar(contactId: _contactId, size: 50),
                       Text(
                         _contactInfo?.contactName ?? '',
                         style: TextStyle(color: Colors.white, fontSize: 16.sp),

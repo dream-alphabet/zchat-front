@@ -285,6 +285,13 @@ void _handleChatMsg(dynamic msg) {
   if (activeSessionId == sessionId) {
     eventBus.fire(ServerMsgEvent(type: ServerMsgType.chat, msg: message));
   }
+  // 如果是视频通话，跳转到视频通话页面
+  if (message.messageType == MessageTypeEnum.videoCall.type) {
+    navigateToPage(
+      RoutePath.videoCall,
+      arguments: {'isCaller': false, 'contactId': message.sendUserId},
+    );
+  }
 }
 
 // 处理联系人申请
@@ -481,8 +488,6 @@ void _handleServerMsg(dynamic msg) {
 
 // 通知消息
 void _notifyMessage(ChatMessageRes message, String sessionId, String type) {
-  print('_notifyMessage: $message');
-  print('sessionId: $sessionId, activeSessionId: $activeSessionId');
   // 会话store
   final sessionStore = Get.find<ChatSessionStore>();
   // 消息store
