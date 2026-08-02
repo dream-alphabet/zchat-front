@@ -289,7 +289,11 @@ void _handleChatMsg(dynamic msg) {
   if (message.messageType == MessageTypeEnum.videoCall.type) {
     navigateToPage(
       RoutePath.videoCall,
-      arguments: {'isCaller': false, 'contactId': message.sendUserId},
+      arguments: {
+        'isCaller': false, 
+        'contactId': message.sendUserId,
+        'messageId': message.messageId
+      },
     );
   }
 }

@@ -58,4 +58,6 @@ class RTCSignalEnum {
   static const candidate = 'candidate';
   // callEnd(挂断)
   static const callEnd = 'callEnd';
+  // 连接已建立
+  static const established = 'established';
 }

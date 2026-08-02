@@ -396,7 +396,11 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     Navigator.pushNamed(
       context,
       RoutePath.videoCall,
-      arguments: {'isCaller': true, 'contactId': _contactId},
+      arguments: {
+        'isCaller': true,
+        'contactId': _contactId,
+        'messageId': msg.messageId,
+      },
     );
   }
 

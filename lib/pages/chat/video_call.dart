@@ -38,6 +38,12 @@ class _VideoCallPageState extends State<VideoCallPage> {
   // 是否是通话发起者
   bool _isCaller = false;
 
+  // 消息id
+  int _messageId = -1;
+
+  // 同意接听按钮是否处于加载中
+  bool _isAgreeing = false;
+
   // 联系人id
   String _contactId = '';
 
@@ -56,6 +62,20 @@ class _VideoCallPageState extends State<VideoCallPage> {
   // 暂存接收到的 Offer SDP 数据
   dynamic _pendingOffer;
 
+  // 暂存接收到的candidate候选信息
+  final List<RTCIceCandidate> _pendingCandidates = [];
+
+  // 最大重连次数
+  final int _maxRetryCount = 2;
+  // 当前已重试次数
+  int _retryCount = 0;
+  // 是否正在重试中
+  bool _isRetrying = false;
+  // 是否主动挂断
+  bool _isManualHangup = false;
+  // 重连延迟定时器
+  Timer? _reconnectTimer;
+
   @override
   void initState() {
     super.initState();
@@ -66,6 +86,7 @@ class _VideoCallPageState extends State<VideoCallPage> {
             ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
         _contactId = params['contactId'];
         _isCaller = params['isCaller'];
+        _messageId = params['messageId'];
         _getContactInfo();
       }
     }).then((_) {
@@ -133,10 +154,23 @@ class _VideoCallPageState extends State<VideoCallPage> {
       return;
     }
     // 媒体约束
-    final constraints = {'video': true, 'audio': true};
+    final constraints = {
+      // 启用视频流
+      'video': true,
+      'audio': true,
+    };
     _localStream = await navigator.mediaDevices.getUserMedia(constraints);
     _localRenderer.srcObject = _localStream;
-    // 初始化PeerConnection
+    await _setupPeerConnection();
+    // 如果是呼叫方，主动发起offer
+    if (_isCaller) {
+      _sendOffer();
+    }
+    setState(() {});
+  }
+
+  // 创建并配置PeerConnection（重连时复用）
+  Future<void> _setupPeerConnection() async {
     _peerConnection = await createPeerConnection({
       'iceServers': [
         {'urls': 'stun:${GlobalConstants.host}:3478'},
@@ -173,15 +207,29 @@ class _VideoCallPageState extends State<VideoCallPage> {
     _peerConnection!.onConnectionState = (state) async {
       switch (state) {
         case RTCPeerConnectionState.RTCPeerConnectionStateConnected:
+          // 连接成功，取消重连定时器并重置重试计数
+          _reconnectTimer?.cancel();
+          _retryCount = 0;
           _isAccept = true;
+          // 发送established信令，告知服务器连接已建立
+          if (_isCaller) {
+            _sendRTCSignal(RTCSignalEnum.established, {'messageId': _messageId});
+          }
           setState(() {});
           break;
-        case RTCPeerConnectionState.RTCPeerConnectionStateClosed:
         case RTCPeerConnectionState.RTCPeerConnectionStateDisconnected:
-          await ToastUtils.showGlobalToastAsync(msg: '已断开连接');
-          Navigator.pop(context);
+          // ICE连接断开，等待3秒看是否能自动恢复
+          print('WebRTC ICE断开，等待自动恢复...');
+          _startReconnectDelay();
           break;
         case RTCPeerConnectionState.RTCPeerConnectionStateFailed:
+          // ICE完全失败，立即重试
+          print('WebRTC连接失败，尝试重连...');
+          _reconnectTimer?.cancel();
+          _tryRetryConnection();
+          break;
+        case RTCPeerConnectionState.RTCPeerConnectionStateClosed:
+          // 主动关闭，不重试
           break;
         default:
       }
@@ -193,11 +241,57 @@ class _VideoCallPageState extends State<VideoCallPage> {
         setState(() {});
       }
     };
-    // 如果是呼叫方，主动发起offer
-    if (_isCaller) {
-      _sendOffer();
+  }
+
+  // 延迟后触发重连（用于Disconnected状态，给ICE自动恢复留时间）
+  void _startReconnectDelay() {
+    _reconnectTimer?.cancel();
+    _reconnectTimer = Timer(const Duration(seconds: 3), () {
+      _tryRetryConnection();
+    });
+  }
+
+  // 尝试重连，判断是否满足重连条件
+  void _tryRetryConnection() {
+    // 主动挂断不重连
+    if (_isManualHangup) return;
+    // 已经在重试中，不重复触发
+    if (_isRetrying) return;
+    // 超过最大重试次数
+    if (_retryCount >= _maxRetryCount) {
+      print('WebRTC重连已用尽重试次数($_maxRetryCount次)，放弃重连');
+      // 主动挂断
+      _callEnd();
+      ToastUtils.showGlobalToast(msg: '连接失败，请稍后重试');
+      Navigator.pop(context);
+      return;
     }
-    setState(() {});
+    _retryConnection();
+  }
+
+  // 执行WebRTC重连
+  Future<void> _retryConnection() async {
+    _isRetrying = true;
+    _retryCount++;
+    print('WebRTC重连尝试 $_retryCount/$_maxRetryCount');
+
+    // 清理旧的PeerConnection
+    await _peerConnection?.close();
+    _peerConnection?.dispose();
+
+    // 重新创建PeerConnection
+    await _setupPeerConnection();
+
+    // 根据角色重新发起协商
+    if (_isCaller) {
+      // 呼叫方：重新发送offer
+      await _sendOffer();
+    } else if (_pendingOffer != null) {
+      // 被叫方：如果有暂存的offer，重新发送answer
+      await _sendAnswer(_pendingOffer);
+    }
+
+    _isRetrying = false;
   }
 
   // 发送webrtc信令
@@ -238,13 +332,29 @@ class _VideoCallPageState extends State<VideoCallPage> {
 
     // 3. 最后发送 answer
     await _sendRTCSignal(RTCSignalEnum.answer, answer.toMap());
+    print('已设置远程sdp, 添加缓存的candidate');
+    // 添加缓存的候选
+    for (var c in _pendingCandidates) {
+      await _peerConnection!.addCandidate(c);
+    }
+    _pendingCandidates.clear();
   }
 
   // 接收candidate
   Future<void> _receiveCandidate(dynamic data) async {
-    await _peerConnection!.addCandidate(
-      RTCIceCandidate(data['candidate'], data['sdpMid'], data['sdpMLineIndex']),
+    final candidate = RTCIceCandidate(
+      data['candidate'],
+      data['sdpMid'],
+      data['sdpMLineIndex'],
     );
+    // 如果远程描述未设置，则缓存
+    final remoteDescription = await _peerConnection?.getRemoteDescription();
+    if (remoteDescription == null) {
+      print('远程sdp为空，缓存candidate: $candidate');
+      _pendingCandidates.add(candidate);
+      return;
+    }
+    await _peerConnection!.addCandidate(candidate);
   }
 
   // 接收answer
@@ -253,6 +363,12 @@ class _VideoCallPageState extends State<VideoCallPage> {
     await _peerConnection!.setRemoteDescription(
       RTCSessionDescription(answer['sdp'], answer['type']),
     );
+    print('已设置远程sdp, 添加缓存的candidate');
+    // 添加缓存的候选
+    for (var c in _pendingCandidates) {
+      await _peerConnection!.addCandidate(c);
+    }
+    _pendingCandidates.clear();
   }
 
   // 请求摄像头和麦克风权限
@@ -274,6 +390,9 @@ class _VideoCallPageState extends State<VideoCallPage> {
 
   // 被动挂断通话
   Future<void> _beCallEnd() async {
+    // 标记为主动挂断，阻止重连逻辑
+    _isManualHangup = true;
+    _reconnectTimer?.cancel();
     // 断开连接
     await _peerConnection?.close();
     await ToastUtils.showGlobalToastAsync(
@@ -287,6 +406,9 @@ class _VideoCallPageState extends State<VideoCallPage> {
 
   // 主动挂断通话
   void _callEnd() async {
+    // 标记为主动挂断，阻止重连逻辑
+    _isManualHangup = true;
+    _reconnectTimer?.cancel();
     await _sendRTCSignal(RTCSignalEnum.callEnd, null);
     // 断开连接
     await _peerConnection?.close();
@@ -302,21 +424,36 @@ class _VideoCallPageState extends State<VideoCallPage> {
   // 构建同意接听按钮
   Widget _buildAgreeCallBtn() {
     return GestureDetector(
-      onTap: () {
-        // 正常流程：如果呼叫方已经发送了offer, 那么可以发送answer
-        if (_pendingOffer != null) {
-          _sendAnswer(_pendingOffer);
-        } else {
-          // 容错处理：如果没收到 Offer 却点了接听，则作为发起方发送 Offer
-          _sendOffer();
-        }
-      },
+      onTap: _isAgreeing
+          ? null // 加载中时禁止重复点击
+          : () {
+              setState(() {
+                _isAgreeing = true; // 进入加载状态
+              });
+              // 正常流程：如果呼叫方已经发送了offer, 那么可以发送answer
+              if (_pendingOffer != null) {
+                _sendAnswer(_pendingOffer);
+              } else {
+                // 容错处理：如果没收到 Offer 却点了接听，则作为发起方发送 Offer
+                _sendOffer();
+              }
+            },
       child: Container(
         width: 50.w,
         height: 50.w,
         decoration: BoxDecoration(shape: .circle, color: Colors.green),
         alignment: .center,
-        child: Icon(Icons.call, color: Colors.white, size: 30.w),
+        // 加载中显示旋转指示器，否则显示电话图标
+        child: _isAgreeing
+            ? SizedBox(
+                width: 24.w,
+                height: 24.w,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: Colors.white,
+                ),
+              )
+            : Icon(Icons.call, color: Colors.white, size: 30.w),
       ),
     );
   }
@@ -420,6 +557,7 @@ class _VideoCallPageState extends State<VideoCallPage> {
 
   @override
   void dispose() {
+    _reconnectTimer?.cancel();
     _streamSubscription.cancel();
     _peerConnection?.dispose();
     _remoteRenderer.dispose();
