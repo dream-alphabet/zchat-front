@@ -53,8 +53,31 @@ class UserContactController extends GetxController {
     final index = groupList.indexOf((group) => group.contactId == groupId);
     if (index != -1) {
       final group = groupList[index];
-      group.contactName = groupName;
+      group.originName = groupName;
       groupList[index] = group;
+    }
+  }
+
+  // 查找联系人
+  UserContactRes? findUserContact(String contactId, int contactType) {
+    if (UserContactTypeEnum.group == contactType) {
+      return groupList.firstWhereOrNull((g) => g.contactId == contactId);
+    } else if (UserContactTypeEnum.user == contactType) {
+      return userList.firstWhereOrNull((c) => c.contactId == contactId);
+    }
+    return null;
+  }
+
+  // 更新备注
+  void updateRemark(String contactId, String remark) {
+    final group = groupList.firstWhereOrNull((g) => g.contactId == contactId);
+    if (group != null) {
+      group.remark = remark;
+      return;
+    }
+    final user = userList.firstWhereOrNull((c) => c.contactId == contactId);
+    if (user != null) {
+      user.remark = remark;
     }
   }
 }

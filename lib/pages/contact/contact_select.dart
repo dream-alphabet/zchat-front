@@ -224,7 +224,9 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
                   alignment: Alignment.centerLeft,
                   child: highlightRanges != null && highlightRanges.isNotEmpty
                       ? HighlightText(
-                          text: data.contactName,
+                          text: data.remark == null
+                              ? data.originName
+                              : '${data.remark}(${data.originName})',
                           normalStyle: TextStyle(
                             color: Colors.black,
                             fontSize: 15.w,
@@ -401,7 +403,9 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
         final item = _searchResult[index];
         // 计算高亮范围
         final ranges = HighlightHelper.computeHighlightRanges(
-          item.contactName,
+          item.remark == null
+              ? item.originName
+              : '${item.remark}(${item.originName})',
           keyword,
         );
         return _buildContactItem(item, highlightRanges: ranges);

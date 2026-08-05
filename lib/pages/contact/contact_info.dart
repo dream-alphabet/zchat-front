@@ -81,11 +81,16 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
             },
             child: Icon(Icons.arrow_back_ios, size: 20.w, color: Colors.black),
           ),
-          // 好友设置(只有好友有)
-          if (_contactInfo?.contactType == UserContactTypeEnum.user)
+          // 跳转到聊天信息页面(只有好友有)
+          if (_contactInfo?.contactType == UserContactTypeEnum.user &&
+              _contactInfo?.contactStatus == UserContactStatusEnum.friend)
             GestureDetector(
               onTap: () {
-                Navigator.pushNamed(context, RoutePath.friendSetting);
+                Navigator.pushNamed(
+                  context,
+                  RoutePath.chatInfo,
+                  arguments: {'contactId': _contactId},
+                );
               },
               child: Icon(
                 Icons.more_horiz_rounded,

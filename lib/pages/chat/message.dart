@@ -319,7 +319,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   }
 
   // 发送个人名片
-  Future<void> _sendPersonCard(UserContactRes contact) async {
+  Future<void> _sendPersonCard(PersonCardData contact) async {
     // 发送消息
     final msg = await sendMessageApi(
       SendMsgReq(
@@ -352,21 +352,29 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       RouteUtils.slideUp(
         (ctx) => ContactSelectPage(
           onSelect: (contact) async {
-            final receiver = UserContactRes(
-              contactId: _contactId,
-              contactType: _contactType,
-              contactName: _contactInfo?.contactName ?? '',
+            final receiver = _userContactController.findUserContact(
+              _contactId,
+              _contactType,
+            );
+            if (receiver == null) {
+              ToastUtils.showGlobalToast(msg: '联系人未找到');
+              return false;
+            }
+            final contactData = PersonCardData(
+              contactId: contact.contactId,
+              contactType: contact.contactType,
+              contactName: contact.originName,
             );
             final result = await showSendConfirmModal(
               context,
               receiver,
-              contact,
+              contactData,
             );
             // 用户是否点击发送按钮
             final confirm = result != null && result;
             // 用户点击了确认发送
             if (confirm) {
-              await _sendPersonCard(contact);
+              await _sendPersonCard(contactData);
             }
             return confirm;
           },
@@ -1042,7 +1050,11 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                     onTap: () async {
                       // 如果双方是好友关系，跳转到聊天信息页面
                       if (_contactType == UserContactTypeEnum.user) {
-                        Navigator.pushNamed(context, RoutePath.chatInfo);
+                        Navigator.pushNamed(
+                          context,
+                          RoutePath.chatInfo,
+                          arguments: {'contactId': _contactId},
+                        );
                       } else if (_contactType == UserContactTypeEnum.group) {
                         // 如果是群聊，跳转到群聊设置页面
                         // 群聊已解散，询问是否要删除该群聊

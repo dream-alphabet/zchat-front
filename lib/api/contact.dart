@@ -69,3 +69,8 @@ Future<void> delContactApi(String contactId, int contactType) async {
     params: {'contactId': contactId, 'contactType': contactType},
   );
 }
+
+// 更新联系人设置
+Future<void> updateContactSettingApi(UpdateContactSettingReq data) async {
+  await request.post(Api.updateContactSetting, data: data.toJson());
+}

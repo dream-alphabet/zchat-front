@@ -290,9 +290,9 @@ void _handleChatMsg(dynamic msg) {
     navigateToPage(
       RoutePath.videoCall,
       arguments: {
-        'isCaller': false, 
+        'isCaller': false,
         'contactId': message.sendUserId,
-        'messageId': message.messageId
+        'messageId': message.messageId,
       },
     );
   }
@@ -431,7 +431,7 @@ void _handleDissolveGroup(dynamic msg) {
     return;
   }
   // 通知消息
-  _notifyMessage(message, sessionId, ServerMsgType.dissolveGroup);
+  _notifyGroupMessage(message, sessionId, ServerMsgType.dissolveGroup);
 }
 
 // 处理更新群聊信息
@@ -449,11 +449,11 @@ void _handleUpdateGroup(dynamic msg) {
   // 更新了群名称
   if (groupName.isNotEmpty) {
     contactStore.updateGroupName(groupId, groupName);
-    sessionStore.updateContactName(sessionId, groupName);
+    sessionStore.updateContactName(groupName, sessionId: sessionId);
   }
   // 通知消息
   for (final message in messageList) {
-    _notifyMessage(message, sessionId, ServerMsgType.chat);
+    _notifyGroupMessage(message, sessionId, ServerMsgType.chat);
   }
   if (sessionId == activeSessionId && groupName.isNotEmpty) {
     eventBus.fire(
@@ -490,8 +490,12 @@ void _handleServerMsg(dynamic msg) {
   }
 }
 
-// 通知消息
-void _notifyMessage(ChatMessageRes message, String sessionId, String type) {
+// 通知群聊消息
+void _notifyGroupMessage(
+  ChatMessageRes message,
+  String sessionId,
+  String type,
+) {
   // 会话store
   final sessionStore = Get.find<ChatSessionStore>();
   // 消息store

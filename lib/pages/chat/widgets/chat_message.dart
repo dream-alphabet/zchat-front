@@ -40,7 +40,7 @@ class ChatMessage extends StatefulWidget {
     super.key,
     required this.message,
     required this.scrollController,
-    required this.onShareMessage
+    required this.onShareMessage,
   });
 
   @override
@@ -382,7 +382,7 @@ class _ChatMessageState extends State<ChatMessage> {
 
   // 构建个人卡片消息
   Widget _buildPersonCard() {
-    final contact = UserContactRes.fromJson(
+    final contact = PersonCardData.fromJson(
       jsonDecode(widget.message.data ?? ''),
     );
     return GestureDetector(
@@ -414,20 +414,20 @@ class _ChatMessageState extends State<ChatMessage> {
           child: Padding(
             padding: .symmetric(horizontal: 5.w, vertical: 12.w),
             child: Column(
-            spacing: 5.w,
-            children: [
-              Icon(items[index].icon, color: Colors.white, size: 20.sp),
-              Text(
-                items[index].text,
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: Colors.white,
-                  decoration: .none,
-                  fontWeight: .normal,
+              spacing: 5.w,
+              children: [
+                Icon(items[index].icon, color: Colors.white, size: 20.sp),
+                Text(
+                  items[index].text,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: Colors.white,
+                    decoration: .none,
+                    fontWeight: .normal,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           ),
         ),
       ),
@@ -492,6 +492,14 @@ class _ChatMessageState extends State<ChatMessage> {
 
   // 显示上下文菜单
   void _showContextMenu() {
+    final message = widget.message;
+    if ([
+      MessageTypeEnum.videoCall.type,
+      MessageTypeEnum.voiceCall.type,
+      MessageTypeEnum.systemNotice.type,
+    ].contains(message.messageType)) {
+      return;
+    }
     // 防止重复弹出
     if (_contextMenuOverlay != null) {
       _contextMenuOverlay!.remove();
@@ -504,7 +512,6 @@ class _ChatMessageState extends State<ChatMessage> {
     Offset offset = contentBox.localToGlobal(Offset.zero);
     Size size = contentBox.size;
     final width = size.width;
-    final message = widget.message;
     // 上下文菜单项列表
     List<ContextMenuItem> items = [
       if (message.messageType == MessageTypeEnum.text.type)
@@ -532,11 +539,15 @@ class _ChatMessageState extends State<ChatMessage> {
             _hideContextMenu();
             // 跳转到选择联系人页面
             Navigator.push(
-              context, 
+              context,
               RouteUtils.slideUp(
                 (ctx) => ContactSelectPage(
                   onSelect: (contact) async {
-                    final res = await showPromptDialog(context, '是否确定向${contact.contactName}转发此消息?', showCancel: true);
+                    final res = await showPromptDialog(
+                      context,
+                      '是否确定向${contact.contactName}转发此消息?',
+                      showCancel: true,
+                    );
                     // 用户取消转发
                     if (res == null || !res) {
                       return false;
@@ -546,11 +557,7 @@ class _ChatMessageState extends State<ChatMessage> {
                     return true;
                   },
                 ),
-                settings: RouteSettings(
-                  arguments: {
-                    'searchAll': true
-                  }
-                )
+                settings: RouteSettings(arguments: {'searchAll': true}),
               ),
             );
           },
@@ -601,6 +608,41 @@ class _ChatMessageState extends State<ChatMessage> {
     Overlay.of(context).insert(_contextMenuOverlay!);
   }
 
+  // 构建视频通话消息
+  Widget _buildVideoCall() {
+    final msgData = widget.message.data;
+    if (msgData == null) {
+      return _buildTextMsg('视频通话');
+    }
+    final data = jsonDecode(msgData);
+    return _buildMsgLayout(
+      child: Container(
+        key: _contentKey,
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.w),
+        decoration: BoxDecoration(
+          color: _isSelf ? const Color.fromRGBO(20, 134, 237, 1) : Colors.white,
+          borderRadius: .circular(8.r),
+        ),
+        child: Row(
+          mainAxisSize: .min,
+          spacing: 5.w,
+          children: [
+            Text(
+              '通话时长 ${formatDuration(data['duration'])}',
+              style: TextStyle(color: _isSelf ? Colors.white : Colors.black),
+            ),
+            Icon(
+              MyIcon.video,
+              size: 18.sp,
+              color: _isSelf ? Colors.white : Colors.black,
+            ),
+          ],
+        ),
+      ),
+      color: _isSelf ? const Color.fromRGBO(20, 134, 237, 1) : Colors.white,
+    );
+  }
+
   // 根据消息类型获取消息内容
   Widget _getContent() {
     // 消息类型
@@ -614,6 +656,9 @@ class _ChatMessageState extends State<ChatMessage> {
     } else if (messageType == MessageTypeEnum.personCard.type) {
       // 个人卡片
       return _buildPersonCard();
+    } else if (messageType == MessageTypeEnum.videoCall.type) {
+      // 视频通话
+      return _buildVideoCall();
     }
     return _buildTextMsg('未知消息类型');
   }

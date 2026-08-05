@@ -6,7 +6,7 @@ import 'package:zchat/widgets/ink_click.dart';
 
 // 个人卡片组件
 class PersonCard extends StatelessWidget {
-  final UserContactRes contact;
+  final PersonCardData contact;
   final String type;
 
   const PersonCard({super.key, required this.contact, required this.type});
@@ -50,11 +50,38 @@ class PersonCard extends StatelessWidget {
   }
 }
 
+// 个人名片数据
+class PersonCardData {
+  String contactId;
+  int contactType;
+  String contactName;
+
+  PersonCardData({
+    required this.contactId,
+    required this.contactType,
+    required this.contactName,
+  });
+
+  factory PersonCardData.fromJson(Map<String, dynamic> json) {
+    return PersonCardData(
+      contactId: json['contactId'],
+      contactType: json['contactType'],
+      contactName: json['contactName'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'contactId': contactId,
+    'contactType': contactType,
+    'contactName': contactName,
+  };
+}
+
 // 弹出是否确认发送个人卡片
 Future<bool?> showSendConfirmModal(
   BuildContext context,
   UserContactRes receiver,
-  UserContactRes contact, {
+  PersonCardData contact, {
   String type = '个人名片',
 }) {
   return showModalBottomSheet<bool>(

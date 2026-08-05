@@ -14,6 +14,8 @@ import 'package:zchat/pages/contact/add_friend.dart';
 import 'package:zchat/pages/contact/chat_info.dart';
 import 'package:zchat/pages/contact/contact_select.dart';
 import 'package:zchat/pages/contact/create_group.dart';
+import 'package:zchat/pages/contact/friend/friend_authority.dart';
+import 'package:zchat/pages/contact/friend/friend_remark.dart';
 import 'package:zchat/pages/contact/friend_setting.dart';
 import 'package:zchat/pages/contact/group/group_name.dart';
 import 'package:zchat/pages/contact/group/group_notice.dart';
@@ -61,7 +63,9 @@ final Map<String, WidgetBuilder> routes = {
   RoutePath.groupName: (ctx) => GroupNamePage(),
   RoutePath.groupNotice: (ctx) => GroupNoticePage(),
   RoutePath.groupQrcode: (ctx) => GroupQrcodePage(),
-  RoutePath.groupRemark: (ctx) => GroupRemarkPage()
+  RoutePath.groupRemark: (ctx) => GroupRemarkPage(),
+  RoutePath.friendRemark: (ctx) => FriendRemarkPage(),
+  RoutePath.friendAuthority: (ctx) => FriendAuthorityPage()
 };
 
 // 全局Context

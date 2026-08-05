@@ -5,33 +5,53 @@ class ChatSessionRes {
   String sessionId;
   String contactId;
   int contactType;
-  String contactName;
-  String? lastMessage;
-  int? lastReceiveTime;
+  String? remark;
+  String originName;
+  String lastMessage;
+  int lastReceiveTime;
+
+  // 获取contactName: 优先使用备注，备注为空再使用原始名称
+  String get contactName => remark ?? originName;
 
   ChatSessionRes({
     required this.sessionId,
     required this.contactId,
     required this.contactType,
-    required this.contactName,
+    this.remark,
+    required this.originName,
     required this.lastMessage,
     required this.lastReceiveTime,
   });
 
-  factory ChatSessionRes.fromJson(Map<String, dynamic> json) => ChatSessionRes(
-    sessionId: json["sessionId"],
-    contactId: json["contactId"],
-    contactType: json["contactType"],
-    contactName: json["contactName"],
-    lastMessage: json["lastMessage"],
-    lastReceiveTime: json["lastReceiveTime"],
-  );
+  factory ChatSessionRes.fromJson(Map<String, dynamic> json) {
+    return ChatSessionRes(
+      sessionId: json['sessionId'],
+      contactId: json['contactId'],
+      contactType: json['contactType'],
+      remark: json['remark'],
+      originName: json['originName'],
+      lastMessage: json['lastMessage'],
+      lastReceiveTime: json['lastReceiveTime'],
+    );
+  }
 
+  Map<String, dynamic> toJson() => {
+    'sessionId': sessionId,
+    'contactId': contactId,
+    'contactType': contactType,
+    'remark': remark,
+    'originName': originName,
+    'lastMessage': lastMessage,
+    'lastReceiveTime': lastReceiveTime,
+  };
+
+  // 新增 copyWith 方法
   ChatSessionRes copyWith({
     String? sessionId,
     String? contactId,
     int? contactType,
-    String? contactName,
+    String? remark,
+    String? originName,
     String? lastMessage,
     int? lastReceiveTime,
   }) {
@@ -39,7 +59,8 @@ class ChatSessionRes {
       sessionId: sessionId ?? this.sessionId,
       contactId: contactId ?? this.contactId,
       contactType: contactType ?? this.contactType,
-      contactName: contactName ?? this.contactName,
+      remark: remark ?? this.remark,
+      originName: originName ?? this.originName,
       lastMessage: lastMessage ?? this.lastMessage,
       lastReceiveTime: lastReceiveTime ?? this.lastReceiveTime,
     );

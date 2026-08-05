@@ -1,7 +1,7 @@
 // 全局常量类
 class GlobalConstants {
   // 主机地址
-  static const host = '192.168.10.8';
+  static const host = '192.168.2.103';
   // api请求基础地址
   static const baseUrl = 'http://$host/api';
   // ws连接地址
@@ -63,6 +63,7 @@ class Api {
   static const searchGroupMember = '/group/searchMember';
   static const dissolveGroup = '/group/dissolve/';
   static const updateGroup = '/group/update/';
+  static const updateContactSetting = '/contact/updateSetting';
 }
 
 // 路由路径常量
@@ -99,6 +100,10 @@ class RoutePath {
   static const chatInfo = 'chatInfo';
   // 好友设置
   static const friendSetting = 'friendSetting';
+  // 好友备注
+  static const friendRemark = 'friendRemark';
+  // 好友权限
+  static const friendAuthority = 'friendAuthority';
   // 群聊设置
   static const groupSetting = 'groupSetting';
   // 添加到通讯录

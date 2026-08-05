@@ -15,6 +15,22 @@ class ChatInfoPage extends StatefulWidget {
 }
 
 class _ChatInfoPageState extends State<ChatInfoPage> {
+  // 联系人id
+  String _contactId = '';
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      if (ModalRoute.of(context) != null) {
+        // 接收路由参数
+        final params =
+            ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+        _contactId = params['contactId'];
+      }
+    });
+  }
+
   // 构建cell行
   Widget _buildRow(Widget child, {GestureTapCallback? onTap}) {
     return InkClick(
@@ -44,7 +60,11 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
         ],
       ),
       onTap: () {
-        Navigator.pushNamed(context, routePath);
+        Navigator.pushNamed(
+          context,
+          routePath,
+          arguments: {'contactId': _contactId},
+        );
       },
     );
   }
@@ -60,7 +80,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
           statusBarColor: const Color.fromRGBO(237, 237, 237, 1),
           statusBarBrightness: Brightness.light,
           statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: const Color.fromRGBO(247, 247, 247, 1),
+          systemNavigationBarColor: const Color.fromRGBO(237, 237, 237, 1),
           // 底部导航栏背景
           systemNavigationBarIconBrightness: Brightness.dark, // 底部导航栏图标颜色
         ),

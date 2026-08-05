@@ -121,26 +121,51 @@ class HandleApplyReq {
 
 // 联系人响应对象
 class UserContactRes {
+  String userId;
   String contactId;
   int contactType;
-  String contactName;
+  int status;
+  String? remark;
+  int createTime;
+  int updateTime;
+  String originName;
+
+  // 获取contactName: 优先使用备注，备注为空再使用原始名称
+  String get contactName => remark ?? originName;
 
   UserContactRes({
+    required this.userId,
     required this.contactId,
     required this.contactType,
-    required this.contactName,
+    required this.status,
+    this.remark,
+    required this.createTime,
+    required this.updateTime,
+    required this.originName,
   });
 
-  factory UserContactRes.fromJson(Map<String, dynamic> json) => UserContactRes(
-    contactId: json["contactId"],
-    contactType: json['contactType'],
-    contactName: json["contactName"],
-  );
+  factory UserContactRes.fromJson(Map<String, dynamic> json) {
+    return UserContactRes(
+      userId: json['userId'],
+      contactId: json['contactId'],
+      contactType: json['contactType'],
+      status: json['status'],
+      remark: json['remark'],
+      createTime: json['createTime'],
+      updateTime: json['updateTime'],
+      originName: json['originName'],
+    );
+  }
 
   Map<String, dynamic> toJson() => {
-    "contactId": contactId,
+    'userId': userId,
+    'contactId': contactId,
     'contactType': contactType,
-    "contactName": contactName,
+    'status': status,
+    'remark': remark,
+    'createTime': createTime,
+    'updateTime': updateTime,
+    'originName': originName,
   };
 }
 
@@ -155,4 +180,21 @@ class SearchContactReq {
     'keywords': keywords,
     'contactType': contactType,
   };
+}
+
+// 更新联系人设置请求参数
+class UpdateContactSettingReq {
+  String contactId;
+  String remark;
+
+  UpdateContactSettingReq({required this.contactId, required this.remark});
+
+  factory UpdateContactSettingReq.fromJson(Map<String, dynamic> json) {
+    return UpdateContactSettingReq(
+      contactId: json['contactId'],
+      remark: json['remark'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {'contactId': contactId, 'remark': remark};
 }

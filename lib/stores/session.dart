@@ -8,12 +8,26 @@ class ChatSessionStore extends GetxController {
   final sessionList = (<ChatSessionRes>[]).obs;
 
   // 更新contactName
-  void updateContactName(String sessionId, String contactName) {
-    final index = sessionList.indexWhere((s) => s.sessionId == sessionId);
+  void updateContactName(
+    String contactName, {
+    String? sessionId,
+    String? contactId,
+  }) {
+    final index = sessionList.indexWhere(
+      (s) => s.sessionId == sessionId || s.contactId == contactId,
+    );
     if (index != -1) {
-      sessionList[index] = sessionList[index].copyWith(
-        contactName: contactName,
-      );
+      sessionList[index] = sessionList[index].copyWith(originName: contactName);
+    }
+  }
+
+  // 更新备注
+  void updateRemark(String remark, {String? sessionId, String? contactId}) {
+    final index = sessionList.indexWhere(
+      (s) => s.sessionId == sessionId || s.contactId == contactId,
+    );
+    if (index != -1) {
+      sessionList[index] = sessionList[index].copyWith(remark: remark);
     }
   }
 

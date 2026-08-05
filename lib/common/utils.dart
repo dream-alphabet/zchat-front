@@ -11,6 +11,27 @@ import 'package:zchat/common/toast.dart';
 import 'package:zchat/model/contact.dart';
 import 'package:zchat/routes/index.dart';
 
+// 格式化持续时间
+String formatDuration(int milliseconds) {
+  // 参数校验（可选）
+  if (milliseconds < 0) {
+    throw ArgumentError('milliseconds cannot be negative');
+  }
+
+  final duration = Duration(milliseconds: milliseconds);
+  final hours = duration.inHours;
+  final minutes = duration.inMinutes.remainder(60);
+  final seconds = duration.inSeconds.remainder(60);
+
+  // 格式化数字为两位，不足补零
+  final twoDigits = (int n) => n.toString().padLeft(2, '0');
+
+  if (hours > 0) {
+    return '${twoDigits(hours)}:${twoDigits(minutes)}:${twoDigits(seconds)}';
+  }
+  return '${twoDigits(minutes)}:${twoDigits(seconds)}';
+}
+
 // 转换时间戳为字符串
 String formatTimestamp(int? millisecondsTimestamp) {
   if (millisecondsTimestamp == null) {
@@ -117,8 +138,7 @@ Future<void> requestNotificationPermission() async {
   // 请求通知栏权限
   state = await Permission.notification.request();
   if (state.isGranted) {
-  } else {
-  }
+  } else {}
 }
 
 // 请求相册权限

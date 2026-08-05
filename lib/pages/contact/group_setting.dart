@@ -87,7 +87,7 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
   // 发送群聊卡片
   Future<void> _sendGroupCard(
     UserContactRes receiver,
-    UserContactRes groupInfo,
+    PersonCardData groupInfo,
   ) async {
     // 发送消息
     final msg = await sendMessageApi(
@@ -115,7 +115,7 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
       RouteUtils.slideUp(
         (context) => ContactSelectPage(
           onSelect: (receiver) async {
-            final groupInfo = UserContactRes(
+            final groupInfo = PersonCardData(
               contactId: _groupId,
               contactType: UserContactTypeEnum.group,
               contactName: _group?.groupName ?? '',
