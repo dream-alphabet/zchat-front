@@ -379,13 +379,29 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
     );
   }
 
-  // 备注
+  // 群备注
   Widget _buildRemark() {
     return Row(
       mainAxisAlignment: .spaceBetween,
       spacing: 10.w,
       children: [
-        Text('备注'),
+        Text('群备注'),
+        Icon(
+          MyIcon.arrowRight,
+          size: 16.sp,
+          color: Color.fromRGBO(174, 174, 174, 1),
+        ),
+      ],
+    );
+  }
+
+  // 我在群里的昵称
+  Widget _buildGroupNickname() {
+    return Row(
+      mainAxisAlignment: .spaceBetween,
+      spacing: 10.w,
+      children: [
+        Text('我在群里的昵称'),
         Icon(
           MyIcon.arrowRight,
           size: 16.sp,
@@ -403,6 +419,7 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
       _buildGroupQrCode(),
       _buildGroupNotice(),
       _buildRemark(),
+      _buildGroupNickname()
     ];
     // 要跳转的页面
     final paths = [
@@ -410,6 +427,7 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
       RoutePath.groupQrcode,
       RoutePath.groupNotice,
       RoutePath.groupRemark,
+      RoutePath.groupNickname
     ];
 
     return Container(
@@ -430,7 +448,10 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
               Navigator.pushNamed(
                 context,
                 paths[index],
-                arguments: {'group': _group},
+                arguments: {
+                  'group': _group,
+                  'groupId': _groupId
+                },
               );
             },
             child: Container(

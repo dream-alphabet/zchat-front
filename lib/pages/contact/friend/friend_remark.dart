@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:zchat/api/contact.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/model/contact.dart';
+import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/stores/contact.dart';
 import 'package:zchat/stores/session.dart';
 
@@ -44,6 +45,13 @@ class _FriendRemarkPageState extends State<FriendRemarkPage> {
         final params =
             ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
         _contactId = params['contactId'];
+        final contact = _userContactController.findUserContact(_contactId, UserContactTypeEnum.user);
+        if (contact != null) {
+          setState(() {
+            _remark = contact.remark ?? '';
+            _remarkController.text = _remark;
+          });
+        }
       }
     });
   }
@@ -58,7 +66,7 @@ class _FriendRemarkPageState extends State<FriendRemarkPage> {
       UpdateContactSettingReq(contactId: _contactId, remark: _remark),
     );
     // 修改本地store remark
-    _userContactController.updateRemark(_contactId, _remark);
+    _userContactController.updateContact(_contactId, remark: _remark);
     _sessionStore.updateRemark(_remark, contactId: _contactId);
     ToastUtils.showGlobalToastAsync(msg: '更新成功').whenComplete(() {
       Navigator.pop(context);

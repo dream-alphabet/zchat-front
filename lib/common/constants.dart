@@ -126,4 +126,6 @@ class RoutePath {
   static const groupRemark = 'groupRemark';
   // 群二维码
   static const groupQrcode = 'groupQrcode';
+  // 我在群里的昵称
+  static const groupNickname = 'groupNickname';
 }

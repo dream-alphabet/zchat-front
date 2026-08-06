@@ -68,16 +68,29 @@ class UserContactController extends GetxController {
     return null;
   }
 
-  // 更新备注
-  void updateRemark(String contactId, String remark) {
-    final group = groupList.firstWhereOrNull((g) => g.contactId == contactId);
-    if (group != null) {
-      group.remark = remark;
+  UserContactRes? getUserContact(String contactId) {
+    final contact = findUserContact(contactId, UserContactTypeEnum.group);
+    if (contact != null) {
+      return contact;
+    }
+    return findUserContact(contactId, UserContactTypeEnum.user);
+  }
+
+  // 更新联系人设置
+  void updateContact(
+    String contactId, {
+    String remark = '',
+    String groupNickname = '',
+  }) {
+    final contact = getUserContact(contactId);
+    if (contact == null) {
       return;
     }
-    final user = userList.firstWhereOrNull((c) => c.contactId == contactId);
-    if (user != null) {
-      user.remark = remark;
+    if (remark.isNotEmpty) {
+      contact.remark = remark;
+    }
+    if (groupNickname.isNotEmpty) {
+      contact.groupNickname = groupNickname;
     }
   }
 }

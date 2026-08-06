@@ -63,6 +63,15 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   // 联系人信息
   ContactInfoRes? _contactInfo;
 
+  // 联系人名称
+  String get _contactName {
+    final contact = _userContactController.findUserContact(_contactId, _contactType);
+    if (contact == null) {
+      return '';
+    }
+    return contact.contactName;
+  }
+
   // 是否显示表情区域
   bool _showEmotion = false;
 
@@ -478,9 +487,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       // 更新群聊信息
       if (event.type == ServerMsgType.updateGroup) {
         // 修改群聊名称
-        setState(() {
-          _contactInfo?.contactName = event.msg;
-        });
+        setState(() {});
         return;
       }
       // 有消息撤回
@@ -1041,8 +1048,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
               // 导航栏
               PageHeader(
                 title: _contactType == UserContactTypeEnum.user
-                    ? _contactInfo?.contactName ?? ''
-                    : '${_contactInfo?.contactName}(${_contactInfo?.memberCount})',
+                    ? _contactName
+                    : '$_contactName(${_contactInfo?.memberCount})',
                 showLeftBackIcon: true,
                 backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
                 rightIconList: [

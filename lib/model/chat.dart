@@ -7,8 +7,8 @@ class ChatSessionRes {
   int contactType;
   String? remark;
   String originName;
-  String lastMessage;
-  int lastReceiveTime;
+  String? lastMessage;
+  int? lastReceiveTime;
 
   // 获取contactName: 优先使用备注，备注为空再使用原始名称
   String get contactName => remark ?? originName;

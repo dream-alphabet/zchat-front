@@ -126,6 +126,7 @@ class UserContactRes {
   int contactType;
   int status;
   String? remark;
+  String? groupNickname;
   int createTime;
   int updateTime;
   String originName;
@@ -139,6 +140,7 @@ class UserContactRes {
     required this.contactType,
     required this.status,
     this.remark,
+    this.groupNickname,
     required this.createTime,
     required this.updateTime,
     required this.originName,
@@ -151,6 +153,7 @@ class UserContactRes {
       contactType: json['contactType'],
       status: json['status'],
       remark: json['remark'],
+      groupNickname: json['groupNickname'],
       createTime: json['createTime'],
       updateTime: json['updateTime'],
       originName: json['originName'],
@@ -163,6 +166,7 @@ class UserContactRes {
     'contactType': contactType,
     'status': status,
     'remark': remark,
+    'groupNickname': groupNickname,
     'createTime': createTime,
     'updateTime': updateTime,
     'originName': originName,
@@ -185,16 +189,26 @@ class SearchContactReq {
 // 更新联系人设置请求参数
 class UpdateContactSettingReq {
   String contactId;
-  String remark;
+  String? remark;
+  String? groupNickname;
 
-  UpdateContactSettingReq({required this.contactId, required this.remark});
+  UpdateContactSettingReq({
+    required this.contactId,
+    this.remark,
+    this.groupNickname,
+  });
 
   factory UpdateContactSettingReq.fromJson(Map<String, dynamic> json) {
     return UpdateContactSettingReq(
       contactId: json['contactId'],
       remark: json['remark'],
+      groupNickname: json['groupNickname'],
     );
   }
 
-  Map<String, dynamic> toJson() => {'contactId': contactId, 'remark': remark};
+  Map<String, dynamic> toJson() => {
+    'contactId': contactId,
+    'remark': remark,
+    'groupNickname': groupNickname,
+  };
 }

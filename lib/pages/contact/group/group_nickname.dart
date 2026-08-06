@@ -7,36 +7,36 @@ import 'package:zchat/common/toast.dart';
 import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/stores/contact.dart';
-import 'package:zchat/stores/session.dart';
+import 'package:zchat/stores/user.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/page_header.dart';
 
-// 群备注
-class GroupRemarkPage extends StatefulWidget {
-  const GroupRemarkPage({super.key});
+// 我在群里的昵称
+class GroupNicknamePage extends StatefulWidget {
+  const GroupNicknamePage({super.key});
 
   @override
-  State<GroupRemarkPage> createState() => _GroupRemarkPageState();
+  State<GroupNicknamePage> createState() => _GroupNicknamePageState();
 }
 
-class _GroupRemarkPageState extends State<GroupRemarkPage> {
+class _GroupNicknamePageState extends State<GroupNicknamePage> {
   // 群聊信息
   String _groupId = '';
 
-  // 备注输入框控制器
-  final _remarkController = TextEditingController();
+  // 群聊昵称输入框控制器
+  final _groupNicknameController = TextEditingController();
 
-  // 备注
-  String _remark = '';
+  // 群聊昵称
+  String _groupNickname = '';
 
-  // 备注是否为空
-  bool get _isRemarkEmpty => _remark.trim().isEmpty;
+  // 群聊昵称是否为空
+  bool get _isGroupNicknameEmpty => _groupNickname.trim().isEmpty;
 
   // 联系人store
   final _userContactController = Get.find<UserContactController>();
 
-  // 会话store
-  final _sessionStore = Get.find<ChatSessionStore>();
+  // 用户store
+  final _userController = Get.find<UserController>();
 
   @override
   void initState() {
@@ -53,27 +53,33 @@ class _GroupRemarkPageState extends State<GroupRemarkPage> {
             UserContactTypeEnum.group,
           );
           if (contact != null) {
-            _remark = contact.remark ?? '';
-            _remarkController.text = _remark;
+            _groupNickname =
+                contact.groupNickname ??
+                _userController.userInfo.value!.nickname;
+            _groupNicknameController.text = _groupNickname;
           }
         });
       }
     });
   }
 
-  // 更新备注
-  void _updateRemark() async {
-    // 备注为空
-    if (_isRemarkEmpty) {
-      ToastUtils.showGlobalToast(msg: '备注不能为空');
+  // 修改群昵称
+  void _updateGroupNickname() async {
+    if (_isGroupNicknameEmpty) {
+      ToastUtils.showGlobalToast(msg: '群昵称不能为空');
       return;
     }
     await updateContactSettingApi(
-      UpdateContactSettingReq(contactId: _groupId, remark: _remark),
+      UpdateContactSettingReq(
+        contactId: _groupId,
+        groupNickname: _groupNickname,
+      ),
     );
-    // 修改本地store remark
-    _userContactController.updateContact(_groupId, remark: _remark);
-    _sessionStore.updateRemark(_remark, contactId: _groupId);
+    // 更新本地store的群昵称
+    _userContactController.updateContact(
+      _groupId,
+      groupNickname: _groupNickname,
+    );
     ToastUtils.showGlobalToastAsync(msg: '更新成功').whenComplete(() {
       Navigator.pop(context);
     });
@@ -84,8 +90,11 @@ class _GroupRemarkPageState extends State<GroupRemarkPage> {
     return Column(
       spacing: 10.w,
       children: [
-        Text('备注', style: TextStyle(fontSize: 20.sp)),
-        Text('群聊的备注仅自己可见'),
+        Text('我在群里的昵称', style: TextStyle(fontSize: 20.sp)),
+        Padding(
+          padding: EdgeInsetsGeometry.symmetric(horizontal: 20.w),
+          child: Text('昵称修改后，只会在群内显示，群内成员都可以看见。', textAlign: .center),
+        ),
       ],
     );
   }
@@ -101,9 +110,9 @@ class _GroupRemarkPageState extends State<GroupRemarkPage> {
           ContactAvatar(contactId: _groupId, shape: .rectangle),
           Expanded(
             child: TextField(
-              controller: _remarkController,
+              controller: _groupNicknameController,
               onChanged: (value) {
-                _remark = value;
+                _groupNickname = value;
               },
               textInputAction: .done,
               maxLength: 20,
@@ -117,7 +126,7 @@ class _GroupRemarkPageState extends State<GroupRemarkPage> {
                     required maxLength,
                   }) => const SizedBox.shrink(),
               decoration: InputDecoration(
-                hintText: '请输入备注',
+                hintText: '请输入昵称',
                 hintStyle: TextStyle(color: Color.fromRGBO(174, 174, 174, 1)),
                 border: InputBorder.none,
               ),
@@ -131,7 +140,7 @@ class _GroupRemarkPageState extends State<GroupRemarkPage> {
   // 完成按钮
   Widget _buildFinishBtn() {
     return GestureDetector(
-      onTap: _updateRemark,
+      onTap: _updateGroupNickname,
       child: Container(
         width: 100.w,
         decoration: BoxDecoration(
@@ -190,7 +199,7 @@ class _GroupRemarkPageState extends State<GroupRemarkPage> {
 
   @override
   void dispose() {
-    _remarkController.dispose();
+    _groupNicknameController.dispose();
     super.dispose();
   }
 }

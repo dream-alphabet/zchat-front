@@ -228,6 +228,8 @@ void _handleChatMsg(dynamic msg) {
   final sessionStore = Get.find<ChatSessionStore>();
   // 用户store
   final userController = Get.find<UserController>();
+  // 联系人store
+  final userContactController = Get.find<UserContactController>();
   // 类型为文本或媒体文件, 如果不是当前活跃会话的消息，弹出消息提示
   // 会话id
   final sessionId = message.sessionId;
@@ -254,15 +256,14 @@ void _handleChatMsg(dynamic msg) {
       final contactId = contactType == UserContactTypeEnum.group
           ? message.contactId
           : message.sendUserId;
-      final contactName = contactType == UserContactTypeEnum.group
-          ? message.contactName
-          : message.sendUserNickname;
+      // 根据发送方的contactId获取备注
+      final contact = userContactController.getUserContact(contactId ?? '');
       // 新增未读数量
       messageStore.addSessionUnreadCount(sessionId);
       // 展示消息提示
       MessageUtils.show(
         contactId: contactId ?? '',
-        contactName: contactName ?? '...',
+        contactName: contact?.contactName ?? '...',
         msg: messageContent,
         sendTime: message.sendTime,
         onTap: () {
@@ -361,6 +362,8 @@ void _handleRecallMessage(dynamic msg) {
   final messageStore = Get.find<MessageController>();
   // 会话store
   final sessionStore = Get.find<ChatSessionStore>();
+  // 联系人store
+  final userContactController = Get.find<UserContactController>();
   // 如果是自己发送的消息，不需要处理
   if (message.sendUserId == userController.userInfo.value?.userId) {
     return;
@@ -384,15 +387,13 @@ void _handleRecallMessage(dynamic msg) {
     final contactId = contactType == UserContactTypeEnum.group
         ? message.contactId
         : message.sendUserId;
-    final contactName = contactType == UserContactTypeEnum.group
-        ? message.contactName
-        : message.sendUserNickname;
+    final contact = userContactController.getUserContact(contactId ?? '');
     // 新增未读数量
     messageStore.addSessionUnreadCount(sessionId);
     // 展示消息提示
     MessageUtils.show(
       contactId: contactId ?? '',
-      contactName: contactName ?? '...',
+      contactName: contact?.contactName ?? '...',
       msg: '${message.sendUserNickname}已撤回一条消息',
       sendTime: now,
       onTap: () {
@@ -504,19 +505,21 @@ void _notifyGroupMessage(
   final sendTime = message.sendTime;
   // 消息内容
   final messageContent = message.messageContent;
+  // 联系人store
+  final userContactController = Get.find<UserContactController>();
   // 就在当前群聊
   if (sessionId == activeSessionId) {
     // 通知聊天消息页面
     eventBus.fire(ServerMsgEvent(type: type, msg: message));
   } else {
     final contactId = message.contactId;
-    final contactName = message.contactName;
+    final contact = userContactController.getUserContact(contactId);
     // 新增未读数量
     messageStore.addSessionUnreadCount(sessionId);
     // 展示消息提示
     MessageUtils.show(
       contactId: contactId,
-      contactName: contactName,
+      contactName: contact?.contactName ?? '',
       msg: messageContent,
       sendTime: sendTime,
       onTap: () {
