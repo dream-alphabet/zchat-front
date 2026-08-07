@@ -1,4 +1,4 @@
-package com.example.front
+package com.example.zchat
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:zchat/common/notification_helper.dart';
 import 'package:zchat/routes/index.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -9,9 +8,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // 初始化 ScreenUtil，必须在 runApp 之前
   ScreenUtil.ensureScreenSize();
-  // 初始化通知栏工具类
-  final helper = NotificationHelper();
-  await helper.initialize();
   // 初始化getx持久化工具
   await GetStorage.init();
   runApp(getRootWidget());

@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/common/constants.dart';
-import 'package:zchat/common/utils.dart';
 import 'package:zchat/common/websocket.dart';
 import 'package:zchat/pages/chat/chat.dart';
 import 'package:zchat/pages/contact/contact.dart';
@@ -125,7 +124,6 @@ class _MainPageState extends State<MainPage> {
     // 获取会话列表
     _chatSessionStore.getSessionList();
     initWebSocket();
-    await requestNotificationPermission();
   }
 
   @override

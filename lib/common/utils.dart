@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:lpinyin/lpinyin.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:zchat/common/toast.dart';
@@ -86,59 +85,6 @@ bool isValidEmail(String? email) {
 Future<void> copyText(String text) async {
   await Clipboard.setData(ClipboardData(text: text));
   ToastUtils.showGlobalToast(msg: '已复制');
-}
-
-// 发送静默通知栏消息
-Future<void> sendTestNotification() async {
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
-
-  const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
-
-  const InitializationSettings initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
-  );
-
-  await flutterLocalNotificationsPlugin.initialize(
-    settings: initializationSettings,
-  );
-
-  const AndroidNotificationDetails androidPlatformChannelSpecifics =
-      AndroidNotificationDetails(
-        'test_channel',
-        'Test Notifications',
-        importance: Importance.min,
-        priority: Priority.min,
-        playSound: false,
-      );
-
-  const NotificationDetails platformChannelSpecifics = NotificationDetails(
-    android: androidPlatformChannelSpecifics,
-  );
-
-  await flutterLocalNotificationsPlugin.show(
-    id: 0,
-    title: '静默发送通知',
-    body: '这是一条开启权限的静默通知消息',
-    notificationDetails: platformChannelSpecifics,
-  );
-}
-
-// 请求通知栏权限
-Future<void> requestNotificationPermission() async {
-  // 查看是否已经授权
-  var state = await Permission.notification.request();
-  // 如果已经授权
-  if (state.isGranted) {
-    return;
-  }
-  // 发送静默通知栏消息，如果失败请求通知栏权限
-  await sendTestNotification();
-  // 请求通知栏权限
-  state = await Permission.notification.request();
-  if (state.isGranted) {
-  } else {}
 }
 
 // 请求相册权限

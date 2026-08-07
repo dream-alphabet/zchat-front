@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart' hide MultipartFile;
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:zchat/api/chat.dart';
 import 'package:zchat/api/contact.dart';
 import 'package:zchat/common/animation.dart';
@@ -218,6 +219,13 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
 
   // 发送图片或视频消息(相册)
   void _sendMediaFromGallery(String mediaType) async {
+    // 获取相册权限
+    final status = await requestGalleryPermission();
+    // 获取失败
+    if (status.isDenied) {
+      ToastUtils.showGlobalToast(msg: '没有权限');
+      return;
+    }
     // 从相册中获取图片或视频
     final picker = ImagePicker();
     XFile? media;
