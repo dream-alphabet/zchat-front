@@ -14,6 +14,11 @@ Future<LoginRes> loginApi(LoginReq data) async {
   );
 }
 
+// 退出登录接口
+Future<void> logoutApi() async {
+  await request.get(Api.logout);
+}
+
 // 注册接口
 Future<void> registerApi(RegisterReq data) async {
   await request.post(Api.register, data: data.toJson());

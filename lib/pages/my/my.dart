@@ -9,8 +9,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:zchat/api/user.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/toast.dart';
+import 'package:zchat/common/websocket.dart';
 import 'package:zchat/model/user.dart';
+import 'package:zchat/stores/token.dart';
 import 'package:zchat/stores/user.dart';
+import 'package:zchat/widgets/dialog.dart';
 import 'package:zchat/widgets/modal.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 
@@ -90,6 +93,26 @@ class _MyPageState extends State<MyPage> {
     ]);
   }
 
+  // 退出登录
+  void _logout() async {
+    final result = await showPromptDialog(context, '是否确定退出登录', showCancel: true);
+    if (result == null || !result) {
+      return;
+    }
+    // 后端删除登录信息
+    await logoutApi();
+    // 删除token
+    tokenManager.removeToken();
+    // 断开websocket连接
+    closeWebSocket();
+    // 关闭所有页面并跳转到登录页面
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      RoutePath.login,
+      (route) => false,
+    );
+  }
+
   // 返回上一页
   void _goBack() {
     // 判断当前路由是个人中心还是主页
@@ -124,6 +147,7 @@ class _MyPageState extends State<MyPage> {
               },
               child: Text('我的二维码'),
             ),
+            ElevatedButton(onPressed: _logout, child: Text('退出登录')),
             ElevatedButton(onPressed: _goBack, child: Text('返回')),
           ],
         ),

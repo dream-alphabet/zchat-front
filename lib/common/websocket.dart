@@ -552,6 +552,11 @@ void initWebSocket() {
   );
 }
 
+// 断开websocket连接
+void closeWebSocket() {
+  _utility.closeSocket();
+}
+
 // 活跃的会话id
 String activeSessionId = '';
 

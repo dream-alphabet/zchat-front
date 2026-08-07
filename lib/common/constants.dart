@@ -42,6 +42,7 @@ class GlobalConstants {
 class Api {
   static const getCaptcha = '/user/captcha';
   static const login = '/user/login';
+  static const logout = '/user/logout';
   static const register = '/user/register';
   static const getUserInfo = '/user/userInfo';
   static const updateUserAvatar = '/user/updateAvatar';
