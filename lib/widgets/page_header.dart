@@ -21,6 +21,8 @@ class PageHeader extends StatefulWidget {
   final Color backgroundColor;
   final void Function()? onBack;
   final List<Widget> rightIconList;
+  // 图标颜色
+  final Color iconColor;
 
   const PageHeader({
     required this.title,
@@ -32,6 +34,7 @@ class PageHeader extends StatefulWidget {
     this.backgroundColor = const Color.fromRGBO(247, 247, 247, 1),
     this.onBack,
     this.rightIconList = const [],
+    this.iconColor = Colors.black,
     super.key,
   });
 
@@ -51,11 +54,11 @@ class _PageHeaderState extends State<PageHeader> {
                   // 跳转到搜索联系人页面
                   Navigator.pushNamed(context, RoutePath.searchContact);
                 },
-                child: Icon(MyIcon.search, size: 25.w),
+                child: Icon(MyIcon.search, size: 25.w, color: widget.iconColor),
               ),
               PopupMenuButton<String>(
                 // 自定义图标
-                icon: Icon(MyIcon.add, size: 25.w),
+                icon: Icon(MyIcon.add, size: 25.w, color: widget.iconColor),
                 // 弹出位置
                 offset: Offset(0, 40.w),
                 // 圆角
@@ -150,7 +153,7 @@ class _PageHeaderState extends State<PageHeader> {
         }
         Navigator.pop(context);
       },
-      child: Icon(Icons.arrow_back_ios, size: 20.sp),
+      child: Icon(Icons.arrow_back_ios, size: 20.sp, color: widget.iconColor),
     );
   }
 

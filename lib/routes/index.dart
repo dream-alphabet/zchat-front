@@ -30,6 +30,7 @@ import 'package:zchat/pages/contact/search_contact.dart';
 import 'package:zchat/pages/contact/contact_info.dart';
 import 'package:zchat/pages/contact/verify_apply.dart';
 import 'package:zchat/pages/discover/moments.dart';
+import 'package:zchat/pages/discover/moments/publish.dart';
 import 'package:zchat/pages/discover/scan.dart';
 import 'package:zchat/pages/main/main.dart';
 import 'package:zchat/common/constants.dart';
@@ -67,8 +68,11 @@ final Map<String, WidgetBuilder> routes = {
   RoutePath.groupRemark: (ctx) => GroupRemarkPage(),
   RoutePath.friendRemark: (ctx) => FriendRemarkPage(),
   RoutePath.friendAuthority: (ctx) => FriendAuthorityPage(),
-  RoutePath.groupNickname: (ctx) => GroupNicknamePage()
+  RoutePath.groupNickname: (ctx) => GroupNicknamePage(),
+  RoutePath.momentsPublish: (ctx) => MomentsPublishPage(),
 };
+// 需要slideUp动画的页面
+const needSlideUp = [RoutePath.contactSelect, RoutePath.momentsPublish];
 
 // 全局Context
 final GlobalKey<NavigatorState> globalNavigatorKey = GlobalKey();
@@ -125,8 +129,8 @@ Widget getRootWidget() {
           if (builder == null) {
             return null;
           }
-          // 联系人选择页面使用SlideUp动画
-          if (settings.name == RoutePath.contactSelect) {
+          // 判断哪些页面需要slideUp动画
+          if (needSlideUp.contains(settings.name)) {
             return RouteUtils.slideUp(builder, settings: settings);
           }
           return MaterialPageRoute(builder: builder, settings: settings);

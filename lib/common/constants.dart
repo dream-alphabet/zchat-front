@@ -1,7 +1,7 @@
 // 全局常量类
 class GlobalConstants {
   // 主机地址
-  static const host = '192.168.2.103';
+  static const host = '192.168.10.4';
   // api请求基础地址
   static const baseUrl = 'http://$host/api';
   // ws连接地址
@@ -85,6 +85,8 @@ class RoutePath {
   static const contactInfo = 'contactInfo';
   // 朋友圈
   static const moments = 'moments';
+  // 朋友圈发布页面
+  static const momentsPublish = 'momentsPublish';
   // 扫一扫
   static const scan = 'scan';
   // 添加朋友

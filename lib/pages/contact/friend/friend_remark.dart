@@ -95,7 +95,7 @@ class _FriendRemarkPageState extends State<FriendRemarkPage> {
                     : Color.fromRGBO(20, 134, 237, 1),
                 borderRadius: .circular(8.r),
               ),
-              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.w),
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.w),
               child: Text(
                 '完成',
                 style: TextStyle(

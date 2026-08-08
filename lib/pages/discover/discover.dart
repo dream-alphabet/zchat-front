@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/stores/user.dart';
-import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/ink_click.dart';
 import 'package:zchat/widgets/page_header.dart';
 
@@ -42,8 +41,6 @@ class _DiscoverPageState extends State<DiscoverPage> with AutomaticKeepAliveClie
             ),
             SizedBox(width: 20.w),
             Expanded(child: Text('朋友圈')),
-            ContactAvatar(contactId: '-1', size: 30),
-            SizedBox(width: 10.w),
             Icon(
               MyIcon.arrowRight,
               color: const Color.fromRGBO(179, 179, 179, 1),
