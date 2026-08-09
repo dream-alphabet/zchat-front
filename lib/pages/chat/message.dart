@@ -66,7 +66,10 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
 
   // 联系人名称
   String get _contactName {
-    final contact = _userContactController.findUserContact(_contactId, _contactType);
+    final contact = _userContactController.findUserContact(
+      _contactId,
+      _contactType,
+    );
     if (contact == null) {
       return '';
     }
@@ -430,8 +433,41 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   }
 
   // 发起语音通话
-  void _makeVoiceCall() {
-    Navigator.pushNamed(context, RoutePath.voiceCall);
+  void _makeVoiceCall() async {
+    // 发送消息
+    final msg = await sendMessageApi(
+      SendMsgReq(
+        contactId: _contactId,
+        contactType: _contactType,
+        messageType: MessageTypeEnum.voiceCall.type,
+        messageContent: MessageTypeEnum.voiceCall.messageContent,
+      ),
+    );
+    setState(() {
+      // 添加到发送后的消息到列表
+      _msgList.insert(0, msg);
+    });
+    // 滚动到底部
+    _scrollToBottom();
+    // 前往视频通话页面
+    Navigator.pushNamed(
+      context,
+      RoutePath.voiceCall,
+      arguments: {
+        'isCaller': true,
+        'contactId': _contactId,
+        'messageId': msg.messageId,
+      },
+    );
+  }
+
+  // 处理视频/语音通话事件
+  void _onVideoOrVoiceCall(MessageTypeEnum messageType) {
+    if (messageType == MessageTypeEnum.videoCall) {
+      _makeVideoCall();
+    } else if (messageType == MessageTypeEnum.voiceCall) {
+      _makeVoiceCall();
+    }
   }
 
   // 视频通话
@@ -680,6 +716,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                 message: _msgList[index],
                 scrollController: _msgListController,
                 onShareMessage: _shareMessage,
+                onVideoOrVoiceCall: _onVideoOrVoiceCall,
               ),
             ],
           );
@@ -688,6 +725,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
           message: _msgList[index],
           scrollController: _msgListController,
           onShareMessage: _shareMessage,
+          onVideoOrVoiceCall: _onVideoOrVoiceCall,
         );
       },
     );

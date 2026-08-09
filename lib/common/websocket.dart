@@ -282,14 +282,21 @@ void _handleChatMsg(dynamic msg) {
     // 更新会话的lastMessage和lastReceiveTime
     sessionStore.updateLastMessage(sessionId, messageContent, message.sendTime);
   }
-  // 如果是在当前活跃的会话
-  if (activeSessionId == sessionId) {
-    eventBus.fire(ServerMsgEvent(type: ServerMsgType.chat, msg: message));
-  }
+  // 通知对应的页面(可能是聊天页面或者语音/视频通话页面)
+  eventBus.fire(ServerMsgEvent(type: ServerMsgType.chat, msg: message));
   // 如果是视频通话，跳转到视频通话页面
   if (message.messageType == MessageTypeEnum.videoCall.type) {
     navigateToPage(
       RoutePath.videoCall,
+      arguments: {
+        'isCaller': false,
+        'contactId': message.sendUserId,
+        'messageId': message.messageId,
+      },
+    );
+  } else if (message.messageType == MessageTypeEnum.voiceCall.type) {
+    navigateToPage(
+      RoutePath.voiceCall,
       arguments: {
         'isCaller': false,
         'contactId': message.sendUserId,

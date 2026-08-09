@@ -35,12 +35,15 @@ class ChatMessage extends StatefulWidget {
   final ScrollController scrollController;
   // 转发消息事件
   final void Function(ChatMessageRes, UserContactRes) onShareMessage;
+  // 语音/视频通话事件
+  final void Function(MessageTypeEnum) onVideoOrVoiceCall;
 
   const ChatMessage({
     super.key,
     required this.message,
     required this.scrollController,
     required this.onShareMessage,
+    required this.onVideoOrVoiceCall,
   });
 
   @override
@@ -608,6 +611,48 @@ class _ChatMessageState extends State<ChatMessage> {
     Overlay.of(context).insert(_contextMenuOverlay!);
   }
 
+  // 构建语音通话消息
+  Widget _buildVoiceCall() {
+    final msgData = widget.message.data;
+    if (msgData == null) {
+      return _buildTextMsg('语音通话');
+    }
+    final data = jsonDecode(msgData);
+    return _buildMsgLayout(
+      child: GestureDetector(
+        onTap: () {
+          widget.onVideoOrVoiceCall(MessageTypeEnum.voiceCall);
+        },
+        child: Container(
+          key: _contentKey,
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.w),
+          decoration: BoxDecoration(
+            color: _isSelf
+                ? const Color.fromRGBO(20, 134, 237, 1)
+                : Colors.white,
+            borderRadius: .circular(8.r),
+          ),
+          child: Row(
+            mainAxisSize: .min,
+            spacing: 5.w,
+            children: [
+              Text(
+                '通话时长 ${formatDuration(data['duration'])}',
+                style: TextStyle(color: _isSelf ? Colors.white : Colors.black),
+              ),
+              Icon(
+                MyIcon.voice,
+                size: 18.sp,
+                color: _isSelf ? Colors.white : Colors.black,
+              ),
+            ],
+          ),
+        ),
+      ),
+      color: _isSelf ? const Color.fromRGBO(20, 134, 237, 1) : Colors.white,
+    );
+  }
+
   // 构建视频通话消息
   Widget _buildVideoCall() {
     final msgData = widget.message.data;
@@ -616,27 +661,34 @@ class _ChatMessageState extends State<ChatMessage> {
     }
     final data = jsonDecode(msgData);
     return _buildMsgLayout(
-      child: Container(
-        key: _contentKey,
-        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.w),
-        decoration: BoxDecoration(
-          color: _isSelf ? const Color.fromRGBO(20, 134, 237, 1) : Colors.white,
-          borderRadius: .circular(8.r),
-        ),
-        child: Row(
-          mainAxisSize: .min,
-          spacing: 5.w,
-          children: [
-            Text(
-              '通话时长 ${formatDuration(data['duration'])}',
-              style: TextStyle(color: _isSelf ? Colors.white : Colors.black),
-            ),
-            Icon(
-              MyIcon.video,
-              size: 18.sp,
-              color: _isSelf ? Colors.white : Colors.black,
-            ),
-          ],
+      child: GestureDetector(
+        onTap: () {
+          widget.onVideoOrVoiceCall(MessageTypeEnum.videoCall);
+        },
+        child: Container(
+          key: _contentKey,
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.w),
+          decoration: BoxDecoration(
+            color: _isSelf
+                ? const Color.fromRGBO(20, 134, 237, 1)
+                : Colors.white,
+            borderRadius: .circular(8.r),
+          ),
+          child: Row(
+            mainAxisSize: .min,
+            spacing: 5.w,
+            children: [
+              Text(
+                '通话时长 ${formatDuration(data['duration'])}',
+                style: TextStyle(color: _isSelf ? Colors.white : Colors.black),
+              ),
+              Icon(
+                MyIcon.video,
+                size: 18.sp,
+                color: _isSelf ? Colors.white : Colors.black,
+              ),
+            ],
+          ),
         ),
       ),
       color: _isSelf ? const Color.fromRGBO(20, 134, 237, 1) : Colors.white,
@@ -659,6 +711,9 @@ class _ChatMessageState extends State<ChatMessage> {
     } else if (messageType == MessageTypeEnum.videoCall.type) {
       // 视频通话
       return _buildVideoCall();
+    } else if (messageType == MessageTypeEnum.voiceCall.type) {
+      // 语音通话
+      return _buildVoiceCall();
     }
     return _buildTextMsg('未知消息类型');
   }

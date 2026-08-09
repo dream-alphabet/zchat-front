@@ -1,10 +1,7 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:zchat/common/constants.dart';
-import 'package:zchat/common/event_bus.dart';
 import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/chat.dart';
 import 'package:zchat/stores/message.dart';
@@ -31,26 +28,6 @@ class _ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin 
   final _messageStore = Get.find<MessageController>();
   // 用户store
   final _userController = Get.find<UserController>();
-
-  // 监听websocket服务器推送的消息
-  late StreamSubscription<ServerMsgEvent> _streamSubscription;
-
-  @override
-  void initState() {
-    super.initState();
-    // 监听服务器推送消息事件
-    _streamSubscription = eventBus.on<ServerMsgEvent<ChatMessageRes>>().listen((
-      event,
-    ) {
-    });
-  }
-
-  @override
-  void dispose() {
-    // 取消事件监听
-    _streamSubscription.cancel();
-    super.dispose();
-  }
 
   Widget _buildSessionItem(ChatSessionRes session) {
     return InkClick(

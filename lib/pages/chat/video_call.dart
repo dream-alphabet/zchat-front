@@ -188,7 +188,7 @@ class _VideoCallPageState extends State<VideoCallPage> {
       // 添加这些配置增强连通性
       'iceTransportPolicy': 'all', // 允许所有候选类型
       'bundlePolicy': 'max-bundle',
-      'rtcpMuxPolicy': 'negotiate',
+      'rtcpMuxPolicy': 'require',
     });
     // 将本地媒体流的所有轨道添加到连接中
     _localStream!.getTracks().forEach((track) {
@@ -196,15 +196,28 @@ class _VideoCallPageState extends State<VideoCallPage> {
       _peerConnection!.addTrack(track, _localStream!);
     });
     // 设置事件监听
+    // 监听ICE候选收集状态
+    _peerConnection!.onIceGatheringState = (state) {
+      print('ICE收集状态: $state');
+    };
     // 监听本地ice候选生成
     _peerConnection!.onIceCandidate = (e) {
       if (e.candidate != null) {
+        // 解析候选类型和地址用于调试
+        final candidateStr = e.candidate!;
+        final typeMatch = RegExp(r'typ (\w+)').firstMatch(candidateStr);
+        final addrMatch =
+            RegExp(r'(\d+\.\d+\.\d+\.\d+)').firstMatch(candidateStr);
+        final type = typeMatch?.group(1) ?? 'unknown';
+        final addr = addrMatch?.group(1) ?? 'unknown';
+        print('ICE候选: $type $addr (mid=${e.sdpMid})');
         // 发送candidate
         _sendRTCSignal(RTCSignalEnum.candidate, e.toMap());
       }
     };
     // 监听ICE连接状态变化
     _peerConnection!.onConnectionState = (state) async {
+      print('ICE连接状态: $state');
       switch (state) {
         case RTCPeerConnectionState.RTCPeerConnectionStateConnected:
           // 连接成功，取消重连定时器并重置重试计数
