@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/widgets/modal.dart';
 
@@ -21,7 +25,7 @@ class _MomentsPublishPageState extends State<MomentsPublishPage> {
   String _text = '';
 
   // 图片列表
-  List<XFile> _imageList = [];
+  final List<XFile> _imageList = [];
 
   // 是否没有输入任何内容(文本，图片)
   bool get _isEmpty => _text.trim().isEmpty && _imageList.isEmpty;
@@ -34,20 +38,23 @@ class _MomentsPublishPageState extends State<MomentsPublishPage> {
     }
     // 选择图片
     final picker = ImagePicker();
+    // 最多可以选几张图片
+    final limit = _maxImageCount - _imageList.length;
     List<XFile> images = [];
     if (source == ImageSource.gallery) {
-      images = await picker.pickMultiImage(
-        limit: _maxImageCount - _imageList.length,
-      );
-      print('选择了${images.length}张图片');
+      images = await picker.pickMultiImage(limit: limit);
     } else if (source == ImageSource.camera) {
       final image = await picker.pickImage(source: source);
       if (image == null) {
         return;
       }
+      images.add(image);
     }
-    // 添加图片到图片列表
-    _imageList.addAll(images);
+    // 添加图片到图片列表(最多取前MaxCount张)
+    setState(() {
+      _imageList.addAll(images.take(limit));
+      Navigator.pop(context);
+    });
   }
 
   // 构建顶部区域
@@ -151,9 +158,68 @@ class _MomentsPublishPageState extends State<MomentsPublishPage> {
     );
   }
 
+  // 预览图片
+  void _previewImage(int index) async {
+    final controller = PageController(initialPage: index);
+    await Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => Scaffold(
+          backgroundColor: Colors.black,
+          body: GestureDetector(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: PhotoViewGallery.builder(
+              pageController: controller,
+              scrollPhysics: const BouncingScrollPhysics(),
+              builder: (BuildContext context, int index) {
+                return PhotoViewGalleryPageOptions(
+                  imageProvider: FileImage(File(_imageList[index].path)),
+                  minScale: PhotoViewComputedScale.contained,
+                  maxScale: PhotoViewComputedScale.covered * 2,
+                  heroAttributes: PhotoViewHeroAttributes(
+                    tag: _imageList[index].path,
+                  ),
+                );
+              },
+              itemCount: _imageList.length,
+            ),
+          ),
+        ),
+      ),
+    );
+    controller.dispose();
+  }
+
   // 媒体(图片)上传区域
   Widget _buildImageUpload() {
-    return _buildUpload();
+    int count = _imageList.length;
+    if (count < _maxImageCount) {
+      count++;
+    }
+    return GridView.count(
+      crossAxisCount: 3,
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(), // 禁用内部滚动
+      childAspectRatio: 1.0, // 正方形
+      crossAxisSpacing: 8.w,
+      mainAxisSpacing: 8.w,
+      children: List.generate(count, (index) {
+        if (index == _imageList.length) {
+          return _buildUpload();
+        }
+        return Hero(
+          tag: _imageList[index].path,
+          child: GestureDetector(
+            onTap: () {
+              _previewImage(index);
+            },
+            child: Image.file(File(_imageList[index].path), fit: .cover),
+          ),
+        );
+      }),
+    );
   }
 
   // 选项配置区域
