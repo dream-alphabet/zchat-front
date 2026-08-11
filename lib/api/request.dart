@@ -87,6 +87,11 @@ class DioRequest {
     );
   }
 
+  // 文件上传请求
+  Future<dynamic> upload(String url, FormData formData) {
+    return _handleResponse(_dio.post(url, data: formData));
+  }
+
   // 处理响应结果
   Future<dynamic> _handleResponse(Future<Response<dynamic>> task) async {
     try {

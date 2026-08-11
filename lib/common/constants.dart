@@ -65,6 +65,8 @@ class Api {
   static const dissolveGroup = '/group/dissolve/';
   static const updateGroup = '/group/update/';
   static const updateContactSetting = '/contact/updateSetting';
+  static const publishMoments = '/moments/publish';
+  static const getMomentsTimeline = '/moments/timeline';
 }
 
 // 路由路径常量
@@ -87,6 +89,8 @@ class RoutePath {
   static const moments = 'moments';
   // 朋友圈发布页面
   static const momentsPublish = 'momentsPublish';
+  // 朋友圈接口
+  static const publishMoments = '/chat/moments/publish';
   // 扫一扫
   static const scan = 'scan';
   // 添加朋友

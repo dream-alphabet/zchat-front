@@ -52,6 +52,10 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
   bool _isSearchGroupMember = false;
   // 群聊id
   String _groupId = '';
+  // 是否是多选模式
+  bool _multiSelect = false;
+  // 多选模式中已选中的联系人ID集合
+  final Set<String> _selectedIds = {};
 
   @override
   void initState() {
@@ -72,6 +76,14 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
           _contactType = null;
           // 拼接群聊列表
           contactList.addAll(_contactStore.groupList);
+        }
+        // 多选模式
+        if (params != null && params['multiSelect'] == true) {
+          _multiSelect = true;
+          final preSelected = params['selectedIds'] as List<String>?;
+          if (preSelected != null) {
+            _selectedIds.addAll(preSelected);
+          }
         }
       }
       // 初始化
@@ -187,14 +199,27 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
   Widget _buildContactItem(
     UserContactRes data, {
     List<HighlightRange>? highlightRanges,
+    bool showCheckbox = false,
   }) {
+    final isSelected = _selectedIds.contains(data.contactId);
+
     return InkClick(
       backgroundColor: Colors.white,
       onTap: () async {
-        // 如果上一个页面传递了onSelect就执行
+        if (showCheckbox) {
+          // 多选模式：切换选中状态
+          setState(() {
+            if (isSelected) {
+              _selectedIds.remove(data.contactId);
+            } else {
+              _selectedIds.add(data.contactId);
+            }
+          });
+          return;
+        }
+        // 单选模式：保持原有逻辑
         if (widget.onSelect != null) {
           final shouldPop = await widget.onSelect!(data);
-          // 判断是否要退回上一页
           if (shouldPop) {
             Navigator.pop(context, data.contactId);
           }
@@ -244,6 +269,20 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
                 ),
               ),
             ),
+            // 多选模式显示复选框
+            if (showCheckbox)
+              Padding(
+                padding: EdgeInsets.only(right: 15.w),
+                child: Icon(
+                  isSelected
+                      ? Icons.check_circle
+                      : Icons.radio_button_unchecked,
+                  color: isSelected
+                      ? const Color.fromRGBO(20, 134, 237, 1)
+                      : const Color.fromRGBO(199, 199, 204, 1),
+                  size: 22.w,
+                ),
+              ),
           ],
         ),
       ),
@@ -269,7 +308,8 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
         ),
         ...List.generate(
           list.length,
-          (index) => _buildContactItem(list[index]),
+          (index) => _buildContactItem(list[index],
+              showCheckbox: _multiSelect),
         ),
       ],
     );
@@ -408,7 +448,8 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
               : '${item.remark}(${item.originName})',
           keyword,
         );
-        return _buildContactItem(item, highlightRanges: ranges);
+        return _buildContactItem(item,
+            highlightRanges: ranges, showCheckbox: _multiSelect);
       }),
     );
   }
@@ -442,9 +483,28 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
               title: '选择联系人',
               backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
               showLeftAvatar: false,
-              showRightIcon: false,
+              showRightIcon: _multiSelect,
               showLeftBackIcon: true,
               showBorder: false,
+              rightIconList: _multiSelect
+                  ? [
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pop(
+                              context, _selectedIds.toList());
+                        },
+                        child: Text(
+                          '完成${_selectedIds.isNotEmpty ? '(${_selectedIds.length})' : ''}',
+                          style: TextStyle(
+                            color: _selectedIds.isNotEmpty
+                                ? const Color.fromRGBO(20, 134, 237, 1)
+                                : const Color.fromRGBO(167, 167, 167, 1),
+                            fontSize: 16.sp,
+                          ),
+                        ),
+                      ),
+                    ]
+                  : [],
             ),
             _buildSearch(),
             Expanded(

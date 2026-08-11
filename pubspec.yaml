@@ -60,6 +60,7 @@ dependencies:
   dashed_border: ^1.0.2
   device_info_plus: ^13.2.0
   unicode_emojis: ^0.5.1
+  reorderable_grid_view: ^2.2.8
 
 dev_dependencies:
   flutter_test:
