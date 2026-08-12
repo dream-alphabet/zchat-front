@@ -1101,11 +1101,11 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                 rightIconList: [
                   GestureDetector(
                     onTap: () async {
-                      // 如果双方是好友关系，跳转到聊天信息页面
+                      // 如果双方是好友关系，跳转到联系人信息
                       if (_contactType == UserContactTypeEnum.user) {
                         Navigator.pushNamed(
                           context,
-                          RoutePath.chatInfo,
+                          RoutePath.contactInfo,
                           arguments: {'contactId': _contactId},
                         );
                       } else if (_contactType == UserContactTypeEnum.group) {

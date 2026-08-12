@@ -38,3 +38,31 @@ Future<PageRes> getTimelineApi({required int page, int pageSize = 10}) async {
     list: pageRes.list.map((e) => MomentsPostItem.fromJson(e)).toList(),
   );
 }
+
+// 点赞/取消点赞
+Future<void> toggleLikeApi(int postId) async {
+  await request.post('${Api.moments}/$postId/like');
+}
+
+// 添加评论
+Future<MomentsCommentItem> addCommentApi({
+  required int postId,
+  required String content,
+  int? parentId,
+  String? replyToUserId,
+}) async {
+  final res = await request.post(
+    '${Api.moments}/$postId/comment',
+    data: {
+      'content': content,
+      if (parentId != null) 'parentId': parentId,
+      if (replyToUserId != null) 'replyToUserId': replyToUserId,
+    },
+  );
+  return MomentsCommentItem.fromJson(res);
+}
+
+// 删除评论
+Future<void> deleteCommentApi(int commentId) async {
+  await request.get('${Api.moments}/comment/$commentId/delete');
+}

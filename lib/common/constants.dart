@@ -65,6 +65,8 @@ class Api {
   static const dissolveGroup = '/group/dissolve/';
   static const updateGroup = '/group/update/';
   static const updateContactSetting = '/contact/updateSetting';
+  // 朋友圈
+  static const moments = '/moments';
   static const publishMoments = '/moments/publish';
   static const getMomentsTimeline = '/moments/timeline';
 }

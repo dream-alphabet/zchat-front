@@ -6,8 +6,10 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:zchat/api/moments.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/common/toast.dart';
 import 'package:zchat/model/moments.dart';
 import 'package:zchat/stores/contact.dart';
+import 'package:zchat/stores/message.dart';
 import 'package:zchat/stores/user.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/widgets/page_header.dart';
@@ -23,6 +25,8 @@ class MomentsPage extends StatefulWidget {
 class _MomentsPageState extends State<MomentsPage> {
   // 用户store
   final _userController = Get.find<UserController>();
+  // 消息store
+  final _messageController = Get.find<MessageController>();
 
   // 滚动控制器
   final _scrollController = ScrollController();
@@ -41,6 +45,11 @@ class _MomentsPageState extends State<MomentsPage> {
 
   // 是否正在刷新
   bool _isRefreshing = false;
+
+  // 展开状态的点赞列表postId集合
+  final Set<int> _expandedLikes = {};
+  // 展开状态的评论列表postId集合
+  final Set<int> _expandedComments = {};
   // 是否正在加载更多
   bool _isLoadingMore = false;
   // 是否还有更多
@@ -59,6 +68,12 @@ class _MomentsPageState extends State<MomentsPage> {
   @override
   void initState() {
     super.initState();
+    // 延迟到帧结束再修改
+    // 不能在build之前清空因为Obx在build之前重构会有问题
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 清空朋友圈未读数量
+      _messageController.clearUnreadCount(UnreadType.share);
+    });
     _scrollController.addListener(_onScroll);
     _loadData();
   }
@@ -127,6 +142,367 @@ class _MomentsPageState extends State<MomentsPage> {
     } catch (_) {
       return timeStr;
     }
+  }
+
+  // 点赞/取消点赞
+  Future<void> _toggleLike(MomentsPostItem post) async {
+    try {
+      await toggleLikeApi(post.postId);
+      setState(() {
+        post.liked = !post.liked;
+        if (post.liked) {
+          post.likeList.add(
+            MomentsLikeItem(
+              userId: _userController.userInfo.value?.userId ?? '',
+              nickname: _userController.userInfo.value?.nickname ?? '',
+            ),
+          );
+        } else {
+          post.likeList.removeWhere(
+            (like) => like.userId == _userController.userInfo.value?.userId,
+          );
+        }
+      });
+    } catch (_) {
+      // request.dart handles toast
+    }
+  }
+
+  // 显示评论输入弹窗
+  void _showCommentInput(
+    MomentsPostItem post, {
+    int? parentId,
+    String? replyToUserId,
+    String? replyToNickname,
+  }) {
+    final controller = TextEditingController();
+    final hintText = replyToNickname != null ? '回复 $replyToNickname' : '评论';
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom,
+              left: 16.w,
+              right: 16.w,
+              top: 16.w,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  maxLines: 3,
+                  minLines: 1,
+                  decoration: InputDecoration(
+                    hintText: hintText,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.r),
+                      borderSide: BorderSide(color: Colors.black),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.r),
+                      borderSide: BorderSide(color: Colors.black),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 10.w,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 12.w),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final content = controller.text.trim();
+                      if (content.isEmpty) {
+                        ToastUtils.showGlobalToast(msg: '评论内容不能为空');
+                        return;
+                      }
+                      final comment = await addCommentApi(
+                        postId: post.postId,
+                        content: content,
+                        parentId: parentId,
+                        replyToUserId: replyToUserId,
+                      );
+                      setState(() {
+                        post.commentList.add(comment);
+                      });
+                      Navigator.pop(ctx);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color.fromRGBO(20, 134, 237, 1),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 12.w),
+                    ),
+                    child: Text('发送', style: TextStyle(fontSize: 16.sp)),
+                  ),
+                ),
+                SizedBox(height: 16.w),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // 删除评论
+  Future<void> _deleteComment(
+    MomentsPostItem post,
+    MomentsCommentItem comment,
+  ) async {
+    await deleteCommentApi(comment.id);
+    setState(() {
+      post.commentList.removeWhere((c) => c.id == comment.id);
+    });
+  }
+
+  // 显示操作菜单（点赞/评论）
+  void _showActionMenu(MomentsPostItem post, Offset position) {
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
+    final items = <PopupMenuEntry<String>>[
+      PopupMenuItem(
+        value: 'like',
+        child: Row(
+          mainAxisAlignment: .center,
+          spacing: 10.w,
+          children: [
+            Icon(
+              post.liked ? Icons.favorite : Icons.favorite_border,
+              color: post.liked ? Colors.red : Colors.white,
+              size: 20.w,
+            ),
+            Text(
+              post.liked ? '取消点赞' : '点赞',
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+      PopupMenuItem(
+        value: 'comment',
+        child: Row(
+          mainAxisAlignment: .center,
+          spacing: 10.w,
+          children: [
+            Icon(Icons.comment_outlined, size: 20.w, color: Colors.white),
+            Text('评论', style: TextStyle(color: Colors.white)),
+          ],
+        ),
+      ),
+    ];
+    showMenu<String>(
+      context: context,
+      color: Color.fromRGBO(87, 87, 87, 1),
+      position: RelativeRect.fromLTRB(
+        position.dx,
+        position.dy,
+        overlay.size.width - position.dx,
+        overlay.size.height - position.dy,
+      ),
+      items: items,
+    ).then((value) {
+      if (value == 'like') {
+        _toggleLike(post);
+      } else if (value == 'comment') {
+        _showCommentInput(post);
+      }
+    });
+  }
+
+  // 构建点赞列表
+  Widget _buildLikeList(List<MomentsLikeItem> likeList, int postId) {
+    if (likeList.isEmpty) return const SizedBox.shrink();
+    final isExpanded = _expandedLikes.contains(postId);
+    // 超过5个且未展开时只显示前5个
+    final displayList = (likeList.length > 5 && !isExpanded)
+        ? likeList.sublist(0, 5)
+        : likeList;
+    final hasMore = likeList.length > 5;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.w),
+      decoration: BoxDecoration(
+        color: Color.fromRGBO(245, 245, 245, 1),
+        borderRadius: BorderRadius.circular(4.r),
+      ),
+      child: Wrap(
+        spacing: 4.w,
+        runSpacing: 4.w,
+        crossAxisAlignment: .center,
+        children: [
+          Icon(Icons.favorite, size: 16.w, color: Colors.red),
+          ...displayList.map((like) {
+            final contact = _userContactController.getUserContact(like.userId);
+            final name = contact?.contactName ?? like.nickname;
+            return Text(
+              name,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: Color.fromRGBO(87, 107, 149, 1),
+              ),
+            );
+          }),
+          if (hasMore)
+            GestureDetector(
+              onTap: () => setState(() {
+                isExpanded
+                    ? _expandedLikes.remove(postId)
+                    : _expandedLikes.add(postId);
+              }),
+              child: Text(
+                isExpanded ? '收起' : '...等${likeList.length}人',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: Color.fromRGBO(167, 167, 167, 1),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // 构建评论列表
+  Widget _buildCommentList(MomentsPostItem post) {
+    if (post.commentList.isEmpty) return const SizedBox.shrink();
+    final isMyPost = post.userId == _userController.userInfo.value?.userId;
+    final isExpanded = _expandedComments.contains(post.postId);
+    // 超过3条且未展开时只显示前3条
+    final displayList = (post.commentList.length > 3 && !isExpanded)
+        ? post.commentList.sublist(0, 3)
+        : post.commentList;
+    final hasMore = post.commentList.length > 3;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.w),
+      decoration: BoxDecoration(
+        color: Color.fromRGBO(245, 245, 245, 1),
+        borderRadius: BorderRadius.circular(4.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ...displayList.map((comment) {
+            final contact = _userContactController.getUserContact(
+              comment.userId,
+            );
+            final commenterName = contact?.contactName ?? comment.nickname;
+            return GestureDetector(
+              onLongPress: isMyPost
+                  ? () => _showDeleteCommentDialog(post, comment)
+                  : null,
+              onTap: () => _showCommentInput(
+                post,
+                parentId: comment.id,
+                replyToUserId: comment.userId,
+                replyToNickname: commenterName,
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 4.w),
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: commenterName,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: Color.fromRGBO(87, 107, 149, 1),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (comment.replyToNickname != null &&
+                          comment.replyToUserId != null) ...[
+                        TextSpan(
+                          text: ' 回复 ',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            color: Colors.black,
+                          ),
+                        ),
+                        TextSpan(
+                          text:
+                              _userContactController
+                                  .getUserContact(comment.replyToUserId!)
+                                  ?.contactName ??
+                              comment.replyToNickname!,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            color: Color.fromRGBO(87, 107, 149, 1),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                      TextSpan(
+                        text: ': ${comment.content}',
+                        style: TextStyle(fontSize: 14.sp, color: Colors.black),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+          if (hasMore)
+            GestureDetector(
+              onTap: () => setState(() {
+                isExpanded
+                    ? _expandedComments.remove(post.postId)
+                    : _expandedComments.add(post.postId);
+              }),
+              child: Padding(
+                padding: EdgeInsets.only(top: 4.w),
+                child: Text(
+                  isExpanded ? '收起' : '展开全部${post.commentList.length}条评论',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: Color.fromRGBO(167, 167, 167, 1),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // 显示删除评论确认弹窗
+  void _showDeleteCommentDialog(
+    MomentsPostItem post,
+    MomentsCommentItem comment,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('删除评论'),
+        content: Text('确定要删除这条评论吗？'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('取消')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _deleteComment(post, comment);
+            },
+            child: Text('删除', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 
   // 构建顶部区域
@@ -211,7 +587,11 @@ class _MomentsPageState extends State<MomentsPage> {
   String _heroTag(int postId, int sortOrder) => 'moments_${postId}_$sortOrder';
 
   // 预览图片
-  void _previewImages(List<MomentsMediaItem> mediaList, int initialIndex, int postId) {
+  void _previewImages(
+    List<MomentsMediaItem> mediaList,
+    int initialIndex,
+    int postId,
+  ) {
     final controller = PageController(initialPage: initialIndex);
     Navigator.push(
       context,
@@ -280,7 +660,7 @@ class _MomentsPageState extends State<MomentsPage> {
                   width: imgSize,
                   height: imgSize,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_, _, _) => Container(
                     width: imgSize,
                     height: imgSize,
                     color: Color.fromRGBO(237, 237, 237, 1),
@@ -335,7 +715,8 @@ class _MomentsPageState extends State<MomentsPage> {
                     post.content!,
                     style: TextStyle(fontSize: 16.sp, color: Colors.black),
                   ),
-                if (post.mediaList.isNotEmpty) _buildImageGrid(post.mediaList, post.postId),
+                if (post.mediaList.isNotEmpty)
+                  _buildImageGrid(post.mediaList, post.postId),
                 Row(
                   spacing: 15.w,
                   children: [
@@ -348,17 +729,31 @@ class _MomentsPageState extends State<MomentsPage> {
                     ),
                     const Spacer(),
                     GestureDetector(
-                      onTap: () {
-                        // TODO: 点击...展开操作菜单
-                      },
-                      child: Icon(
-                        Icons.more_horiz,
-                        size: 18.sp,
-                        color: Color.fromRGBO(167, 167, 167, 1),
+                      onTapDown: (details) =>
+                          _showActionMenu(post, details.globalPosition),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8.w,
+                          vertical: 4.w,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Color.fromRGBO(245, 245, 245, 1),
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
+                        child: Icon(
+                          Icons.more_horiz,
+                          size: 18.sp,
+                          color: Color.fromRGBO(167, 167, 167, 1),
+                        ),
                       ),
                     ),
                   ],
                 ),
+                // 点赞列表
+                if (post.likeList.isNotEmpty)
+                  _buildLikeList(post.likeList, post.postId),
+                // 评论列表
+                if (post.commentList.isNotEmpty) _buildCommentList(post),
               ],
             ),
           ),
@@ -447,7 +842,7 @@ class _MomentsPageState extends State<MomentsPage> {
         backgroundColor: _topColor,
         bottomOpacity: 0,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Colors.white,
+          statusBarColor: _topColor,
           statusBarBrightness: _isTopVisible
               ? Brightness.dark
               : Brightness.light,
