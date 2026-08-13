@@ -139,6 +139,50 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
     );
   }
 
+  // 是否显示朋友圈入口(自己或好友)
+  bool _showMomentsEntry() {
+    final contactInfo = _contactInfo;
+    if (contactInfo == null) return false;
+    // 自己
+    if (_contactId == _userController.userInfo.value?.userId) return true;
+    // 好友
+    return contactInfo.contactStatus == UserContactStatusEnum.friend;
+  }
+
+  // 构建朋友圈入口
+  Widget _buildMomentsEntry() {
+    return InkClick(
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          RoutePath.momentsUser,
+          arguments: {
+            'userId': _contactId,
+            'nickname': _contactInfo?.contactName ?? '',
+          },
+        );
+      },
+      backgroundColor: Colors.white,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 12.w),
+        child: Row(
+          spacing: 10.w,
+          children: [
+            Icon(Icons.photo_library_outlined, size: 22.w, color: Colors.black),
+            Text('朋友圈', style: TextStyle(fontSize: 16.sp)),
+            const Spacer(),
+            Icon(
+              Icons.chevron_right,
+              size: 20.w,
+              color: Color.fromRGBO(199, 199, 204, 1),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // 底部提示
   Widget _buildWarn(String info) {
     return Container(
@@ -229,7 +273,10 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
           children: [
             _buildTop(),
             _buildCenter(),
-            SizedBox(height: 20.w),
+            if (_showMomentsEntry()) ...[
+              _buildMomentsEntry(),
+              SizedBox(height: 20.w),
+            ],
             _contactId != _userController.userInfo.value?.userId
                 ? _buildBottom()
                 : _buildWarn('不能和自己添加好友'),

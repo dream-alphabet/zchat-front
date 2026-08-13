@@ -12,6 +12,8 @@ class GlobalConstants {
   static const avatarUrl = '$fileUrl/avatar';
   // 消息文件访问地址
   static const msgFileUrl = '$fileUrl/messages';
+  // 朋友圈背景访问地址
+  static const momentsBackgroundUrl = '$fileUrl/moments_background';
   // 默认用户头像
   static const defaultAvatar = 'lib/assets/images/default_user.png';
   // 超时时间
@@ -69,6 +71,8 @@ class Api {
   static const moments = '/moments';
   static const publishMoments = '/moments/publish';
   static const getMomentsTimeline = '/moments/timeline';
+  static const getUserMoments = '/moments/user';
+  static const updateMomentsBackground = '/moments/updateBackground';
 }
 
 // 路由路径常量
@@ -91,8 +95,10 @@ class RoutePath {
   static const moments = 'moments';
   // 朋友圈发布页面
   static const momentsPublish = 'momentsPublish';
+  // 用户朋友圈页面
+  static const momentsUser = 'momentsUser';
   // 朋友圈接口
-  static const publishMoments = '/chat/moments/publish';
+  static const publishMoments = 'publishMoments';
   // 扫一扫
   static const scan = 'scan';
   // 添加朋友

@@ -66,3 +66,28 @@ Future<MomentsCommentItem> addCommentApi({
 Future<void> deleteCommentApi(int commentId) async {
   await request.get('${Api.moments}/comment/$commentId/delete');
 }
+
+// 获取指定用户的动态列表
+Future<PageRes> getUserTimelineApi({
+  required String userId,
+  required int page,
+  int pageSize = 10,
+}) async {
+  final res = await request.get(
+    '${Api.getUserMoments}/$userId',
+    params: {'page': page, 'pageSize': pageSize},
+  );
+  final pageRes = PageRes.fromJson(res);
+  return PageRes(
+    pages: pageRes.pages,
+    total: pageRes.total,
+    list: pageRes.list.map((e) => MomentsPostItem.fromJson(e)).toList(),
+  );
+}
+
+// 更新朋友圈背景
+Future<void> updateMomentsBackgroundApi(MultipartFile file) async {
+  final formData = FormData();
+  formData.files.add(MapEntry('background', file));
+  await request.upload(Api.updateMomentsBackground, formData);
+}

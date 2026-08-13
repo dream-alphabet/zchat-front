@@ -28,6 +28,7 @@ import 'package:zchat/pages/contact/new_friend.dart';
 import 'package:zchat/pages/contact/only_chat_friend.dart';
 import 'package:zchat/pages/contact/search_contact.dart';
 import 'package:zchat/pages/contact/contact_info.dart';
+import 'package:zchat/pages/contact/moments_user.dart';
 import 'package:zchat/pages/contact/verify_apply.dart';
 import 'package:zchat/pages/discover/moments.dart';
 import 'package:zchat/pages/discover/moments/publish.dart';
@@ -69,6 +70,7 @@ final Map<String, WidgetBuilder> routes = {
   RoutePath.friendRemark: (ctx) => FriendRemarkPage(),
   RoutePath.friendAuthority: (ctx) => FriendAuthorityPage(),
   RoutePath.groupNickname: (ctx) => GroupNicknamePage(),
+  RoutePath.momentsUser: (ctx) => MomentsUserPage(),
   RoutePath.momentsPublish: (ctx) => MomentsPublishPage(),
 };
 // 需要slideUp动画的页面
@@ -98,9 +100,9 @@ Widget getRootWidget() {
         // 设置主题中的文本样式也支持适配
         theme: ThemeData(
           textSelectionTheme: TextSelectionThemeData(
-            selectionColor: Colors.blue,
-            selectionHandleColor: Colors.orange,
-            cursorColor: const Color.fromRGBO(20, 134, 237, 1),
+            selectionColor: Color.fromRGBO(237, 120, 20, 1),
+            selectionHandleColor: Color.fromRGBO(237, 120, 20, 1),
+            cursorColor: Color.fromRGBO(237, 120, 20, 1),
           ),
           textTheme: TextTheme(
             // 设置默认文本样式能自动响应字体缩放
