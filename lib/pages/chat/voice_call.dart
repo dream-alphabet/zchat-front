@@ -8,6 +8,7 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:zchat/api/chat.dart';
 import 'package:zchat/api/contact.dart';
+import 'package:zchat/common/call_tone.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/event_bus.dart';
 import 'package:zchat/common/toast.dart';
@@ -28,6 +29,9 @@ class VoiceCallPage extends StatefulWidget {
 class _VoiceCallPageState extends State<VoiceCallPage> {
   // 是否接听
   bool _isAccept = false;
+
+  // 是否打开麦克风
+  bool _isMicOn = true;
 
   // 是否是通话发起者
   bool _isCaller = false;
@@ -82,6 +86,12 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
         _isCaller = params['isCaller'];
         _messageId = params['messageId'];
         _getContactInfo();
+        // 启动铃声提示：呼叫方播放等待音，被叫方播放来电铃声
+        if (_isCaller) {
+          CallTone.startWaitingTone();
+        } else {
+          CallTone.startRingtone();
+        }
       }
     }).then((_) {
       _getUserMedia();
@@ -112,6 +122,10 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
                 // 接收candidate
                 _receiveCandidate(signalData);
               } else if (signalType == RTCSignalEnum.callEnd) {
+                // 自己主动挂断时，忽略后端推送回来的挂断信令
+                if (_isManualHangup) {
+                  return;
+                }
                 // 对方已挂断
                 _beCallEnd();
               }
@@ -141,7 +155,14 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
       return;
     }
     // 仅请求音频轨道，不请求视频
-    final constraints = {'audio': true};
+    final constraints = {
+      'audio': {
+        // 回声消除/降噪/自动增益，保证语音清晰
+        'echoCancellation': true,
+        'noiseSuppression': true,
+        'autoGainControl': true,
+      },
+    };
     _localStream = await navigator.mediaDevices.getUserMedia(constraints);
     await _setupPeerConnection();
     // 如果是呼叫方，主动发起offer
@@ -171,6 +192,8 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
       'iceTransportPolicy': 'all', // 允许所有候选类型
       'bundlePolicy': 'max-bundle',
       'rtcpMuxPolicy': 'require',
+      // 预收集ICE候选，加速连接建立（减少接通等待时间）
+      'iceCandidatePoolSize': 8,
     });
     // 将本地音频轨道添加到连接中
     _localStream!.getTracks().forEach((track) {
@@ -204,6 +227,9 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
           _reconnectTimer?.cancel();
           _retryCount = 0;
           _isAccept = true;
+          // 接听成功，停止铃声并振动提示
+          CallTone.stop();
+          CallTone.vibrate();
           // 发送established信令，告知服务器连接已建立
           if (_isCaller) {
             _sendRTCSignal(RTCSignalEnum.established, {'messageId': _messageId});
@@ -238,7 +264,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
   }
 
   // 尝试重连，判断是否满足重连条件
-  void _tryRetryConnection() {
+  Future<void> _tryRetryConnection() async {
     // 主动挂断不重连
     if (_isManualHangup) return;
     // 已经在重试中，不重复触发
@@ -246,10 +272,9 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
     // 超过最大重试次数
     if (_retryCount >= _maxRetryCount) {
       print('WebRTC重连已用尽重试次数($_maxRetryCount次)，放弃重连');
-      // 主动挂断
-      _callEnd();
+      // 异常挂断（_callEnd内部会挂断并退出页面）
       ToastUtils.showGlobalToast(msg: '连接失败，请稍后重试');
-      Navigator.pop(context);
+      await _callEnd(abnormal: true);
       return;
     }
     _retryConnection();
@@ -379,6 +404,9 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
     // 标记为主动挂断，阻止重连逻辑
     _isManualHangup = true;
     _reconnectTimer?.cancel();
+    // 停止铃声并振动提示
+    CallTone.stop();
+    CallTone.vibrate();
     // 断开连接
     await _peerConnection?.close();
     await ToastUtils.showGlobalToastAsync(
@@ -390,12 +418,18 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
     Navigator.pop(context);
   }
 
-  // 主动挂断通话
-  void _callEnd() async {
+  // 主动挂断通话（abnormal=true表示异常挂断，如重连失败）
+  Future<void> _callEnd({bool abnormal = false}) async {
     // 标记为主动挂断，阻止重连逻辑
     _isManualHangup = true;
     _reconnectTimer?.cancel();
-    await _sendRTCSignal(RTCSignalEnum.callEnd, null);
+    // 停止铃声并振动提示
+    CallTone.stop();
+    CallTone.vibrate();
+    await _sendRTCSignal(RTCSignalEnum.callEnd, {
+      'messageId': _messageId,
+      'abnormal': abnormal,
+    });
     // 断开连接
     await _peerConnection?.close();
     await ToastUtils.showGlobalToastAsync(
@@ -405,6 +439,50 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
     // 清空暂存的offer
     _pendingOffer = null;
     Navigator.pop(context);
+  }
+
+  // 打开/关闭麦克风（关闭后发送静音帧，对方听不到声音）
+  void _toggleMic() {
+    setState(() => _isMicOn = !_isMicOn);
+    _localStream?.getAudioTracks().forEach((track) {
+      track.enabled = _isMicOn;
+    });
+  }
+
+  // 构建圆形控制按钮（微信风格：半透明深色底+白色图标，非激活时白底+黑色图标）
+  Widget _buildControlBtn({
+    required VoidCallback onTap,
+    required IconData icon,
+    required bool active,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 50.w,
+        height: 50.w,
+        decoration: BoxDecoration(
+          shape: .circle,
+          color: active
+              ? Colors.black.withOpacity(0.4)
+              : Colors.white.withOpacity(0.9),
+        ),
+        alignment: .center,
+        child: Icon(
+          icon,
+          color: active ? Colors.white : Colors.black,
+          size: 24.w,
+        ),
+      ),
+    );
+  }
+
+  // 构建麦克风开关按钮
+  Widget _buildMicBtn() {
+    return _buildControlBtn(
+      onTap: _toggleMic,
+      icon: _isMicOn ? Icons.mic : Icons.mic_off,
+      active: _isMicOn,
+    );
   }
 
   // 构建同意接听按钮
@@ -461,7 +539,14 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
   // 构建控制按钮区域
   Widget _buildControl() {
     if (_isAccept) {
-      return Center(child: _buildCallEndBtn());
+      // 通话中：麦克风开关 + 挂断
+      return Row(
+        mainAxisAlignment: .spaceEvenly,
+        children: [
+          _buildMicBtn(),
+          _buildCallEndBtn(),
+        ],
+      );
     }
     return _isCaller
         ? Center(child: _buildCallEndBtn())
@@ -530,6 +615,8 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
     _streamSubscription.cancel();
     _peerConnection?.dispose();
     _localStream?.dispose();
+    // 兜底停止铃声/振动（防止页面被意外关闭时铃声残留）
+    CallTone.stop();
     super.dispose();
   }
 }

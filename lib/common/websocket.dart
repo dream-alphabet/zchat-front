@@ -294,6 +294,12 @@ void _handleChatMsg(dynamic msg) {
         'messageId': message.messageId,
       },
     );
+    // 更新会话的lastMessage和lastReceiveTime
+    sessionStore.updateLastMessage(
+      sessionId,
+      message.messageContent,
+      message.sendTime,
+    );
   } else if (message.messageType == MessageTypeEnum.voiceCall.type) {
     navigateToPage(
       RoutePath.voiceCall,
@@ -302,6 +308,12 @@ void _handleChatMsg(dynamic msg) {
         'contactId': message.sendUserId,
         'messageId': message.messageId,
       },
+    );
+    // 更新会话的lastMessage和lastReceiveTime
+    sessionStore.updateLastMessage(
+      sessionId,
+      message.messageContent,
+      message.sendTime,
     );
   }
 }

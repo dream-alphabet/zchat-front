@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:get/get.dart' hide navigator;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:zchat/api/chat.dart';
 import 'package:zchat/api/contact.dart';
+import 'package:zchat/common/call_tone.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/event_bus.dart';
 import 'package:zchat/common/toast.dart';
@@ -16,6 +18,7 @@ import 'package:zchat/model/enums/chat.dart';
 import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
 import 'package:zchat/model/contact.dart';
+import 'package:zchat/stores/user.dart';
 
 // 视频通话页面
 class VideoCallPage extends StatefulWidget {
@@ -34,6 +37,15 @@ class _VideoCallPageState extends State<VideoCallPage> {
 
   // 是否接听
   bool _isAccept = false;
+
+  // 是否打开摄像头
+  bool _isCameraOn = true;
+
+  // 是否打开麦克风
+  bool _isMicOn = true;
+
+  // 用户store
+  final _userController = Get.find<UserController>();
 
   // 是否是通话发起者
   bool _isCaller = false;
@@ -88,6 +100,12 @@ class _VideoCallPageState extends State<VideoCallPage> {
         _isCaller = params['isCaller'];
         _messageId = params['messageId'];
         _getContactInfo();
+        // 启动铃声提示：呼叫方播放等待音，被叫方播放来电铃声
+        if (_isCaller) {
+          CallTone.startWaitingTone();
+        } else {
+          CallTone.startRingtone();
+        }
       }
     }).then((_) {
       _initRenderer();
@@ -119,6 +137,10 @@ class _VideoCallPageState extends State<VideoCallPage> {
                 // 接收candidate
                 _receiveCandidate(signalData);
               } else if (signalType == RTCSignalEnum.callEnd) {
+                // 自己主动挂断时，忽略后端推送回来的挂断信令
+                if (_isManualHangup) {
+                  return;
+                }
                 // 对方已挂断
                 _beCallEnd();
               }
@@ -153,11 +175,21 @@ class _VideoCallPageState extends State<VideoCallPage> {
     if (!isPermitted) {
       return;
     }
-    // 媒体约束
+    // 媒体约束（ideal为期望值，浏览器会按设备能力自适应，弱网时自动降级）
     final constraints = {
-      // 启用视频流
-      'video': true,
-      'audio': true,
+      'video': {
+        'width': {'ideal': 1280},
+        'height': {'ideal': 720},
+        'frameRate': {'ideal': 30},
+        // facingMode必须是字符串，不支持map形式
+        'facingMode': 'user',
+      },
+      'audio': {
+        // 回声消除/降噪/自动增益，保证语音清晰
+        'echoCancellation': true,
+        'noiseSuppression': true,
+        'autoGainControl': true,
+      },
     };
     _localStream = await navigator.mediaDevices.getUserMedia(constraints);
     _localRenderer.srcObject = _localStream;
@@ -189,6 +221,8 @@ class _VideoCallPageState extends State<VideoCallPage> {
       'iceTransportPolicy': 'all', // 允许所有候选类型
       'bundlePolicy': 'max-bundle',
       'rtcpMuxPolicy': 'require',
+      // 预收集ICE候选，加速连接建立（减少接通等待时间）
+      'iceCandidatePoolSize': 8,
     });
     // 将本地媒体流的所有轨道添加到连接中
     _localStream!.getTracks().forEach((track) {
@@ -224,6 +258,9 @@ class _VideoCallPageState extends State<VideoCallPage> {
           _reconnectTimer?.cancel();
           _retryCount = 0;
           _isAccept = true;
+          // 接听成功，停止铃声并振动提示
+          CallTone.stop();
+          CallTone.vibrate();
           // 发送established信令，告知服务器连接已建立
           if (_isCaller) {
             _sendRTCSignal(RTCSignalEnum.established, {'messageId': _messageId});
@@ -265,7 +302,7 @@ class _VideoCallPageState extends State<VideoCallPage> {
   }
 
   // 尝试重连，判断是否满足重连条件
-  void _tryRetryConnection() {
+  Future<void> _tryRetryConnection() async {
     // 主动挂断不重连
     if (_isManualHangup) return;
     // 已经在重试中，不重复触发
@@ -273,10 +310,9 @@ class _VideoCallPageState extends State<VideoCallPage> {
     // 超过最大重试次数
     if (_retryCount >= _maxRetryCount) {
       print('WebRTC重连已用尽重试次数($_maxRetryCount次)，放弃重连');
-      // 主动挂断
-      _callEnd();
+      // 异常挂断（_callEnd内部会挂断并退出页面）
       ToastUtils.showGlobalToast(msg: '连接失败，请稍后重试');
-      Navigator.pop(context);
+      await _callEnd(abnormal: true);
       return;
     }
     _retryConnection();
@@ -406,6 +442,9 @@ class _VideoCallPageState extends State<VideoCallPage> {
     // 标记为主动挂断，阻止重连逻辑
     _isManualHangup = true;
     _reconnectTimer?.cancel();
+    // 停止铃声并振动提示
+    CallTone.stop();
+    CallTone.vibrate();
     // 断开连接
     await _peerConnection?.close();
     await ToastUtils.showGlobalToastAsync(
@@ -417,12 +456,18 @@ class _VideoCallPageState extends State<VideoCallPage> {
     Navigator.pop(context);
   }
 
-  // 主动挂断通话
-  void _callEnd() async {
+  // 主动挂断通话（abnormal=true表示异常挂断，如重连失败）
+  Future<void> _callEnd({bool abnormal = false}) async {
     // 标记为主动挂断，阻止重连逻辑
     _isManualHangup = true;
     _reconnectTimer?.cancel();
-    await _sendRTCSignal(RTCSignalEnum.callEnd, null);
+    // 停止铃声并振动提示
+    CallTone.stop();
+    CallTone.vibrate();
+    await _sendRTCSignal(RTCSignalEnum.callEnd, {
+      'messageId': _messageId,
+      'abnormal': abnormal,
+    });
     // 断开连接
     await _peerConnection?.close();
     await ToastUtils.showGlobalToastAsync(
@@ -432,6 +477,33 @@ class _VideoCallPageState extends State<VideoCallPage> {
     // 清空暂存的offer
     _pendingOffer = null;
     Navigator.pop(context);
+  }
+
+  // 切换前置/后置摄像头
+  Future<void> _switchCamera() async {
+    final tracks = _localStream?.getVideoTracks();
+    if (tracks == null || tracks.isEmpty) return;
+    try {
+      await Helper.switchCamera(tracks[0]);
+    } catch (_) {
+      // 设备不支持切换时忽略
+    }
+  }
+
+  // 打开/关闭摄像头（关闭后发送黑帧，对方画面会变为黑色占位）
+  void _toggleCamera() {
+    setState(() => _isCameraOn = !_isCameraOn);
+    _localStream?.getVideoTracks().forEach((track) {
+      track.enabled = _isCameraOn;
+    });
+  }
+
+  // 打开/关闭麦克风（关闭后发送静音帧，对方听不到声音）
+  void _toggleMic() {
+    setState(() => _isMicOn = !_isMicOn);
+    _localStream?.getAudioTracks().forEach((track) {
+      track.enabled = _isMicOn;
+    });
   }
 
   // 构建同意接听按钮
@@ -485,10 +557,95 @@ class _VideoCallPageState extends State<VideoCallPage> {
     );
   }
 
+  // 构建圆形控制按钮（微信风格：半透明深色底+白色图标，非激活时白底+黑色图标）
+  Widget _buildControlBtn({
+    required VoidCallback onTap,
+    required IconData icon,
+    required bool active,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 50.w,
+        height: 50.w,
+        decoration: BoxDecoration(
+          shape: .circle,
+          color: active
+              ? Colors.black.withOpacity(0.4)
+              : Colors.white.withOpacity(0.9),
+        ),
+        alignment: .center,
+        child: Icon(
+          icon,
+          color: active ? Colors.white : Colors.black,
+          size: 24.w,
+        ),
+      ),
+    );
+  }
+
+  // 构建切换摄像头按钮
+  Widget _buildSwitchCameraBtn() {
+    return _buildControlBtn(
+      onTap: _switchCamera,
+      icon: Icons.cameraswitch_outlined,
+      active: true,
+    );
+  }
+
+  // 构建摄像头开关按钮
+  Widget _buildCameraBtn() {
+    return _buildControlBtn(
+      onTap: _toggleCamera,
+      icon: _isCameraOn ? Icons.videocam : Icons.videocam_off,
+      active: _isCameraOn,
+    );
+  }
+
+  // 构建麦克风开关按钮
+  Widget _buildMicBtn() {
+    return _buildControlBtn(
+      onTap: _toggleMic,
+      icon: _isMicOn ? Icons.mic : Icons.mic_off,
+      active: _isMicOn,
+    );
+  }
+
+  // 构建摄像头关闭占位视图（黑色背景+头像+提示文字）
+  Widget _buildCameraOffView() {
+    return Container(
+      color: Colors.black,
+      alignment: .center,
+      child: Column(
+        mainAxisAlignment: .center,
+        spacing: 8.w,
+        children: [
+          ContactAvatar(
+            contactId: _userController.userInfo.value?.userId ?? '',
+            size: 34,
+          ),
+          Text(
+            '摄像头已关闭',
+            style: TextStyle(color: Colors.white54, fontSize: 10.sp),
+          ),
+        ],
+      ),
+    );
+  }
+
   // 构建控制按钮区域
   Widget _buildControl() {
     if (_isAccept) {
-      return Center(child: _buildCallEndBtn());
+      // 通话中：切换摄像头 + 麦克风开关 + 挂断 + 摄像头开关
+      return Row(
+        mainAxisAlignment: .spaceEvenly,
+        children: [
+          _buildSwitchCameraBtn(),
+          _buildMicBtn(),
+          _buildCallEndBtn(),
+          _buildCameraBtn(),
+        ],
+      );
     }
     return _isCaller
         ? Center(child: _buildCallEndBtn())
@@ -554,11 +711,14 @@ class _VideoCallPageState extends State<VideoCallPage> {
                 child: SizedBox(
                   width: 150.w,
                   height: 180.w,
-                  child: RTCVideoView(
-                    _localRenderer,
-                    objectFit: .RTCVideoViewObjectFitCover,
-                    filterQuality: .medium,
-                  ),
+                  child: _isCameraOn
+                      ? RTCVideoView(
+                          _localRenderer,
+                          objectFit: .RTCVideoViewObjectFitCover,
+                          filterQuality: .medium,
+                        )
+                      // 摄像头关闭时显示头像占位
+                      : _buildCameraOffView(),
                 ),
               ),
             Positioned(bottom: 30.w, left: 0, right: 0, child: _buildControl()),
@@ -576,6 +736,8 @@ class _VideoCallPageState extends State<VideoCallPage> {
     _remoteRenderer.dispose();
     _localRenderer.dispose();
     _localStream?.dispose();
+    // 兜底停止铃声/振动（防止页面被意外关闭时铃声残留）
+    CallTone.stop();
     super.dispose();
   }
 }

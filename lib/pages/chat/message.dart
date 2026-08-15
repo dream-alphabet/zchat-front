@@ -420,6 +420,12 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     });
     // 滚动到底部
     _scrollToBottom();
+    // 更新会话的lastMessage和lastReceiveTime
+    _sessionStore.updateLastMessage(
+      _sessionId,
+      MessageTypeEnum.videoCall.messageContent,
+      msg.sendTime,
+    );
     // 前往视频通话页面
     Navigator.pushNamed(
       context,
@@ -449,6 +455,12 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     });
     // 滚动到底部
     _scrollToBottom();
+    // 更新会话的lastMessage和lastReceiveTime
+    _sessionStore.updateLastMessage(
+      _sessionId,
+      MessageTypeEnum.voiceCall.messageContent,
+      msg.sendTime,
+    );
     // 前往视频通话页面
     Navigator.pushNamed(
       context,
@@ -552,9 +564,13 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       }
       // 消息内容
       final msg = event.msg as ChatMessageRes;
-      // 如果是webrtc信令消息，不处理, 如果是当前用户发送的，也不处理
-      if (msg.messageType != MessageTypeEnum.rtcSignal.type &&
-          msg.sendUserId != _userController.userInfo.value?.userId) {
+      // webrtc信令消息：通话挂断时更新本地通话消息的data（实时显示通话状态）
+      if (msg.messageType == MessageTypeEnum.rtcSignal.type) {
+        _updateCallMessageData(msg);
+        return;
+      }
+      // 如果是当前用户发送的，也不处理
+      if (msg.sendUserId != _userController.userInfo.value?.userId) {
         setState(() {
           _msgList.insert(0, msg);
         });
@@ -563,6 +579,28 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
           _scrollToBottom();
         }
       }
+    });
+  }
+
+  // 处理通话挂断信令，更新本地通话消息的data（通话状态/时长）
+  void _updateCallMessageData(ChatMessageRes msg) {
+    // 只处理挂断信令
+    final signal = jsonDecode(msg.messageContent);
+    if (signal['type'] != RTCSignalEnum.callEnd) {
+      return;
+    }
+    // 信令数据中的通话消息id
+    final messageId = signal['data']?['messageId'];
+    if (messageId == null) {
+      return;
+    }
+    // 在本地消息列表中找到对应的通话消息并更新data
+    final index = _msgList.indexWhere((m) => m.messageId == messageId);
+    if (index == -1) {
+      return;
+    }
+    setState(() {
+      _msgList[index].data = msg.data;
     });
   }
 

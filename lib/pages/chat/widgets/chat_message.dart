@@ -611,17 +611,35 @@ class _ChatMessageState extends State<ChatMessage> {
     Overlay.of(context).insert(_contextMenuOverlay!);
   }
 
-  // 构建语音通话消息
-  Widget _buildVoiceCall() {
+  // 构建通话消息（语音/视频共用，根据data中的status展示不同状态）
+  Widget _buildCallMsg(MessageTypeEnum type) {
+    final icon = type == MessageTypeEnum.voiceCall ? MyIcon.voice : MyIcon.video;
+    String content;
     final msgData = widget.message.data;
     if (msgData == null) {
-      return _buildTextMsg('语音通话');
+      // data为空（通话尚未结束），显示默认文案
+      content = type.messageContent;
+    } else {
+      final data = jsonDecode(msgData);
+      final status = data['status'];
+      final duration = data['duration'];
+      if (status == CallStatusEnum.reject.status) {
+        // 拒绝接听
+        content = '未接听';
+      } else if (status == CallStatusEnum.abnormal.status) {
+        // 异常挂断
+        content = '通话中断';
+      } else if (duration != null) {
+        // 正常接听（兼容旧数据：无status但有duration）
+        content = '通话时长 ${formatDuration(duration)}';
+      } else {
+        content = type.messageContent;
+      }
     }
-    final data = jsonDecode(msgData);
     return _buildMsgLayout(
       child: GestureDetector(
         onTap: () {
-          widget.onVideoOrVoiceCall(MessageTypeEnum.voiceCall);
+          widget.onVideoOrVoiceCall(type);
         },
         child: Container(
           key: _contentKey,
@@ -637,11 +655,11 @@ class _ChatMessageState extends State<ChatMessage> {
             spacing: 5.w,
             children: [
               Text(
-                '通话时长 ${formatDuration(data['duration'])}',
+                content,
                 style: TextStyle(color: _isSelf ? Colors.white : Colors.black),
               ),
               Icon(
-                MyIcon.voice,
+                icon,
                 size: 18.sp,
                 color: _isSelf ? Colors.white : Colors.black,
               ),
@@ -653,46 +671,14 @@ class _ChatMessageState extends State<ChatMessage> {
     );
   }
 
+  // 构建语音通话消息
+  Widget _buildVoiceCall() {
+    return _buildCallMsg(MessageTypeEnum.voiceCall);
+  }
+
   // 构建视频通话消息
   Widget _buildVideoCall() {
-    final msgData = widget.message.data;
-    if (msgData == null) {
-      return _buildTextMsg('视频通话');
-    }
-    final data = jsonDecode(msgData);
-    return _buildMsgLayout(
-      child: GestureDetector(
-        onTap: () {
-          widget.onVideoOrVoiceCall(MessageTypeEnum.videoCall);
-        },
-        child: Container(
-          key: _contentKey,
-          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.w),
-          decoration: BoxDecoration(
-            color: _isSelf
-                ? const Color.fromRGBO(20, 134, 237, 1)
-                : Colors.white,
-            borderRadius: .circular(8.r),
-          ),
-          child: Row(
-            mainAxisSize: .min,
-            spacing: 5.w,
-            children: [
-              Text(
-                '通话时长 ${formatDuration(data['duration'])}',
-                style: TextStyle(color: _isSelf ? Colors.white : Colors.black),
-              ),
-              Icon(
-                MyIcon.video,
-                size: 18.sp,
-                color: _isSelf ? Colors.white : Colors.black,
-              ),
-            ],
-          ),
-        ),
-      ),
-      color: _isSelf ? const Color.fromRGBO(20, 134, 237, 1) : Colors.white,
-    );
+    return _buildCallMsg(MessageTypeEnum.videoCall);
   }
 
   // 根据消息类型获取消息内容

@@ -21,6 +21,20 @@ enum MessageTypeEnum {
   final String messageContent;
 }
 
+// 通话状态枚举
+enum CallStatusEnum {
+  // 正常接听
+  normal(status: 1),
+  // 拒绝接听
+  reject(status: 2),
+  // 异常挂断
+  abnormal(status: 3);
+
+  const CallStatusEnum({required this.status});
+
+  final int status;
+}
+
 // 消息状态枚举
 enum MessageStatusEnum {
   sending(status: 0, desc: '发送中'),
