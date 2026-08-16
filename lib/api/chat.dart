@@ -37,3 +37,18 @@ Future<ChatMessageRes> shareMessageApi(ShareMsgReq data) async {
     await request.post(Api.shareMessage, data: data.toJson()),
   );
 }
+
+// 搜索聊天记录
+Future<PageRes> searchChatMessageApi(SearchMsgReq data) async {
+  return PageRes.fromJson(
+    await request.get(Api.searchChatMessage, params: data.toMap()),
+  );
+}
+
+// 获取消息所在页码（用于搜索后跳转定位）
+Future<int> getMsgPageNumApi(int messageId, int pageSize) async {
+  return await request.get(
+    Api.getMsgPageNum,
+    params: {'messageId': messageId, 'pageSize': pageSize},
+  );
+}

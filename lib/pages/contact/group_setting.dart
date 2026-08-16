@@ -52,6 +52,11 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
   // 成员列表区域显示几行
   int get _memberRows => ((min(_memberList.length, 24) + 1) / 5).ceil();
 
+  // 次要文字/图标颜色
+  static const _hintColor = Color.fromRGBO(174, 174, 174, 1);
+  // 列表分隔线颜色
+  static const _dividerColor = Color.fromRGBO(247, 247, 247, 1);
+
   // 群聊id
   String _groupId = '';
 
@@ -137,6 +142,71 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
             return confirm;
           },
         ),
+      ),
+    );
+  }
+
+  // 跳转到全部群成员页面，点击成员跳转到联系人信息页面
+  Future<void> _showAllGroupMembers() async {
+    final contact =
+        await Navigator.pushNamed(
+              context,
+              RoutePath.contactSelect,
+              arguments: {'contactList': _memberList, 'groupId': _groupId},
+            )
+            as UserContactRes?;
+    // 没有选择
+    if (contact == null) {
+      return;
+    }
+    // 前往联系人信息页面
+    Navigator.pushNamed(
+      context,
+      RoutePath.contactInfo,
+      arguments: {'contactId': contact.contactId},
+    );
+  }
+
+  // 构建设置行（左侧标题，右侧内容+箭头）
+  Widget _buildSettingRow(String title, {Widget? trailing}) {
+    return Row(
+      mainAxisAlignment: .spaceBetween,
+      spacing: 10.w,
+      children: [
+        Text(title),
+        Row(
+          mainAxisSize: .min,
+          spacing: 5.w,
+          children: [
+            ?trailing,
+            Icon(MyIcon.arrowRight, size: 16.sp, color: _hintColor),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // 构建设置列表行（点击效果 + 水平边距 + 可选底部分隔线）
+  Widget _buildListItem({
+    required VoidCallback onTap,
+    required Widget child,
+    bool showBorder = false,
+  }) {
+    return InkClick(
+      onTap: onTap,
+      backgroundColor: Colors.white,
+      child: Container(
+        width: double.infinity,
+        margin: EdgeInsets.symmetric(horizontal: 15.w),
+        padding: EdgeInsets.symmetric(vertical: 10.w),
+        decoration: BoxDecoration(
+          border: showBorder
+              ? Border(
+                  bottom: BorderSide(color: _dividerColor, width: 1.w),
+                )
+              : null,
+        ),
+        child: child,
       ),
     );
   }
@@ -261,30 +331,7 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
           ),
           if (_memberList.length > 24)
             GestureDetector(
-              onTap: () async {
-                // 跳转到联系人选择页面，联系人数据使用_memberList
-                // 点击联系人时跳转到联系人信息页面
-                final contact =
-                    await Navigator.pushNamed(
-                          context,
-                          RoutePath.contactSelect,
-                          arguments: {
-                            'contactList': _memberList,
-                            'groupId': _groupId,
-                          },
-                        )
-                        as UserContactRes?;
-                // 没有选择
-                if (contact == null) {
-                  return;
-                }
-                // 前往联系人信息页面
-                Navigator.pushNamed(
-                  context,
-                  RoutePath.contactInfo,
-                  arguments: {'contactId': contact.contactId},
-                );
-              },
+              onTap: _showAllGroupMembers,
               child: Row(
                 mainAxisSize: .min,
                 spacing: 5.w,
@@ -311,180 +358,91 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
 
   // 群聊名称
   Widget _buildGroupName() {
-    return Row(
-      mainAxisAlignment: .spaceBetween,
-      spacing: 10.w,
-      children: [
-        Text('群聊名称'),
-        Row(
-          spacing: 5.w,
-          children: [
-            Text(
-              _group?.groupName ?? '',
-              style: TextStyle(
-                color: Color.fromRGBO(174, 174, 174, 1),
-                overflow: .ellipsis,
-              ),
-            ),
-            Icon(
-              MyIcon.arrowRight,
-              size: 16.sp,
-              color: Color.fromRGBO(174, 174, 174, 1),
-            ),
-          ],
-        ),
-      ],
+    return _buildSettingRow(
+      '群聊名称',
+      trailing: Text(
+        _group?.groupName ?? '',
+        style: TextStyle(color: _hintColor, overflow: .ellipsis),
+      ),
     );
   }
 
   // 群二维码
   Widget _buildGroupQrCode() {
-    return Row(
-      mainAxisAlignment: .spaceBetween,
-      spacing: 10.w,
-      children: [
-        Text('群二维码'),
-        Row(
-          spacing: 5.w,
-          children: [
-            Icon(
-              MyIcon.qrCode,
-              size: 20.sp,
-              color: Color.fromRGBO(174, 174, 174, 1),
-            ),
-            Icon(
-              MyIcon.arrowRight,
-              size: 16.sp,
-              color: Color.fromRGBO(174, 174, 174, 1),
-            ),
-          ],
-        ),
-      ],
+    return _buildSettingRow(
+      '群二维码',
+      trailing: Icon(MyIcon.qrCode, size: 20.sp, color: _hintColor),
     );
   }
 
   // 群公告
-  Widget _buildGroupNotice() {
-    return Row(
-      mainAxisAlignment: .spaceBetween,
-      spacing: 10.w,
-      children: [
-        Text('群公告'),
-        Icon(
-          MyIcon.arrowRight,
-          size: 16.sp,
-          color: Color.fromRGBO(174, 174, 174, 1),
-        ),
-      ],
-    );
-  }
+  Widget _buildGroupNotice() => _buildSettingRow('群公告');
 
   // 群备注
-  Widget _buildRemark() {
-    return Row(
-      mainAxisAlignment: .spaceBetween,
-      spacing: 10.w,
-      children: [
-        Text('群备注'),
-        Icon(
-          MyIcon.arrowRight,
-          size: 16.sp,
-          color: Color.fromRGBO(174, 174, 174, 1),
-        ),
-      ],
-    );
-  }
+  Widget _buildRemark() => _buildSettingRow('群备注');
 
   // 我在群里的昵称
-  Widget _buildGroupNickname() {
-    return Row(
-      mainAxisAlignment: .spaceBetween,
-      spacing: 10.w,
-      children: [
-        Text('我在群里的昵称'),
-        Icon(
-          MyIcon.arrowRight,
-          size: 16.sp,
-          color: Color.fromRGBO(174, 174, 174, 1),
-        ),
-      ],
-    );
-  }
+  Widget _buildGroupNickname() => _buildSettingRow('我在群里的昵称');
 
   // 构建功能区域
   Widget _buildFunction() {
-    // 功能列表
-    final functionList = [
-      _buildGroupName(),
-      _buildGroupQrCode(),
-      _buildGroupNotice(),
-      _buildRemark(),
-      _buildGroupNickname()
+    // 功能项列表（页面组件 + 对应路由）
+    final functionList = <(Widget, String)>[
+      (_buildGroupName(), RoutePath.groupName),
+      (_buildGroupQrCode(), RoutePath.groupQrcode),
+      (_buildGroupNotice(), RoutePath.groupNotice),
+      (_buildRemark(), RoutePath.groupRemark),
+      (_buildGroupNickname(), RoutePath.groupNickname),
     ];
-    // 要跳转的页面
-    final paths = [
-      RoutePath.groupName,
-      RoutePath.groupQrcode,
-      RoutePath.groupNotice,
-      RoutePath.groupRemark,
-      RoutePath.groupNickname
-    ];
-
     return Container(
       width: double.infinity,
       color: Colors.white,
       child: Column(
         children: List.generate(
           functionList.length,
-          (index) => InkClick(
-            onTap: () {
-              // 如果是群聊名称需要判断是否是群主
-              final onlyOwner = [RoutePath.groupName];
-              final path = paths[index];
-              if (onlyOwner.contains(path) && !isGroupOwner) {
-                showPromptDialog(context, '只有群主才可以修改', confirmText: '知道了');
-                return;
-              }
-              Navigator.pushNamed(
-                context,
-                paths[index],
-                arguments: {
-                  'group': _group,
-                  'groupId': _groupId
-                },
-              );
-            },
-            child: Container(
-              width: double.infinity,
-              margin: EdgeInsets.symmetric(horizontal: 15.w),
-              padding: EdgeInsets.symmetric(vertical: 10.w),
-              decoration: BoxDecoration(
-                border: index < functionList.length - 1
-                    ? Border(
-                        bottom: BorderSide(
-                          color: Color.fromRGBO(247, 247, 247, 1),
-                          width: 1.w,
-                        ),
-                      )
-                    : null,
-              ),
-              child: functionList[index],
-            ),
-          ),
+          (index) {
+            final (item, path) = functionList[index];
+            return _buildListItem(
+              onTap: () {
+                // 群聊名称只有群主可以修改
+                if (path == RoutePath.groupName && !isGroupOwner) {
+                  showPromptDialog(context, '只有群主才可以修改', confirmText: '知道了');
+                  return;
+                }
+                Navigator.pushNamed(
+                  context,
+                  path,
+                  arguments: {'group': _group, 'groupId': _groupId},
+                );
+              },
+              showBorder: index < functionList.length - 1,
+              child: item,
+            );
+          },
         ),
       ),
     );
   }
 
+  // 查找聊天记录
+  Widget _buildChatHistory() {
+    return _buildListItem(
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          RoutePath.chatHistory,
+          arguments: {'contactId': _groupId},
+        );
+      },
+      child: _buildSettingRow('查找聊天记录'),
+    );
+  }
+
   // 构建退出/解散群聊按钮
   Widget _buildExitGroupBtn() {
-    return InkClick(
+    return _buildListItem(
       onTap: _dissolveOrExitGroup,
-      backgroundColor: Colors.white,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: 10.w),
-        alignment: .center,
+      child: Center(
         child: Text(
           isGroupOwner ? '解散群聊' : '退出群聊',
           style: TextStyle(
@@ -526,30 +484,7 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
               title: '群聊设置',
               rightIconList: [
                 GestureDetector(
-                  onTap: () async {
-                    // 跳转到联系人选择页面，联系人数据使用_memberList
-                    // 点击联系人时跳转到联系人信息页面
-                    final contact =
-                        await Navigator.pushNamed(
-                              context,
-                              RoutePath.contactSelect,
-                              arguments: {
-                                'contactList': _memberList,
-                                'groupId': _groupId,
-                              },
-                            )
-                            as UserContactRes?;
-                    // 没有选择
-                    if (contact == null) {
-                      return;
-                    }
-                    // 前往联系人信息页面
-                    Navigator.pushNamed(
-                      context,
-                      RoutePath.contactInfo,
-                      arguments: {'contactId': contact.contactId},
-                    );
-                  },
+                  onTap: _showAllGroupMembers,
                   child: Icon(MyIcon.search, size: 25.w),
                 ),
               ],
@@ -558,6 +493,8 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
             _buildGroupMemberList(),
             SizedBox(height: 10.w),
             _buildFunction(),
+            SizedBox(height: 10.w),
+            _buildChatHistory(),
             SizedBox(height: 10.w),
             _buildExitGroupBtn(),
           ],

@@ -98,7 +98,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
             ),
             _buildNavigateRow('朋友设置', RoutePath.friendSetting),
             SizedBox(height: 10.w),
-            _buildNavigateRow('查找聊天记录', RoutePath.friendSetting),
+            _buildNavigateRow('查找聊天记录', RoutePath.chatHistory),
           ],
         ),
       ),

@@ -122,6 +122,28 @@ class GetMsgListReq {
   };
 }
 
+// 搜索聊天记录请求参数
+class SearchMsgReq {
+  String keyword;
+  String contactId;
+  int page;
+  int pageSize;
+
+  SearchMsgReq({
+    required this.keyword,
+    required this.contactId,
+    required this.page,
+    required this.pageSize,
+  });
+
+  Map<String, dynamic> toMap() => {
+    "keyword": keyword,
+    "contactId": contactId,
+    "page": page,
+    "pageSize": pageSize,
+  };
+}
+
 // 消息响应结果
 class ChatMessageRes {
   int messageId;

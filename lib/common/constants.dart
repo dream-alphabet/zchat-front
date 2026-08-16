@@ -61,6 +61,8 @@ class Api {
   static const recallMessage = '/chat/message/recall/';
   static const getMsgList = '/chat/message/list';
   static const shareMessage = '/chat/message/share';
+  static const searchChatMessage = '/chat/message/search';
+  static const getMsgPageNum = '/chat/message/pageNum';
   static const createGroup = '/group/create';
   static const getGroupSettings = '/group/settings/';
   static const searchGroupMember = '/group/searchMember';
@@ -143,4 +145,6 @@ class RoutePath {
   static const groupQrcode = 'groupQrcode';
   // 我在群里的昵称
   static const groupNickname = 'groupNickname';
+  // 查找聊天记录
+  static const chatHistory = 'chatHistory';
 }

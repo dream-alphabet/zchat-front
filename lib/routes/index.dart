@@ -11,6 +11,7 @@ import 'package:zchat/pages/chat/video_call.dart';
 import 'package:zchat/pages/chat/voice_call.dart';
 import 'package:zchat/pages/contact/add_contact.dart';
 import 'package:zchat/pages/contact/add_friend.dart';
+import 'package:zchat/pages/contact/chat_history.dart';
 import 'package:zchat/pages/contact/chat_info.dart';
 import 'package:zchat/pages/contact/contact_select.dart';
 import 'package:zchat/pages/contact/create_group.dart';
@@ -72,6 +73,7 @@ final Map<String, WidgetBuilder> routes = {
   RoutePath.groupNickname: (ctx) => GroupNicknamePage(),
   RoutePath.momentsUser: (ctx) => MomentsUserPage(),
   RoutePath.momentsPublish: (ctx) => MomentsPublishPage(),
+  RoutePath.chatHistory: (ctx) => ChatHistoryPage()
 };
 // 需要slideUp动画的页面
 const needSlideUp = [RoutePath.contactSelect, RoutePath.momentsPublish];

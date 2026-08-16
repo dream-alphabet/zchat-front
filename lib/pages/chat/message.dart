@@ -115,6 +115,15 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   // 消息列表滚动控制器
   final _msgListController = ScrollController();
 
+  // 定位目标消息id（搜索聊天记录跳转）
+  int? _targetMessageId;
+  // 定位后高亮的消息id
+  int? _highlightMessageId;
+  // 是否处于定位模式（显示回到最新悬浮条）
+  bool _isLocated = false;
+  // 消息GlobalKey（用于定位滚动）
+  final Map<int, GlobalKey> _messageKeys = {};
+
   // 滚动加载防抖
   final _scrollDebouncer = Debouncer(timeout: Duration(milliseconds: 200));
 
@@ -502,16 +511,26 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         _contactId = params['contactId'];
         _contactType = params['contactType'];
         _sessionId = params['sessionId'];
+        _targetMessageId = params['targetMessageId'] as int?;
         // 设置当前活跃会话id
         setActiveSession(_sessionId);
         // 清空当前会话消息未读数量
         // 不能在build之前清空因为Obx在build之前重构会有问题，这里因为Future.microtask所以没有问题
         _messageStore.clearSessionUnreadCount(_sessionId);
         _getContactInfo();
-        _getMsgList().then((_) {
-          _scrollToBottom();
-        });
+        // 搜索跳转定位模式：从目标消息所在页加载并定位
+        if (_targetMessageId != null && _targetMessageId! > 0) {
+          _loadAroundMessage(_targetMessageId!);
+        } else {
+          _getMsgList().then((_) {
+            _scrollToBottom();
+          });
+        }
         _msgListController.addListener(() {
+          // 定位模式下滚动到最顶部（最新消息）时自动退出定位模式
+          if (_isLocated && _msgListController.offset < 50.w) {
+            setState(() => _isLocated = false);
+          }
           // 当用户滚动到最旧的一条消息时才加载更多历史消息
           // reverse列表中 extentAfter=0 意味着已经滑到底部(最旧消息)
           if (_msgListController.position.extentAfter < 1) {
@@ -605,34 +624,46 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   }
 
   // 获取消息列表
-  Future<void> _getMsgList() async {
+  Future<void> _getMsgList({bool clear = false, int? page}) async {
     // 如果正在请求或者没有更多数据了
     if (_isLoading || !_hasMore) {
       return;
     }
     _isLoading = true;
-    // 如果已经存在消息
-    if (_msgList.isNotEmpty) {
-      _maxMessageId = _msgList[_msgList.length - 1].messageId;
+    try {
+      // 清空模式（定位加载）：重置最大消息id
+      if (clear) {
+        _msgList.clear();
+        _maxMessageId = null;
+      }
+      // 如果已经存在消息
+      if (_msgList.isNotEmpty) {
+        _maxMessageId = _msgList[_msgList.length - 1].messageId;
+      }
+      final res = await getMessageListApi(
+        GetMsgListReq(
+          page: page ?? _page,
+          pageSize: _pageSize,
+          contactId: _contactId,
+          maxMessageId: _maxMessageId,
+        ),
+      );
+      final list = res.list.map((msg) => ChatMessageRes.fromJson(msg)).toList();
+      if (list.isEmpty) {
+        _hasMore = false;
+        return;
+      }
+      // 根据messageId从大到小排序
+      list.sort((a, b) => b.messageId - a.messageId);
+      _msgList = [..._msgList, ...list];
+      setState(() {});
+    } catch (e) {
+      // 请求失败（request.dart已弹出错误提示），打印日志便于排查
+      print('加载消息列表失败: $e');
+    } finally {
+      // 无论成功失败都复位加载状态，避免卡死导致后续加载被跳过
+      _isLoading = false;
     }
-    final res = await getMessageListApi(
-      GetMsgListReq(
-        page: _page,
-        pageSize: _pageSize,
-        contactId: _contactId,
-        maxMessageId: _maxMessageId,
-      ),
-    );
-    final list = res.list.map((msg) => ChatMessageRes.fromJson(msg)).toList();
-    if (list.isEmpty) {
-      _hasMore = false;
-      return;
-    }
-    // 根据messageId从大到小排序
-    list.sort((a, b) => b.messageId - a.messageId);
-    _msgList = [..._msgList, ...list];
-    _isLoading = false;
-    setState(() {});
   }
 
   // 获取联系人信息
@@ -664,6 +695,122 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _msgListController.jumpTo(0);
     });
+  }
+
+  // 获取消息GlobalKey（用于定位滚动）
+  GlobalKey _messageKey(int messageId) {
+    return _messageKeys.putIfAbsent(messageId, () => GlobalKey());
+  }
+
+  // 定位到指定消息（从目标消息所在页开始加载）
+  Future<void> _loadAroundMessage(int targetMessageId) async {
+    setState(() => _isLocated = true);
+    try {
+      // 目标消息所在页码（按消息id倒序分页）
+      var pageNum = await getMsgPageNumApi(targetMessageId, _pageSize);
+      // 从目标页加载，如果目标消息不在该页则向前翻页查找（防止期间有新消息导致页码偏移）
+      while (true) {
+        await _getMsgList(clear: true, page: pageNum);
+        if (_msgList.any((m) => m.messageId == targetMessageId)) {
+          break;
+        }
+        if (pageNum <= 1 || !_hasMore) {
+          break;
+        }
+        pageNum--;
+      }
+      // 滚动定位到目标消息
+      final index = _msgList.indexWhere((m) => m.messageId == targetMessageId);
+      if (index != -1) {
+        setState(() => _highlightMessageId = targetMessageId);
+        _scrollToMessage(index);
+        // 1.5秒后取消高亮
+        Future.delayed(const Duration(milliseconds: 1500), () {
+          if (mounted) {
+            setState(() => _highlightMessageId = null);
+          }
+        });
+      }
+    } catch (e) {
+      // 定位失败（如页码接口异常），回退到加载最新消息
+      print('定位消息失败: $e');
+      setState(() => _isLocated = false);
+      _maxMessageId = null;
+      await _getMsgList();
+      _scrollToBottom();
+    }
+  }
+
+  // 滚动到指定消息（粗跳估算位置后精确滚动）
+  void _scrollToMessage(int index) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 先粗跳估算位置，确保目标消息被构建
+      final estimatedOffset = index * 80.w;
+      final maxOffset = _msgListController.position.maxScrollExtent;
+      _msgListController.jumpTo(
+        estimatedOffset > maxOffset ? maxOffset : estimatedOffset,
+      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final targetKey = _messageKeys[_targetMessageId];
+        final targetContext = targetKey?.currentContext;
+        if (targetContext != null) {
+          Scrollable.ensureVisible(
+            targetContext,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+            alignment: 0.3,
+          );
+        }
+      });
+    });
+  }
+
+  // 回到最新消息（退出定位模式）
+  void _backToLatest() async {
+    setState(() {
+      _isLocated = false;
+      _highlightMessageId = null;
+      // 强制复位，防止定位加载未完成时点击导致跳过加载
+      _isLoading = false;
+    });
+    _maxMessageId = null;
+    await _getMsgList(clear: true);
+    _scrollToBottom();
+  }
+
+  // 构建回到最新悬浮条（定位模式下显示）
+  Widget _buildBackToLatest() {
+    if (!_isLocated) {
+      return const SizedBox.shrink();
+    }
+    return Positioned(
+      left: 0,
+      right: 0,
+      top: 0,
+      child: Center(
+        child: GestureDetector(
+          onTap: _backToLatest,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.w),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              '回到最新消息',
+              style: TextStyle(fontSize: 13.sp, color: Colors.black),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   // 发送文本消息
@@ -734,6 +881,25 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       padding: EdgeInsets.only(top: 10.w),
       reverse: true,
       itemBuilder: (ctx, index) {
+        // 构建单条消息（带定位key，定位后高亮显示）
+        Widget buildMsg() {
+          final message = _msgList[index];
+          Widget msg = ChatMessage(
+            message: message,
+            scrollController: _msgListController,
+            onShareMessage: _shareMessage,
+            onVideoOrVoiceCall: _onVideoOrVoiceCall,
+          );
+          // 定位后高亮目标消息
+          if (message.messageId == _highlightMessageId) {
+            msg = Container(
+              color: const Color.fromRGBO(255, 236, 179, 0.5),
+              child: msg,
+            );
+          }
+          return Container(key: _messageKey(message.messageId), child: msg);
+        }
+
         // 第一条消息显示发送时间，因为顺序翻转，所以_msgList.length-1是第一条消息
         // 两条消息发送时间间隔超过5分钟就显示时间
         if (index == _msgList.length - 1 ||
@@ -750,21 +916,11 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                   fontSize: 14.sp,
                 ),
               ),
-              ChatMessage(
-                message: _msgList[index],
-                scrollController: _msgListController,
-                onShareMessage: _shareMessage,
-                onVideoOrVoiceCall: _onVideoOrVoiceCall,
-              ),
+              buildMsg(),
             ],
           );
         }
-        return ChatMessage(
-          message: _msgList[index],
-          scrollController: _msgListController,
-          onShareMessage: _shareMessage,
-          onVideoOrVoiceCall: _onVideoOrVoiceCall,
-        );
+        return buildMsg();
       },
     );
   }
@@ -1178,7 +1334,13 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                   ),
                 ],
               ),
-              Expanded(child: _buildMessageList()),
+              Expanded(
+                child: Stack(
+                  // 非定位子项强制填充，否则Stack宽度会被收缩为0
+                  fit: StackFit.expand,
+                  children: [_buildMessageList(), _buildBackToLatest()],
+                ),
+              ),
               if (_contactInfo?.groupStatus != GroupStatusEnum.dissolve)
                 _buildBottom(),
             ],

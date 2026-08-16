@@ -21,6 +21,10 @@ class HighlightText extends StatelessWidget {
   final TextStyle normalStyle;
   // 高亮样式
   final TextStyle highlightStyle;
+  // 最大行数
+  final int? maxLines;
+  // 溢出处理
+  final TextOverflow overflow;
 
   const HighlightText({
     super.key,
@@ -28,13 +32,15 @@ class HighlightText extends StatelessWidget {
     this.ranges = const [],
     required this.normalStyle,
     required this.highlightStyle,
+    this.maxLines,
+    this.overflow = TextOverflow.clip,
   });
 
   @override
   Widget build(BuildContext context) {
     // 没有高亮范围，直接返回全部正常样式文本
     if (ranges.isEmpty) {
-      return Text(text, style: normalStyle);
+      return Text(text, style: normalStyle, maxLines: maxLines, overflow: overflow);
     }
     // 给范围数组排序
     final sorted = List<HighlightRange>.from(ranges)
@@ -66,10 +72,14 @@ class HighlightText extends StatelessWidget {
         style: normalStyle,
       ));
     }
-    return RichText(text: TextSpan(
-      style: normalStyle,
-      children: spans
-    ));
+    return RichText(
+      text: TextSpan(
+        style: normalStyle,
+        children: spans,
+      ),
+      maxLines: maxLines,
+      overflow: overflow,
+    );
   }
 }
 
