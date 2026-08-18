@@ -323,7 +323,7 @@ class _MomentsUserPageState extends State<MomentsUserPage> {
   Widget _buildEmptyContent() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.only(top: 150.w),
+      padding: EdgeInsets.only(top: 50.w),
       child: Column(
         spacing: 10.w,
         children: [

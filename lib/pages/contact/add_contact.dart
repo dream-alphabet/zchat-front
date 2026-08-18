@@ -8,6 +8,7 @@ import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/stores/user.dart';
 import 'package:zchat/widgets/page_header.dart';
+import 'package:zchat/widgets/wechat_switch.dart';
 
 // 添加到通讯录
 class AddContactPage extends StatefulWidget {
@@ -22,8 +23,17 @@ class _AddContactPageState extends State<AddContactPage> {
   final _userController = Get.find<UserController>();
   // 打招呼内容输入框控制器
   final _applyInfoController = TextEditingController();
+  // 备注输入框控制器
+  final _applyRemarkController = TextEditingController();
   // 联系人id
   String _contactId = '';
+  // 联系人类型(0:好友 1:群聊)
+  int _contactType = UserContactTypeEnum.user;
+  // 是否仅聊天(仅好友申请有效)
+  bool _onlyChat = false;
+
+  // 是否好友申请(群聊申请没有备注和权限一说)
+  bool get _isUserApply => _contactType == UserContactTypeEnum.user;
 
   @override
   void initState() {
@@ -34,6 +44,7 @@ class _AddContactPageState extends State<AddContactPage> {
         final params =
             ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
         _contactId = params['contactId'];
+        _contactType = params['contactType'] ?? UserContactTypeEnum.user;
       }
     });
     // 设置默认文本
@@ -48,9 +59,20 @@ class _AddContactPageState extends State<AddContactPage> {
       ToastUtils.showGlobalToast(msg: '打招呼内容不能为空');
       return;
     }
+    // 备注
+    final applyRemark = _applyRemarkController.text.trim();
     // 请求接口，返回联系人加入类型
     int joinType = await sendContactApplyApi(
-      SendApplyReq(contactId: _contactId, applyInfo: applyInfo),
+      SendApplyReq(
+        contactId: _contactId,
+        applyInfo: applyInfo,
+        applyRemark: _isUserApply && applyRemark.isNotEmpty ? applyRemark : null,
+        applyPermission: _isUserApply
+            ? (_onlyChat
+                  ? ContactPermissionEnum.onlyChat
+                  : ContactPermissionEnum.allowMoments)
+            : null,
+      ),
     );
     if (joinType == JoinTypeEnum.directAdd) {
       ToastUtils.showGlobalToast(msg: '添加成功');
@@ -113,6 +135,88 @@ class _AddContactPageState extends State<AddContactPage> {
     );
   }
 
+  // 备注(仅好友申请)
+  Widget _buildRemark() {
+    return Padding(
+      padding: EdgeInsetsGeometry.symmetric(horizontal: 30.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 10.w,
+        children: [
+          Padding(
+            padding: EdgeInsetsGeometry.only(left: 15.w),
+            child: Text(
+              '备注',
+              style: TextStyle(color: const Color.fromRGBO(108, 109, 109, 1)),
+            ),
+          ),
+          TextField(
+            controller: _applyRemarkController,
+            textInputAction: TextInputAction.done,
+            style: TextStyle(color: Colors.black, fontSize: 16.sp),
+            maxLength: 20,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: const Color.fromRGBO(247, 247, 247, 1),
+              hintText: '给朋友设置备注',
+              hintStyle: TextStyle(
+                color: const Color.fromRGBO(178, 178, 178, 1),
+                fontSize: 16.sp,
+              ),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 15.w,
+                vertical: 12.w,
+              ),
+              isDense: true,
+              border: OutlineInputBorder(
+                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 仅聊天开关(仅好友申请)
+  Widget _buildPermission() {
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsetsGeometry.only(top: 20.w, left: 15.w, right: 15.w),
+      color: Colors.white,
+      child: Column(
+        children: [
+          Padding(
+            padding: EdgeInsetsGeometry.symmetric(horizontal: 15.w),
+            child: Row(
+              mainAxisAlignment: .spaceBetween,
+              children: [
+                Text('仅聊天', style: TextStyle(fontSize: 16.sp)),
+                WeChatSwitch(
+                  value: _onlyChat,
+                  onChanged: (value) {
+                    setState(() => _onlyChat = value);
+                  },
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: EdgeInsetsGeometry.fromLTRB(15.w, 0, 15.w, 15.w),
+            child: Text(
+              '仅聊天时，对方只能查看你的聊天记录，不能查看你的朋友圈等',
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: const Color.fromRGBO(174, 174, 174, 1),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // 发送按钮
   Widget _buildSendBtn() {
     return GestureDetector(
@@ -161,6 +265,10 @@ class _AddContactPageState extends State<AddContactPage> {
                 backgroundColor: Colors.white,
               ),
               _buildApplyInfo(),
+              if (_isUserApply) ...[
+                _buildRemark(),
+                _buildPermission(),
+              ],
               SizedBox(height: 50.w),
               _buildSendBtn()
             ],

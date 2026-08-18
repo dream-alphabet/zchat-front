@@ -7,6 +7,9 @@ class ContactInfoRes {
   int? memberCount;
   int? groupStatus;
   String sessionId;
+  int? disturb;
+  int? permission;
+  bool? canViewMoments;
 
   ContactInfoRes({
     required this.contactId,
@@ -16,6 +19,9 @@ class ContactInfoRes {
     required this.memberCount,
     required this.groupStatus,
     required this.sessionId,
+    this.disturb,
+    this.permission,
+    this.canViewMoments,
   });
 
   factory ContactInfoRes.fromJson(Map<String, dynamic> json) => ContactInfoRes(
@@ -26,6 +32,9 @@ class ContactInfoRes {
     memberCount: json['memberCount'],
     groupStatus: json['groupStatus'],
     sessionId: json['sessionId'],
+    disturb: json['disturb'],
+    permission: json['permission'],
+    canViewMoments: json['canViewMoments'],
   );
 }
 
@@ -33,12 +42,21 @@ class ContactInfoRes {
 class SendApplyReq {
   String contactId;
   String applyInfo;
+  String? applyRemark;
+  int? applyPermission;
 
-  SendApplyReq({required this.contactId, required this.applyInfo});
+  SendApplyReq({
+    required this.contactId,
+    required this.applyInfo,
+    this.applyRemark,
+    this.applyPermission,
+  });
 
   Map<String, dynamic> toJson() => {
     "contactId": contactId,
     "applyInfo": applyInfo,
+    "applyRemark": applyRemark,
+    "applyPermission": applyPermission,
   };
 }
 
@@ -53,6 +71,10 @@ class ContactApplyRes {
   String? groupName;
   int status;
   String applyInfo;
+  String? applyRemark;
+  int? applyPermission;
+  String? handleRemark;
+  int? handlePermission;
   int applyTime;
   int? handleTime;
 
@@ -66,6 +88,10 @@ class ContactApplyRes {
     required this.groupName,
     required this.status,
     required this.applyInfo,
+    this.applyRemark,
+    this.applyPermission,
+    this.handleRemark,
+    this.handlePermission,
     required this.applyTime,
     required this.handleTime,
   });
@@ -81,6 +107,10 @@ class ContactApplyRes {
         groupName: json['groupName'],
         status: json["status"],
         applyInfo: json["applyInfo"],
+        applyRemark: json['applyRemark'],
+        applyPermission: json['applyPermission'],
+        handleRemark: json['handleRemark'],
+        handlePermission: json['handlePermission'],
         applyTime: json["applyTime"],
         handleTime: json["handleTime"],
       );
@@ -94,6 +124,10 @@ class ContactApplyRes {
     "contactName": contactName,
     "status": status,
     "applyInfo": applyInfo,
+    "applyRemark": applyRemark,
+    "applyPermission": applyPermission,
+    "handleRemark": handleRemark,
+    "handlePermission": handlePermission,
     "applyTime": applyTime,
     "handleTime": handleTime,
   };
@@ -113,10 +147,22 @@ class ApplyListReq {
 class HandleApplyReq {
   int applyId;
   int status;
+  String? handleRemark;
+  int? handlePermission;
 
-  HandleApplyReq({required this.applyId, required this.status});
+  HandleApplyReq({
+    required this.applyId,
+    required this.status,
+    this.handleRemark,
+    this.handlePermission,
+  });
 
-  Map<String, dynamic> toMap() => {"applyId": applyId, "status": status};
+  Map<String, dynamic> toMap() => {
+    "applyId": applyId,
+    "status": status,
+    "handleRemark": handleRemark,
+    "handlePermission": handlePermission,
+  };
 }
 
 // 联系人响应对象
@@ -127,6 +173,8 @@ class UserContactRes {
   int status;
   String? remark;
   String? groupNickname;
+  int disturb;
+  int permission;
   int createTime;
   int updateTime;
   String originName;
@@ -141,6 +189,8 @@ class UserContactRes {
     required this.status,
     this.remark,
     this.groupNickname,
+    this.disturb = 0,
+    this.permission = 0,
     required this.createTime,
     required this.updateTime,
     required this.originName,
@@ -154,6 +204,8 @@ class UserContactRes {
       status: json['status'],
       remark: json['remark'],
       groupNickname: json['groupNickname'],
+      disturb: json['disturb'] ?? 0,
+      permission: json['permission'] ?? 0,
       createTime: json['createTime'],
       updateTime: json['updateTime'],
       originName: json['originName'],
@@ -167,6 +219,8 @@ class UserContactRes {
     'status': status,
     'remark': remark,
     'groupNickname': groupNickname,
+    'disturb': disturb,
+    'permission': permission,
     'createTime': createTime,
     'updateTime': updateTime,
     'originName': originName,
@@ -191,11 +245,15 @@ class UpdateContactSettingReq {
   String contactId;
   String? remark;
   String? groupNickname;
+  int? disturb;
+  int? permission;
 
   UpdateContactSettingReq({
     required this.contactId,
     this.remark,
     this.groupNickname,
+    this.disturb,
+    this.permission,
   });
 
   factory UpdateContactSettingReq.fromJson(Map<String, dynamic> json) {
@@ -203,6 +261,8 @@ class UpdateContactSettingReq {
       contactId: json['contactId'],
       remark: json['remark'],
       groupNickname: json['groupNickname'],
+      disturb: json['disturb'],
+      permission: json['permission'],
     );
   }
 
@@ -210,5 +270,7 @@ class UpdateContactSettingReq {
     'contactId': contactId,
     'remark': remark,
     'groupNickname': groupNickname,
+    'disturb': disturb,
+    'permission': permission,
   };
 }

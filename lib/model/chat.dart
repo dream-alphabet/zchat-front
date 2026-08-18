@@ -9,6 +9,7 @@ class ChatSessionRes {
   String originName;
   String? lastMessage;
   int? lastReceiveTime;
+  int disturb;
 
   // 获取contactName: 优先使用备注，备注为空再使用原始名称
   String get contactName => remark ?? originName;
@@ -21,6 +22,7 @@ class ChatSessionRes {
     required this.originName,
     required this.lastMessage,
     required this.lastReceiveTime,
+    this.disturb = 0,
   });
 
   factory ChatSessionRes.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class ChatSessionRes {
       originName: json['originName'],
       lastMessage: json['lastMessage'],
       lastReceiveTime: json['lastReceiveTime'],
+      disturb: json['disturb'] ?? 0,
     );
   }
 
@@ -43,6 +46,7 @@ class ChatSessionRes {
     'originName': originName,
     'lastMessage': lastMessage,
     'lastReceiveTime': lastReceiveTime,
+    'disturb': disturb,
   };
 
   // 新增 copyWith 方法
@@ -54,6 +58,7 @@ class ChatSessionRes {
     String? originName,
     String? lastMessage,
     int? lastReceiveTime,
+    int? disturb,
   }) {
     return ChatSessionRes(
       sessionId: sessionId ?? this.sessionId,
@@ -63,6 +68,7 @@ class ChatSessionRes {
       originName: originName ?? this.originName,
       lastMessage: lastMessage ?? this.lastMessage,
       lastReceiveTime: lastReceiveTime ?? this.lastReceiveTime,
+      disturb: disturb ?? this.disturb,
     );
   }
 }

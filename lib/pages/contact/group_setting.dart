@@ -27,6 +27,7 @@ import 'package:zchat/widgets/dialog.dart';
 import 'package:zchat/widgets/ink_click.dart';
 import 'package:zchat/widgets/modal.dart';
 import 'package:zchat/widgets/page_header.dart';
+import 'package:zchat/widgets/wechat_switch.dart';
 
 // 群聊设置
 class GroupSettingPage extends StatefulWidget {
@@ -424,6 +425,36 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
     );
   }
 
+  // 切换消息免打扰
+  void _toggleDisturb(bool value) async {
+    final disturb = value ? DisturbStatusEnum.open : DisturbStatusEnum.close;
+    await updateContactSettingApi(
+      UpdateContactSettingReq(contactId: _groupId, disturb: disturb),
+    );
+    // 更新本地store
+    _userContactController.updateContact(_groupId, disturb: disturb);
+    // 同步会话列表的免打扰状态(用于红点角标)
+    _sessionStore.updateDisturb(_groupId, disturb);
+    setState(() {});
+  }
+
+  // 消息免打扰
+  Widget _buildDisturb() {
+    // 当前免打扰状态
+    final contact = _userContactController.getUserContact(_groupId);
+    final disturb = contact?.disturb == DisturbStatusEnum.open;
+    return _buildListItem(
+      onTap: () {},
+      child: Row(
+        mainAxisAlignment: .spaceBetween,
+        children: [
+          Text('消息免打扰'),
+          WeChatSwitch(value: disturb, onChanged: _toggleDisturb),
+        ],
+      ),
+    );
+  }
+
   // 查找聊天记录
   Widget _buildChatHistory() {
     return _buildListItem(
@@ -494,6 +525,7 @@ class _GroupSettingPageState extends State<GroupSettingPage> {
             SizedBox(height: 10.w),
             _buildFunction(),
             SizedBox(height: 10.w),
+            _buildDisturb(),
             _buildChatHistory(),
             SizedBox(height: 10.w),
             _buildExitGroupBtn(),

@@ -260,24 +260,28 @@ void _handleChatMsg(dynamic msg) {
       final contact = userContactController.getUserContact(contactId ?? '');
       // 新增未读数量
       messageStore.addSessionUnreadCount(sessionId);
-      // 展示消息提示
-      MessageUtils.show(
-        contactId: contactId ?? '',
-        contactName: contact?.contactName ?? '...',
-        msg: messageContent,
-        sendTime: message.sendTime,
-        onTap: () {
-          // 跳转到聊天消息页面
-          navigateToPage(
-            RoutePath.chatMessage,
-            arguments: {
-              'contactId': contactId,
-              'contactType': contactType,
-              'sessionId': sessionId,
-            },
-          );
-        },
-      );
+      // 消息免打扰的会话不弹提示（未读数量正常增加）
+      final isDisturb = contact?.disturb == DisturbStatusEnum.open;
+      if (!isDisturb) {
+        // 展示消息提示
+        MessageUtils.show(
+          contactId: contactId ?? '',
+          contactName: contact?.contactName ?? '...',
+          msg: messageContent,
+          sendTime: message.sendTime,
+          onTap: () {
+            // 跳转到聊天消息页面
+            navigateToPage(
+              RoutePath.chatMessage,
+              arguments: {
+                'contactId': contactId,
+                'contactType': contactType,
+                'sessionId': sessionId,
+              },
+            );
+          },
+        );
+      }
     }
     // 更新会话的lastMessage和lastReceiveTime
     sessionStore.updateLastMessage(sessionId, messageContent, message.sendTime);

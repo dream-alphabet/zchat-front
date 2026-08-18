@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:zchat/model/enums/contact.dart';
+import 'package:zchat/stores/session.dart';
 
 class MessageController extends GetxController {
   // 持久化实例
@@ -45,10 +47,7 @@ class MessageController extends GetxController {
       otherUnreadCount = RxMap<String, int>();
     }
     // 第一次计算
-    chatUnreadTotal.value = unreadCount.values.fold(
-      0,
-      (sum, count) => sum + count,
-    );
+    chatUnreadTotal.value = _calcChatUnreadTotal();
     contactUnreadTotal.value = otherUnreadCount.keys.fold(0, (sum, key) {
       if ([UnreadType.contactApply].contains(key)) {
         return sum + otherUnreadCount[key]!;
@@ -63,9 +62,13 @@ class MessageController extends GetxController {
     });
     // 监听变化并持久化
     ever(unreadCount, (_) {
-      final total = unreadCount.values.fold(0, (sum, count) => sum + count);
-      chatUnreadTotal.value = total;
+      chatUnreadTotal.value = _calcChatUnreadTotal();
       _storage.write('unreadCount', unreadCount);
+    });
+    // 会话列表加载/更新(如切换免打扰)时重新计算聊天总未读
+    final sessionStore = Get.find<ChatSessionStore>();
+    ever(sessionStore.sessionList, (_) {
+      chatUnreadTotal.value = _calcChatUnreadTotal();
     });
     ever(otherUnreadCount, (_) {
       contactUnreadTotal.value = otherUnreadCount.keys.fold(0, (sum, key) {
@@ -81,6 +84,22 @@ class MessageController extends GetxController {
         return sum;
       });
       _storage.write('otherUnreadCount', otherUnreadCount);
+    });
+  }
+
+  // 计算聊天总未读（免打扰会话的未读不计入tab角标，参考微信）
+  int _calcChatUnreadTotal() {
+    final sessionStore = Get.find<ChatSessionStore>();
+    // 免打扰会话的sessionId集合
+    final disturbedIds = sessionStore.sessionList
+        .where((s) => s.disturb == DisturbStatusEnum.open)
+        .map((s) => s.sessionId)
+        .toSet();
+    return unreadCount.entries.fold(0, (sum, entry) {
+      if (disturbedIds.contains(entry.key)) {
+        return sum;
+      }
+      return sum + entry.value;
     });
   }
 

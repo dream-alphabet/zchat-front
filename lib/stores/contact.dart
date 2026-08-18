@@ -81,6 +81,8 @@ class UserContactController extends GetxController {
     String contactId, {
     String remark = '',
     String groupNickname = '',
+    int? disturb,
+    int? permission,
   }) {
     final contact = getUserContact(contactId);
     if (contact == null) {
@@ -91,6 +93,12 @@ class UserContactController extends GetxController {
     }
     if (groupNickname.isNotEmpty) {
       contact.groupNickname = groupNickname;
+    }
+    if (disturb != null) {
+      contact.disturb = disturb;
+    }
+    if (permission != null) {
+      contact.permission = permission;
     }
   }
 }

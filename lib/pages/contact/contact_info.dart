@@ -146,7 +146,10 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
     // 自己
     if (_contactId == _userController.userInfo.value?.userId) return true;
     // 好友
-    return contactInfo.contactStatus == UserContactStatusEnum.friend;
+    if (contactInfo.contactStatus != UserContactStatusEnum.friend) return false;
+    // 对方设置了我仅聊天，隐藏朋友圈入口
+    if (contactInfo.canViewMoments == false) return false;
+    return true;
   }
 
   // 构建朋友圈入口
@@ -227,7 +230,10 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
             final joinType = await Navigator.pushNamed(
               context,
               RoutePath.addContact,
-              arguments: {'contactId': _contactId},
+              arguments: {
+                'contactId': _contactId,
+                'contactType': _contactInfo?.contactType,
+              },
             );
             // 如果联系人添加类型是直接添加，重新获取联系人信息
             if (joinType == JoinTypeEnum.directAdd) {
@@ -273,10 +279,8 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
           children: [
             _buildTop(),
             _buildCenter(),
-            if (_showMomentsEntry()) ...[
-              _buildMomentsEntry(),
-              SizedBox(height: 20.w),
-            ],
+            if (_showMomentsEntry()) _buildMomentsEntry(),
+            SizedBox(height: 20.w),
             _contactId != _userController.userInfo.value?.userId
                 ? _buildBottom()
                 : _buildWarn('不能和自己添加好友'),

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/chat.dart';
+import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/stores/message.dart';
 import 'package:zchat/stores/session.dart';
 import 'package:zchat/stores/user.dart';
@@ -60,6 +61,7 @@ class _ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin 
             Obx(
               () => UnreadCountBadge(
                 count: _messageStore.unreadCount[session.sessionId] ?? 0,
+                disturb: session.disturb == DisturbStatusEnum.open,
                 child: ContactAvatar(contactId: session.contactId),
               ),
             ),

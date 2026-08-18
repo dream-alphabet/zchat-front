@@ -53,3 +53,31 @@ class JoinTypeEnum {
   // 需要审核
   static const needCheck = 1;
 }
+
+// 消息免打扰状态枚举
+class DisturbStatusEnum {
+  // 关闭免打扰（开启提醒）
+  static const close = 0;
+  // 开启免打扰
+  static const open = 1;
+}
+
+// 朋友圈权限枚举（仅好友有效）
+class ContactPermissionEnum {
+  // 允许看朋友圈
+  static const allowMoments = 0;
+  // 仅聊天
+  static const onlyChat = 1;
+
+  // 获取权限文本
+  static String getText(int permission) {
+    switch (permission) {
+      case allowMoments:
+        return '允许看朋友圈';
+      case onlyChat:
+        return '仅聊天';
+      default:
+        return '允许看朋友圈';
+    }
+  }
+}

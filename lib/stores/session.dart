@@ -31,6 +31,14 @@ class ChatSessionStore extends GetxController {
     }
   }
 
+  // 更新会话免打扰状态
+  void updateDisturb(String contactId, int disturb) {
+    final index = sessionList.indexWhere((s) => s.contactId == contactId);
+    if (index != -1) {
+      sessionList[index] = sessionList[index].copyWith(disturb: disturb);
+    }
+  }
+
   // 更新会话的lastMessage和lastReceiveTime
   void updateLastMessage(
     String sessionId,

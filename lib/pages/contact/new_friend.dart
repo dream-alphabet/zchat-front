@@ -108,7 +108,10 @@ class _NewFriendPageState extends State<NewFriendPage> {
               final status = await Navigator.pushNamed(
                 context,
                 RoutePath.verifyApply,
-                arguments: {"applyId": apply.applyId},
+                arguments: {
+                  "applyId": apply.applyId,
+                  "contactType": apply.contactType,
+                },
               );
               // 如果处理了申请
               if (status != null && status is int) {
