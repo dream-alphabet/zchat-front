@@ -129,3 +129,18 @@ class UpdateAvatarReq {
 
   Map<String, dynamic> toJson() => {'avatar': avatar};
 }
+
+// 更新用户信息请求参数(性别/个性签名/添加类型)
+class UpdateUserInfoReq {
+  int? gender;
+  String? personDesc;
+  int? joinType;
+
+  UpdateUserInfoReq({this.gender, this.personDesc, this.joinType});
+
+  Map<String, dynamic> toJson() => {
+    'gender': gender,
+    'personDesc': personDesc,
+    'joinType': joinType,
+  };
+}

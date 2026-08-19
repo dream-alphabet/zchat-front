@@ -48,6 +48,7 @@ class Api {
   static const register = '/user/register';
   static const getUserInfo = '/user/userInfo';
   static const updateUserAvatar = '/user/updateAvatar';
+  static const updateUserInfo = '/user/updateInfo';
   static const searchContactExist = '/contact/searchExist';
   static const getContactInfo = '/contact/contactInfo';
   static const sendContactApply = '/contact/sendApply';
@@ -113,6 +114,10 @@ class RoutePath {
   static const myQRCode = 'myQRCode';
   // 用户中心
   static const my = 'my';
+  // 性别
+  static const gender = 'gender';
+  // 个性签名
+  static const personDesc = 'personDesc';
   // 聊天信息
   static const chatInfo = 'chatInfo';
   // 好友设置

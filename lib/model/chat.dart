@@ -10,9 +10,15 @@ class ChatSessionRes {
   String? lastMessage;
   int? lastReceiveTime;
   int disturb;
+  int isTop;
 
   // 获取contactName: 优先使用备注，备注为空再使用原始名称
-  String get contactName => remark ?? originName;
+  String get contactName {
+    if (remark == null || remark!.isEmpty) {
+      return originName;
+    }
+    return remark!;
+  }
 
   ChatSessionRes({
     required this.sessionId,
@@ -23,6 +29,7 @@ class ChatSessionRes {
     required this.lastMessage,
     required this.lastReceiveTime,
     this.disturb = 0,
+    this.isTop = 0,
   });
 
   factory ChatSessionRes.fromJson(Map<String, dynamic> json) {
@@ -35,6 +42,7 @@ class ChatSessionRes {
       lastMessage: json['lastMessage'],
       lastReceiveTime: json['lastReceiveTime'],
       disturb: json['disturb'] ?? 0,
+      isTop: json['isTop'] ?? 0,
     );
   }
 
@@ -47,6 +55,7 @@ class ChatSessionRes {
     'lastMessage': lastMessage,
     'lastReceiveTime': lastReceiveTime,
     'disturb': disturb,
+    'isTop': isTop,
   };
 
   // 新增 copyWith 方法
@@ -59,6 +68,7 @@ class ChatSessionRes {
     String? lastMessage,
     int? lastReceiveTime,
     int? disturb,
+    int? isTop,
   }) {
     return ChatSessionRes(
       sessionId: sessionId ?? this.sessionId,
@@ -69,6 +79,7 @@ class ChatSessionRes {
       lastMessage: lastMessage ?? this.lastMessage,
       lastReceiveTime: lastReceiveTime ?? this.lastReceiveTime,
       disturb: disturb ?? this.disturb,
+      isTop: isTop ?? this.isTop,
     );
   }
 }

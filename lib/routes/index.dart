@@ -36,8 +36,10 @@ import 'package:zchat/pages/discover/moments/publish.dart';
 import 'package:zchat/pages/discover/scan.dart';
 import 'package:zchat/pages/main/main.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/pages/my/gender.dart';
 import 'package:zchat/pages/my/my.dart';
 import 'package:zchat/pages/my/my_qrcode.dart';
+import 'package:zchat/pages/my/person_desc.dart';
 
 // 路由配置
 final Map<String, WidgetBuilder> routes = {
@@ -55,6 +57,8 @@ final Map<String, WidgetBuilder> routes = {
   RoutePath.searchContact: (ctx) => SearchContactPage(),
   RoutePath.myQRCode: (ctx) => MyQrcodePage(),
   RoutePath.my: (ctx) => MyPage(),
+  RoutePath.gender: (ctx) => GenderPage(),
+  RoutePath.personDesc: (ctx) => PersonDescPage(),
   RoutePath.friendSetting: (ctx) => FriendSettingPage(),
   RoutePath.chatInfo: (ctx) => ChatInfoPage(),
   RoutePath.addContact: (ctx) => AddContactPage(),

@@ -37,3 +37,8 @@ Future<void> updateUserAvatarApi(UpdateAvatarReq data) async {
     isFormData: true,
   );
 }
+
+// 更新用户信息(性别/个性签名/添加类型)
+Future<UserInfo> updateUserInfoApi(UpdateUserInfoReq data) async {
+  return UserInfo.fromJson((await request.post(Api.updateUserInfo, data: data.toJson())));
+}

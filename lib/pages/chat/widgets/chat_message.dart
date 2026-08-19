@@ -613,7 +613,9 @@ class _ChatMessageState extends State<ChatMessage> {
 
   // 构建通话消息（语音/视频共用，根据data中的status展示不同状态）
   Widget _buildCallMsg(MessageTypeEnum type) {
-    final icon = type == MessageTypeEnum.voiceCall ? MyIcon.voice : MyIcon.video;
+    final icon = type == MessageTypeEnum.voiceCall
+        ? MyIcon.voice
+        : MyIcon.video;
     String content;
     final msgData = widget.message.data;
     if (msgData == null) {
@@ -713,6 +715,21 @@ class _ChatMessageState extends State<ChatMessage> {
     );
   }
 
+  // 构建用户头像
+  Widget _buildAvatar() {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          RoutePath.contactInfo,
+          arguments: {'contactId': widget.message.sendUserId},
+        );
+      },
+      child: ContactAvatar(contactId: widget.message.sendUserId ?? '-1'),
+    );
+  }
+
+  // 构建消息
   Widget _buildMsg() {
     return Row(
       mainAxisAlignment: _isSelf
@@ -727,11 +744,11 @@ class _ChatMessageState extends State<ChatMessage> {
                 child: _buildMsgContent(),
               ),
               // 头像
-              ContactAvatar(contactId: widget.message.sendUserId ?? '-1'),
+              _buildAvatar(),
             ]
           : [
               // 头像
-              ContactAvatar(contactId: widget.message.sendUserId ?? '-1'),
+              _buildAvatar(),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 5.w,

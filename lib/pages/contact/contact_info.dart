@@ -119,6 +119,67 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
     );
   }
 
+  // 性别显示文案
+  String get _genderText {
+    final gender = _contactInfo?.gender;
+    if (gender == null) {
+      return '未设置';
+    }
+    return gender == 1 ? '男' : '女';
+  }
+
+  // 签名显示文案
+  String get _personDescText {
+    final desc = _contactInfo?.personDesc;
+    if (desc == null || desc.isEmpty) {
+      return '未填写';
+    }
+    return desc;
+  }
+
+  // 好友信息行(标题+值)
+  Widget _buildInfoRow(String title, String value) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 12.w),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: const Color.fromRGBO(237, 237, 237, 1),
+            width: 1.w,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: TextStyle(fontSize: 16.sp)),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: const Color.fromRGBO(174, 174, 174, 1),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 好友信息卡(性别/个性签名, 仅好友显示)
+  Widget _buildUserInfoCard() {
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      child: Column(
+        children: [
+          _buildInfoRow('性别', _genderText),
+          _buildInfoRow('个性签名', _personDescText),
+        ],
+      ),
+    );
+  }
+
   // 底部操作按钮
   Widget _buildBottomBtn(String name, GestureTapCallback onTap) {
     return InkClick(
@@ -279,6 +340,9 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
           children: [
             _buildTop(),
             _buildCenter(),
+            if (_contactInfo?.contactType == UserContactTypeEnum.user &&
+                _contactInfo?.contactStatus == UserContactStatusEnum.friend)
+              _buildUserInfoCard(),
             if (_showMomentsEntry()) _buildMomentsEntry(),
             SizedBox(height: 20.w),
             _contactId != _userController.userInfo.value?.userId

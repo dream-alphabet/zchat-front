@@ -10,6 +10,8 @@ class ContactInfoRes {
   int? disturb;
   int? permission;
   bool? canViewMoments;
+  int? gender;
+  String? personDesc;
 
   ContactInfoRes({
     required this.contactId,
@@ -22,6 +24,8 @@ class ContactInfoRes {
     this.disturb,
     this.permission,
     this.canViewMoments,
+    this.gender,
+    this.personDesc,
   });
 
   factory ContactInfoRes.fromJson(Map<String, dynamic> json) => ContactInfoRes(
@@ -35,6 +39,8 @@ class ContactInfoRes {
     disturb: json['disturb'],
     permission: json['permission'],
     canViewMoments: json['canViewMoments'],
+    gender: json['gender'],
+    personDesc: json['personDesc'],
   );
 }
 
@@ -180,7 +186,12 @@ class UserContactRes {
   String originName;
 
   // 获取contactName: 优先使用备注，备注为空再使用原始名称
-  String get contactName => remark ?? originName;
+  String get contactName {
+    if (remark == null || remark!.isEmpty) {
+      return originName;
+    }
+    return remark!;
+  }
 
   UserContactRes({
     required this.userId,
@@ -247,6 +258,7 @@ class UpdateContactSettingReq {
   String? groupNickname;
   int? disturb;
   int? permission;
+  int? isTop;
 
   UpdateContactSettingReq({
     required this.contactId,
@@ -254,6 +266,7 @@ class UpdateContactSettingReq {
     this.groupNickname,
     this.disturb,
     this.permission,
+    this.isTop,
   });
 
   factory UpdateContactSettingReq.fromJson(Map<String, dynamic> json) {
@@ -263,6 +276,7 @@ class UpdateContactSettingReq {
       groupNickname: json['groupNickname'],
       disturb: json['disturb'],
       permission: json['permission'],
+      isTop: json['isTop'],
     );
   }
 
@@ -272,5 +286,6 @@ class UpdateContactSettingReq {
     'groupNickname': groupNickname,
     'disturb': disturb,
     'permission': permission,
+    'isTop': isTop,
   };
 }

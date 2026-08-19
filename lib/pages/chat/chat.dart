@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:zchat/api/contact.dart';
 import 'package:zchat/common/constants.dart';
+import 'package:zchat/common/toast.dart';
 import 'package:zchat/common/utils.dart';
 import 'package:zchat/model/chat.dart';
+import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/stores/message.dart';
 import 'package:zchat/stores/session.dart';
@@ -30,9 +33,58 @@ class _ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin 
   // 用户store
   final _userController = Get.find<UserController>();
 
-  Widget _buildSessionItem(ChatSessionRes session) {
-    return InkClick(
+  // 置顶/取消置顶会话
+  void _toggleTop(ChatSessionRes session) async {
+    final isTop = session.isTop == 1 ? 0 : 1;
+    await updateContactSettingApi(
+      UpdateContactSettingReq(contactId: session.contactId, isTop: isTop),
+    );
+    _chatSessionStore.updateTop(session.contactId, isTop);
+    ToastUtils.showGlobalToast(msg: isTop == 1 ? '已置顶' : '已取消置顶');
+  }
+
+  // 长按会话弹出操作菜单
+  void _showSessionMenu(ChatSessionRes session) {
+    showModalBottomSheet(
+      context: context,
       backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(10.r)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 10.w),
+            GestureDetector(
+              onTap: () {
+                Navigator.pop(context);
+                _toggleTop(session);
+              },
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 15.w),
+                alignment: Alignment.center,
+                child: Text(
+                  session.isTop == 1 ? '取消置顶' : '置顶该聊天',
+                  style: TextStyle(fontSize: 16.sp, color: Colors.black),
+                ),
+              ),
+            ),
+            SizedBox(height: 10.w),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSessionItem(ChatSessionRes session) {
+    // 置顶会话使用灰色背景(参考微信)
+    final isTop = session.isTop == 1;
+    return InkClick(
+      backgroundColor: isTop
+          ? const Color.fromRGBO(245, 245, 245, 1)
+          : Colors.white,
       onTap: () {
         Navigator.pushNamed(
           context,
@@ -44,6 +96,7 @@ class _ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin 
           },
         );
       },
+      onLongPress: () => _showSessionMenu(session),
       child: Container(
         padding: EdgeInsetsGeometry.symmetric(vertical: 12.w, horizontal: 15.w),
         decoration: BoxDecoration(

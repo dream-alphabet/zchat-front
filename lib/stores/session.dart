@@ -39,6 +39,15 @@ class ChatSessionStore extends GetxController {
     }
   }
 
+  // 更新会话置顶状态
+  void updateTop(String contactId, int isTop) {
+    final index = sessionList.indexWhere((s) => s.contactId == contactId);
+    if (index != -1) {
+      sessionList[index] = sessionList[index].copyWith(isTop: isTop);
+    }
+    _sort();
+  }
+
   // 更新会话的lastMessage和lastReceiveTime
   void updateLastMessage(
     String sessionId,
@@ -52,6 +61,15 @@ class ChatSessionStore extends GetxController {
         lastReceiveTime: lastReceiveTime,
       );
     }
+    _sort();
+  }
+
+  // 置顶会话排最前，置顶/未置顶内部都按最后消息时间倒序(参考微信)
+  void _sort() {
+    sessionList.sort((a, b) {
+      if (a.isTop != b.isTop) return b.isTop - a.isTop;
+      return (b.lastReceiveTime ?? 0) - (a.lastReceiveTime ?? 0);
+    });
   }
 
   // 获取会话列表
@@ -62,6 +80,7 @@ class ChatSessionStore extends GetxController {
   // 新增会话
   void addSession(ChatSessionRes session) {
     sessionList.add(session);
+    _sort();
   }
 
   // 删除指定会话

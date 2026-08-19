@@ -6,6 +6,8 @@ class InkClick extends StatelessWidget {
   final Widget child;
   // 点击事件
   final GestureTapCallback? onTap;
+  // 长按事件
+  final GestureLongPressCallback? onLongPress;
   // 背景颜色
   final Color backgroundColor;
 
@@ -13,6 +15,7 @@ class InkClick extends StatelessWidget {
     super.key,
     required this.child,
     this.onTap,
+    this.onLongPress,
     this.backgroundColor = Colors.transparent,
   });
 
@@ -20,7 +23,7 @@ class InkClick extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: backgroundColor,
-      child: InkWell(onTap: onTap, child: child),
+      child: InkWell(onTap: onTap, onLongPress: onLongPress, child: child),
     );
   }
 }
