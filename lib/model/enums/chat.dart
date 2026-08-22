@@ -13,7 +13,9 @@ enum MessageTypeEnum {
   // 系统通知
   systemNotice(type: 5, messageContent: ''),
   // 名片(用户/群聊)
-  personCard(type: 6, messageContent: '[名片]');
+  personCard(type: 6, messageContent: '[名片]'),
+  // 语音消息
+  voice(type: 7, messageContent: '[语音]');
 
   const MessageTypeEnum({required this.type, required this.messageContent});
 

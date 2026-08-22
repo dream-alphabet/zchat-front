@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +17,7 @@ import 'package:zchat/common/constants.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/common/utils.dart';
+import 'package:zchat/common/voice_player.dart';
 import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/pages/chat/widgets/video_preview.dart';
@@ -140,6 +143,88 @@ class _ChatMessageState extends State<ChatMessage> {
       return _buildNormalFileMsg(fileId, fileName, fileSize);
     }
     return _buildTextMsg('未知文件类型');
+  }
+
+  // 构建语音消息
+  Widget _buildVoiceMsg() {
+    final fileId = widget.message.fileId ?? -1;
+    final fileName = widget.message.fileName ?? '';
+    // 校验参数
+    if (fileId == -1 || fileName.isEmpty) {
+      return _buildTextMsg('语音消息不存在');
+    }
+    // 时长(秒)
+    var duration = 0;
+    final data = widget.message.data;
+    if (data != null && data.isNotEmpty) {
+      try {
+        duration = (jsonDecode(data)['duration'] as num?)?.toInt() ?? 0;
+      } catch (_) {
+        // 数据损坏时兜底为0
+        duration = 0;
+      }
+    }
+    // 气泡宽度随时长增长(微信风格)
+    var width = 60.w + duration * 1.5.w;
+    if (width > 170.w) {
+      width = 170.w;
+    }
+    // 语音url
+    final voiceUrl = _getFileUrl(fileId, fileName);
+    // 语音key(消息id，防止相同文件id的消息互斥失效)
+    final voiceKey = '${widget.message.messageId}';
+    final bubbleColor = _isSelf
+        ? const Color.fromRGBO(20, 134, 237, 1)
+        : Colors.white;
+    final contentColor = _isSelf ? Colors.white : Colors.black;
+    return _buildMsgLayout(
+      child: GestureDetector(
+        onTap: () {
+          unawaited(
+            VoicePlayer.instance.play(key: voiceKey, url: voiceUrl),
+          );
+        },
+        child: ValueListenableBuilder<String?>(
+          valueListenable: VoicePlayer.instance.playingKey,
+          builder: (context, playingKey, _) {
+            final playing = playingKey == voiceKey;
+            return Container(
+              key: _contentKey,
+              width: width,
+              alignment: _isSelf ? Alignment.centerRight : Alignment.centerLeft,
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.w),
+              decoration: BoxDecoration(
+                color: bubbleColor,
+                borderRadius: .circular(8.r),
+              ),
+              child: Row(
+                mainAxisSize: .min,
+                children: [
+                  // 喇叭图标在气泡靠近箭头的一侧
+                  if (!_isSelf) _buildVoiceIcon(playing, contentColor),
+                  if (!_isSelf) SizedBox(width: 6.w),
+                  Text(
+                    '$duration″',
+                    style: TextStyle(color: contentColor, fontSize: 14.sp),
+                  ),
+                  if (_isSelf) SizedBox(width: 6.w),
+                  if (_isSelf) _buildVoiceIcon(playing, contentColor),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+      color: bubbleColor,
+    );
+  }
+
+  // 语音图标(播放时显示动画)
+  Widget _buildVoiceIcon(bool playing, Color color) {
+    if (!playing) {
+      return Icon(MyIcon.voice, size: 20.w, color: color);
+    }
+    return _VoicePlayingIcon(color: color);
   }
 
   // 格式化文件大小
@@ -528,11 +613,12 @@ class _ChatMessageState extends State<ChatMessage> {
             _hideContextMenu();
           },
         ),
-      // 只有文本，媒体文件，个人卡片可以转发
+      // 只有文本，媒体文件，个人卡片，语音可以转发
       if ([
         MessageTypeEnum.text.type,
         MessageTypeEnum.file.type,
         MessageTypeEnum.personCard.type,
+        MessageTypeEnum.voice.type,
       ].contains(message.messageType))
         ContextMenuItem(
           icon: Icons.share,
@@ -702,6 +788,9 @@ class _ChatMessageState extends State<ChatMessage> {
     } else if (messageType == MessageTypeEnum.voiceCall.type) {
       // 语音通话
       return _buildVoiceCall();
+    } else if (messageType == MessageTypeEnum.voice.type) {
+      // 语音消息
+      return _buildVoiceMsg();
     }
     return _buildTextMsg('未知消息类型');
   }
@@ -885,4 +974,61 @@ class ContextMenuItem {
     required this.text,
     required this.onTap,
   });
+}
+
+// 语音播放动画图标(三条相位错开的跳动音波)
+class _VoicePlayingIcon extends StatefulWidget {
+  final Color color;
+
+  const _VoicePlayingIcon({required this.color});
+
+  @override
+  State<_VoicePlayingIcon> createState() => _VoicePlayingIconState();
+}
+
+class _VoicePlayingIconState extends State<_VoicePlayingIcon>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: List.generate(3, (index) {
+            // 相位错开的三条音波
+            final t = (sin(_controller.value * 2 * pi + index * 2) + 1) / 2;
+            final height = 5.w + t * 9.w;
+            return Container(
+              width: 3.w,
+              height: height,
+              margin: EdgeInsets.only(right: 3.w),
+              decoration: BoxDecoration(
+                color: widget.color,
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            );
+          }),
+        );
+      },
+    );
+  }
 }

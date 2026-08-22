@@ -65,6 +65,7 @@ dependencies:
   audioplayers: ^6.1.0
   # 振动提示（通话振动）
   vibration: ^3.2.0
+  record: ^7.1.1
 
 dev_dependencies:
   flutter_test:

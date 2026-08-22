@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
@@ -9,6 +10,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart' hide MultipartFile;
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
 import 'package:zchat/api/chat.dart';
 import 'package:zchat/api/contact.dart';
 import 'package:zchat/common/animation.dart';
@@ -18,6 +21,7 @@ import 'package:zchat/common/event_bus.dart';
 import 'package:zchat/common/icon.dart';
 import 'package:zchat/common/toast.dart';
 import 'package:zchat/common/utils.dart';
+import 'package:zchat/common/voice_player.dart';
 import 'package:zchat/common/websocket.dart';
 import 'package:zchat/model/chat.dart';
 import 'package:zchat/model/contact.dart';
@@ -131,6 +135,33 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   late StreamSubscription<ServerMsgEvent> _streamSubscription;
 
   final _userController = Get.find<UserController>();
+
+  // 录音器
+  final _audioRecorder = AudioRecorder();
+
+  // 是否正在录音
+  bool _isRecording = false;
+
+  // 是否处于取消发送状态(上滑)
+  bool _recordCanceled = false;
+
+  // 录音文件路径
+  String _recordPath = '';
+
+  // 录音时长(秒)
+  int _recordDuration = 0;
+
+  // 录音计时器
+  Timer? _recordTimer;
+
+  // 按住时手指起始y坐标(用于判断上滑取消)
+  double _pressStartDy = 0;
+
+  // 录音是否已结束(防止重复触发发送)
+  bool _recordFinished = false;
+
+  // 手指是否还按在按钮上(用于取消异步启动中的录音)
+  bool _pressActive = false;
 
   // 根据文件后缀获取文件类型
   FileTypeEnum _getFileType(String filePath) {
@@ -925,18 +956,272 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     );
   }
 
-  // 语音录入区域
+  // 语音录入区域(按住说话)
   Widget _buildVoice() {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8.r),
-        color: Colors.white,
+    return GestureDetector(
+      // 长按开始录音
+      onLongPressStart: (details) {
+        _pressStartDy = details.globalPosition.dy;
+        // 标记手指仍按在按钮上
+        _pressActive = true;
+        _startRecord();
+      },
+      // 上滑超过一定距离进入取消发送状态
+      onLongPressMoveUpdate: (details) {
+        final canceled = details.globalPosition.dy < _pressStartDy - 80.w;
+        if (canceled != _recordCanceled) {
+          setState(() {
+            _recordCanceled = canceled;
+          });
+        }
+      },
+      onLongPressEnd: (details) {
+        // 手指已松开
+        _pressActive = false;
+        _finishRecord();
+      },
+      // 手势被中断(如页面切换)视为取消
+      onLongPressCancel: () {
+        // 手指已松开(手势被中断)
+        _pressActive = false;
+        _finishRecord(canceled: true);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8.r),
+          color: _isRecording
+              ? const Color.fromRGBO(237, 237, 237, 1)
+              : Colors.white,
+        ),
+        padding: EdgeInsets.all(6.w),
+        alignment: Alignment.center,
+        child: Text(
+          _isRecording ? '松开 结束' : '按住 说话',
+          style: TextStyle(color: Colors.black, fontSize: 16.sp),
+        ),
       ),
-      padding: EdgeInsets.all(6.w),
-      alignment: Alignment.center,
-      child: Text(
-        '按住 说话',
-        style: TextStyle(color: Colors.black, fontSize: 16.sp),
+    );
+  }
+
+  // 开始录音
+  Future<void> _startRecord() async {
+    // 正在录音时不允许再次启动
+    if (_isRecording) {
+      return;
+    }
+    // 请求麦克风权限
+    final status = await Permission.microphone.request();
+    // 拒绝或永久拒绝
+    if (status.isDenied) {
+      ToastUtils.showGlobalToast(msg: '没有麦克风权限');
+      return;
+    }
+    // 永久拒绝，引导去设置页开启
+    if (status.isPermanentlyDenied) {
+      ToastUtils.showGlobalToast(msg: '请在设置中开启麦克风权限');
+      openAppSettings();
+      return;
+    }
+    if (!mounted) return;
+    // 停止正在播放的语音，避免录音时拾取扬声器回声
+    await VoicePlayer.instance.stop();
+    // 录音文件保存路径
+    final dir = await getTemporaryDirectory();
+    _recordPath =
+        '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    // 开始录音
+    try {
+      await _audioRecorder.start(
+        const RecordConfig(
+          encoder: AudioEncoder.aacLc,
+          numChannels: 1,
+          bitRate: 64000,
+        ),
+        path: _recordPath,
+      );
+    } catch (_) {
+      // 启动录音失败
+      ToastUtils.showGlobalToast(msg: '录音失败');
+      if (!mounted) return;
+      setState(() {
+        _isRecording = false;
+        _recordCanceled = false;
+      });
+      return;
+    }
+    if (!mounted) return;
+    // 手指已松开(如系统权限弹窗中断手势)，取消刚启动的录音
+    if (!_pressActive) {
+      // 取消刚启动的录音(忽略取消失败)
+      try {
+        await _audioRecorder.cancel();
+      } catch (_) {}
+      if (!mounted) return;
+      setState(() {
+        _isRecording = false;
+        _recordCanceled = false;
+      });
+      return;
+    }
+    setState(() {
+      _isRecording = true;
+      _recordCanceled = false;
+      _recordDuration = 0;
+      _recordFinished = false;
+    });
+    // 计时器(每秒+1)
+    _recordTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      setState(() {
+        _recordDuration++;
+      });
+      // 达到60秒上限自动停止并发送
+      if (_recordDuration >= 60) {
+        _finishRecord();
+      }
+    });
+  }
+
+  // 结束录音
+  Future<void> _finishRecord({bool canceled = false}) async {
+    if (!_isRecording || _recordFinished) {
+      return;
+    }
+    _recordFinished = true;
+    // 停止计时器
+    _recordTimer?.cancel();
+    _recordTimer = null;
+    final path = _recordPath;
+    // 上滑取消或手势中断
+    if (canceled || _recordCanceled) {
+      // 取消录音(忽略取消失败)
+      try {
+        await _audioRecorder.cancel();
+      } catch (_) {}
+      if (!mounted) return;
+      setState(() {
+        _isRecording = false;
+        _recordCanceled = false;
+      });
+      return;
+    }
+    // 停止录音
+    try {
+      await _audioRecorder.stop();
+    } catch (_) {
+      // 停止录音失败，删除临时文件
+      try {
+        await File(path).delete();
+      } catch (_) {}
+      ToastUtils.showGlobalToast(msg: '录音失败');
+      if (!mounted) return;
+      setState(() {
+        _isRecording = false;
+        _recordCanceled = false;
+      });
+      return;
+    }
+    if (!mounted) return;
+    setState(() {
+      _isRecording = false;
+      _recordCanceled = false;
+    });
+    // 说话时间太短
+    if (_recordDuration < 1) {
+      // 删除录音文件
+      try {
+        await File(path).delete();
+      } catch (_) {}
+      ToastUtils.showGlobalToast(msg: '说话时间太短');
+      return;
+    }
+    await _sendVoice(path, _recordDuration);
+  }
+
+  // 发送语音消息
+  Future<void> _sendVoice(String path, int duration) async {
+    // 封装multipart
+    final file = await MultipartFile.fromFile(path);
+    try {
+      // 发送消息
+      final msg = await sendMessageApi(
+        SendMsgReq(
+          contactId: _contactId,
+          contactType: _contactType,
+          messageType: MessageTypeEnum.voice.type,
+          messageContent: MessageTypeEnum.voice.messageContent,
+          data: jsonEncode({'duration': duration}),
+          file: file,
+        ),
+      );
+      if (!mounted) return;
+      setState(() {
+        // 添加到发送后的消息到列表
+        _msgList.insert(0, msg);
+      });
+      // 滚动到底部
+      _scrollToBottom();
+      // 更新会话的lastMessage和lastReceiveTime
+      _sessionStore.updateLastMessage(
+        _sessionId,
+        MessageTypeEnum.voice.messageContent,
+        msg.sendTime,
+      );
+    } catch (_) {
+      ToastUtils.showGlobalToast(msg: '语音发送失败');
+    } finally {
+      // 删除临时录音文件
+      try {
+        await File(path).delete();
+      } catch (_) {}
+    }
+  }
+
+  // 录音面板(悬浮在输入栏上方)
+  Widget _buildRecordPanel() {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 70.w,
+      child: Center(
+        child: Container(
+          width: 170.w,
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.w),
+          decoration: BoxDecoration(
+            color: const Color.fromRGBO(60, 60, 60, 0.9),
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 8.w,
+            children: [
+              Icon(
+                _recordCanceled ? Icons.close_rounded : MyIcon.voice,
+                size: 30.w,
+                color: _recordCanceled
+                    ? const Color.fromRGBO(241, 90, 81, 1)
+                    : Colors.white,
+              ),
+              Text(
+                formatDuration(_recordDuration * 1000),
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                _recordCanceled ? '松开手指，取消发送' : '松开发送，上滑取消',
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: _recordCanceled
+                      ? const Color.fromRGBO(241, 90, 81, 1)
+                      : Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1187,65 +1472,88 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.w),
       color: const Color.fromRGBO(247, 247, 247, 1),
-      child: Column(
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          Row(
-            spacing: 6.w,
-            crossAxisAlignment: CrossAxisAlignment.center,
+          Column(
             children: [
-              _showVoice
-                  ? _buildKeyboardIcon()
-                  : GestureDetector(
-                      onTap: () {
-                        // 使得输入框失去焦点
-                        FocusScope.of(context).unfocus();
-                        SystemChannels.textInput.invokeMethod('TextInput.hide');
-                        setState(() {
-                          _showVoice = true;
-                          _showMore = false;
-                          _showEmotion = false;
-                        });
-                      },
-                      child: Icon(MyIcon.voice, size: 30.w),
-                    ),
-              Expanded(child: _showVoice ? _buildVoice() : _buildInput()),
-              _showEmotion
-                  ? _buildKeyboardIcon()
-                  : GestureDetector(
-                      onTap: () {
-                        // 隐藏软键盘
-                        SystemChannels.textInput.invokeMethod('TextInput.hide');
-                        setState(() {
-                          _showVoice = false;
-                          _showMore = false;
-                          _showEmotion = true;
-                        });
-                      },
-                      child: Icon(MyIcon.emotion, size: 30.w),
-                    ),
-              _msg.isEmpty
-                  ? (_showMore
+              Row(
+                spacing: 6.w,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // 录音时屏蔽语音切换按钮(不影响按住说话手势)
+                  AbsorbPointer(
+                    absorbing: _isRecording,
+                    child: _showVoice
                         ? _buildKeyboardIcon()
                         : GestureDetector(
                             onTap: () {
-                              // 输入框失去焦点
+                              // 使得输入框失去焦点
                               FocusScope.of(context).unfocus();
+                              SystemChannels.textInput.invokeMethod(
+                                'TextInput.hide',
+                              );
                               setState(() {
-                                _showVoice = false;
-                                _showMore = true;
+                                _showVoice = true;
+                                _showMore = false;
                                 _showEmotion = false;
                               });
                             },
-                            child: Icon(MyIcon.messageAdd, size: 30.w),
-                          ))
-                  : _buildSendBtn(),
+                            child: Icon(MyIcon.voice, size: 30.w),
+                          ),
+                  ),
+                  Expanded(child: _showVoice ? _buildVoice() : _buildInput()),
+                  // 录音时屏蔽表情按钮
+                  AbsorbPointer(
+                    absorbing: _isRecording,
+                    child: _showEmotion
+                        ? _buildKeyboardIcon()
+                        : GestureDetector(
+                            onTap: () {
+                              // 隐藏软键盘
+                              SystemChannels.textInput.invokeMethod(
+                                'TextInput.hide',
+                              );
+                              setState(() {
+                                _showVoice = false;
+                                _showMore = false;
+                                _showEmotion = true;
+                              });
+                            },
+                            child: Icon(MyIcon.emotion, size: 30.w),
+                          ),
+                  ),
+                  // 录音时屏蔽加号/发送按钮
+                  AbsorbPointer(
+                    absorbing: _isRecording,
+                    child: _msg.isEmpty
+                        ? (_showMore
+                              ? _buildKeyboardIcon()
+                              : GestureDetector(
+                                  onTap: () {
+                                    // 输入框失去焦点
+                                    FocusScope.of(context).unfocus();
+                                    setState(() {
+                                      _showVoice = false;
+                                      _showMore = true;
+                                      _showEmotion = false;
+                                    });
+                                  },
+                                  child: Icon(MyIcon.messageAdd, size: 30.w),
+                                ))
+                        : _buildSendBtn(),
+                  ),
+                ],
+              ),
+              if (_showEmotion || _showMore) SizedBox(height: 10.w),
+              // emoji
+              Offstage(offstage: !_showEmotion, child: _buildEmoji()),
+              // 更多
+              Offstage(offstage: !_showMore, child: _buildMore()),
             ],
           ),
-          if (_showEmotion || _showMore) SizedBox(height: 10.w),
-          // emoji
-          Offstage(offstage: !_showEmotion, child: _buildEmoji()),
-          // 更多
-          Offstage(offstage: !_showMore, child: _buildMore()),
+          // 录音面板
+          if (_isRecording) _buildRecordPanel(),
         ],
       ),
     );
@@ -1361,6 +1669,20 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     // 销毁ScrollController
     _msgListController.dispose();
     _scrollDebouncer.dispose();
+    // 停止录音(防止页面销毁后录音残留)
+    _recordTimer?.cancel();
+    if (_isRecording) {
+      _audioRecorder.cancel();
+    }
+    _audioRecorder.dispose();
+    // 删除残留的临时录音文件
+    if (_recordPath.isNotEmpty) {
+      final path = _recordPath;
+      _recordPath = '';
+      final file = File(path);
+      // 异步删除，忽略删除失败
+      unawaited(file.delete().catchError((_) => file));
+    }
     super.dispose();
   }
 }
