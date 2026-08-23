@@ -239,6 +239,7 @@ void _handleChatMsg(dynamic msg) {
     MessageTypeEnum.systemNotice.type,
     MessageTypeEnum.personCard.type,
     MessageTypeEnum.voice.type,
+    MessageTypeEnum.chatRecord.type,
   ].contains(message.messageType)) {
     // 联系人类型
     final contactType = message.contactType;

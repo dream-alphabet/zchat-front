@@ -113,7 +113,13 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
         spacing: 20.w,
         children: [
           ContactAvatar(contactId: _contactId, size: 50),
-          Text(_contactInfo?.contactName ?? ''),
+          Expanded(
+            child: Text(
+              _contactInfo?.contactName ?? '',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );
@@ -121,6 +127,10 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
 
   // 性别显示文案
   String get _genderText {
+    // 机器人没有性别概念
+    if (_contactId == GlobalConstants.robotContactId) {
+      return '未知';
+    }
     final gender = _contactInfo?.gender;
     if (gender == null) {
       return '未设置';
@@ -138,30 +148,39 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
   }
 
   // 好友信息行(标题+值)
-  Widget _buildInfoRow(String title, String value) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 12.w),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: const Color.fromRGBO(237, 237, 237, 1),
-            width: 1.w,
-          ),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: TextStyle(fontSize: 16.sp)),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: const Color.fromRGBO(174, 174, 174, 1),
+  Widget _buildInfoRow(String title, String value, {GestureTapCallback? onTap}) {
+    return InkClick(
+      onTap: onTap,
+      backgroundColor: Colors.white,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 12.w),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: const Color.fromRGBO(237, 237, 237, 1),
+              width: 1.w,
             ),
           ),
-        ],
+        ),
+        child: Row(
+          children: [
+            Text(title, style: TextStyle(fontSize: 16.sp)),
+            SizedBox(width: 15.w),
+            Expanded(
+              child: Text(
+                value,
+                textAlign: TextAlign.right,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: const Color.fromRGBO(174, 174, 174, 1),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -174,10 +193,20 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
       child: Column(
         children: [
           _buildInfoRow('性别', _genderText),
-          _buildInfoRow('个性签名', _personDescText),
+          // 签名过长省略，点击查看完整文本
+          _buildInfoRow('个性签名', _personDescText, onTap: _showPersonDescDialog),
         ],
       ),
     );
+  }
+
+  // 查看完整个性签名
+  void _showPersonDescDialog() {
+    final desc = _personDescText;
+    if (desc == '未填写') {
+      return;
+    }
+    showContentDialog(context, title: '个性签名', content: desc);
   }
 
   // 底部操作按钮

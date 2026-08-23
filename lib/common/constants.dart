@@ -38,6 +38,8 @@ class GlobalConstants {
   static const videoFormats = ['mp4'];
   // 撤回时间限制(5分钟)
   static const recallLimit = 5 * 60 * 1000;
+  // 机器人用户id(后端Constants.ROBOT_USER_ID)
+  static const robotContactId = 'URobot';
 }
 
 // api请求路径常量

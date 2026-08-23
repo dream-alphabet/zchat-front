@@ -239,6 +239,7 @@ class _MyPageState extends State<MyPage> {
         fontSize: 14.sp,
         color: const Color.fromRGBO(174, 174, 174, 1),
       ),
+      maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );
   }
@@ -273,7 +274,11 @@ class _MyPageState extends State<MyPage> {
             Expanded(
               child: Text(title, style: TextStyle(fontSize: 16.sp)),
             ),
-            if (trailing != null) ...[SizedBox(width: 10.w), trailing],
+            if (trailing != null) ...[
+              SizedBox(width: 10.w),
+              // Flexible防止长文本(如个性签名)撑爆行布局
+              Flexible(child: trailing),
+            ],
             SizedBox(width: 5.w),
             Icon(
               MyIcon.arrowRight,

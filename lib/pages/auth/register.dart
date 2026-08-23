@@ -158,6 +158,7 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ),
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(

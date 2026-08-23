@@ -149,6 +149,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Column(
           children: [

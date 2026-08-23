@@ -195,6 +195,19 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
     );
   }
 
+  // 构建联系人显示名称(搜索高亮用)
+  // 备注非空时显示"备注(原始名称)"，备注与原始名称相同(机器人等)时只显示一个
+  String _buildContactDisplayName(UserContactRes data) {
+    final originName = data.originName;
+    if (data.remark == null) {
+      return originName ?? '';
+    }
+    if (originName == null || originName.isEmpty || originName == data.remark) {
+      return data.remark!;
+    }
+    return '$data.remark($originName)';
+  }
+
   // 构建联系人列表项
   Widget _buildContactItem(
     UserContactRes data, {
@@ -249,9 +262,7 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
                   alignment: Alignment.centerLeft,
                   child: highlightRanges != null && highlightRanges.isNotEmpty
                       ? HighlightText(
-                          text: data.remark == null
-                              ? data.originName
-                              : '${data.remark}(${data.originName})',
+                          text: _buildContactDisplayName(data),
                           normalStyle: TextStyle(
                             color: Colors.black,
                             fontSize: 15.w,
@@ -443,9 +454,7 @@ class _ContactSelectPageState extends State<ContactSelectPage> {
         final item = _searchResult[index];
         // 计算高亮范围
         final ranges = HighlightHelper.computeHighlightRanges(
-          item.remark == null
-              ? item.originName
-              : '${item.remark}(${item.originName})',
+          _buildContactDisplayName(item),
           keyword,
         );
         return _buildContactItem(item,

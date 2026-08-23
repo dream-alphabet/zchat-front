@@ -6,7 +6,8 @@ class ChatSessionRes {
   String contactId;
   int contactType;
   String? remark;
-  String originName;
+  // 机器人等无用户记录的会话原始名称为空
+  String? originName;
   String? lastMessage;
   int? lastReceiveTime;
   int disturb;
@@ -15,7 +16,7 @@ class ChatSessionRes {
   // 获取contactName: 优先使用备注，备注为空再使用原始名称
   String get contactName {
     if (remark == null || remark!.isEmpty) {
-      return originName;
+      return originName ?? '';
     }
     return remark!;
   }

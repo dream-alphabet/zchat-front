@@ -124,6 +124,8 @@ class _ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin 
                 children: [
                   Text(
                     session.contactName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 14.sp,

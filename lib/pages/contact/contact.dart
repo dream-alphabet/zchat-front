@@ -119,6 +119,8 @@ class _ContactPageState extends State<ContactPage> with AutomaticKeepAliveClient
                   alignment: Alignment.centerLeft,
                   child: Text(
                     data.rightName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(color: Colors.black, fontSize: 15.w),
                   ),
                 ),

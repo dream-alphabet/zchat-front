@@ -22,6 +22,7 @@ import 'package:zchat/model/contact.dart';
 import 'package:zchat/model/enums/contact.dart';
 import 'package:zchat/pages/chat/widgets/video_preview.dart';
 import 'package:zchat/pages/contact/contact_select.dart';
+import 'package:zchat/pages/chat/chat_record_detail.dart';
 import 'package:zchat/stores/session.dart';
 import 'package:zchat/stores/user.dart';
 import 'package:zchat/model/chat.dart';
@@ -29,6 +30,83 @@ import 'package:zchat/model/enums/chat.dart';
 import 'package:zchat/widgets/dialog.dart';
 import 'package:zchat/widgets/modal.dart';
 import 'package:zchat/widgets/contact_avatar.dart';
+
+// 解析聊天记录快照(失败返回null)
+List<ChatMessageRes>? parseChatRecordSnapshot(String? data) {
+  if (data == null || data.isEmpty) {
+    return null;
+  }
+  try {
+    final messages = jsonDecode(data)['messages'] as List?;
+    if (messages == null || messages.isEmpty) {
+      return null;
+    }
+    final result = <ChatMessageRes>[];
+    for (var i = 0; i < messages.length; i++) {
+      try {
+        final map = messages[i] as Map<String, dynamic>;
+        result.add(ChatMessageRes(
+          // messageId用索引保证详情页内唯一(语音互斥/图片Hero tag依赖唯一id)
+          messageId: i,
+          sessionId: '',
+          messageType: (map['messageType'] as num?)?.toInt() ?? -1,
+          messageContent: map['messageContent'] ?? '',
+          sendUserId: map['sendUserId'] as String?,
+          sendUserNickname: map['sendUserNickname'] as String?,
+          sendTime: (map['sendTime'] as num?)?.toInt() ?? 0,
+          contactId: '',
+          contactName: '',
+          contactType: 0,
+          fileId: (map['fileId'] as num?)?.toInt(),
+          fileName: map['fileName'] as String?,
+          fileType: (map['fileType'] as num?)?.toInt(),
+          fileSize: (map['fileSize'] as num?)?.toInt(),
+          status: MessageStatusEnum.sent.status,
+          data: map['data'] as String?,
+        ));
+      } catch (_) {
+        // 跳过坏条目
+      }
+    }
+    return result.isEmpty ? null : result;
+  } catch (_) {
+    return null;
+  }
+}
+
+// 消息内容摘要(聊天记录卡片预览用)
+String messageContentPreview(ChatMessageRes message) {
+  final type = message.messageType;
+  if (type == MessageTypeEnum.text.type) {
+    return message.messageContent;
+  } else if (type == MessageTypeEnum.file.type) {
+    if (message.fileType == FileTypeEnum.image.type) {
+      return '[图片]';
+    } else if (message.fileType == FileTypeEnum.video.type) {
+      return '[视频]';
+    }
+    return '[文件]${message.fileName ?? ''}';
+  } else if (type == MessageTypeEnum.personCard.type) {
+    return '[名片]';
+  } else if (type == MessageTypeEnum.voice.type) {
+    return '[语音]';
+  } else if (type == MessageTypeEnum.chatRecord.type) {
+    return '[聊天记录]';
+  } else if (type == MessageTypeEnum.videoCall.type ||
+      type == MessageTypeEnum.voiceCall.type) {
+    final data = message.data;
+    if (data != null && data.isNotEmpty) {
+      try {
+        final duration = jsonDecode(data)['duration'];
+        if (duration != null) {
+          return '通话时长 ${formatDuration(duration)}';
+        }
+      } catch (_) {}
+    }
+    return message.messageContent;
+  }
+  return message.messageContent;
+}
 
 // 聊天消息组件（StatefulWidget）
 class ChatMessage extends StatefulWidget {
@@ -40,6 +118,16 @@ class ChatMessage extends StatefulWidget {
   final void Function(ChatMessageRes, UserContactRes) onShareMessage;
   // 语音/视频通话事件
   final void Function(MessageTypeEnum) onVideoOrVoiceCall;
+  // 是否多选模式
+  final bool multiSelectMode;
+  // 是否已选中(多选模式)
+  final bool selected;
+  // 多选模式下点击气泡回调(为null表示该消息不可勾选)
+  final VoidCallback? onSelectTap;
+  // 菜单"多选"回调
+  final VoidCallback? onMultiSelect;
+  // 是否显示长按菜单(详情页传false)
+  final bool showMenu;
 
   const ChatMessage({
     super.key,
@@ -47,6 +135,11 @@ class ChatMessage extends StatefulWidget {
     required this.scrollController,
     required this.onShareMessage,
     required this.onVideoOrVoiceCall,
+    this.multiSelectMode = false,
+    this.selected = false,
+    this.onSelectTap,
+    this.onMultiSelect,
+    this.showMenu = true,
   });
 
   @override
@@ -470,9 +563,15 @@ class _ChatMessageState extends State<ChatMessage> {
 
   // 构建个人卡片消息
   Widget _buildPersonCard() {
-    final contact = PersonCardData.fromJson(
-      jsonDecode(widget.message.data ?? ''),
-    );
+    PersonCardData contact;
+    try {
+      contact = PersonCardData.fromJson(
+        jsonDecode(widget.message.data ?? ''),
+      );
+    } catch (_) {
+      // 名片数据损坏时兜底
+      return _buildTextMsg('[名片]');
+    }
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
@@ -488,6 +587,102 @@ class _ChatMessageState extends State<ChatMessage> {
           type: contact.contactType == UserContactTypeEnum.user ? '个人名片' : '群聊',
         ),
         color: Colors.white,
+      ),
+    );
+  }
+
+  // 构建聊天记录消息(合并转发)
+  Widget _buildChatRecordMsg() {
+    final messages = parseChatRecordSnapshot(widget.message.data);
+    final count = messages?.length ?? 0;
+    // 第一条消息预览
+    String preview = '';
+    if (messages != null && messages.isNotEmpty) {
+      final first = messages.first;
+      final time = first.sendTime > 0 ? formatTimestamp(first.sendTime) : '';
+      preview =
+          '$time ${first.sendUserNickname ?? ''}：'
+          '${messageContentPreview(first)}';
+    }
+    return GestureDetector(
+      onTap: () {
+        // 快照为空不跳转
+        if (messages == null || messages.isEmpty) {
+          return;
+        }
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (ctx) => ChatRecordDetailPage(messages: messages),
+          ),
+        );
+      },
+      child: _buildMsgLayout(
+        child: Container(
+          key: _contentKey,
+          width: 230.w,
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: _isSelf
+                ? const Color.fromRGBO(20, 134, 237, 1)
+                : Colors.white,
+            borderRadius: .circular(8.r),
+          ),
+          child: Column(
+            crossAxisAlignment: .start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    '聊天记录',
+                    style: TextStyle(
+                      color: _isSelf ? Colors.white : Colors.black,
+                      fontSize: 16.sp,
+                      fontWeight: .bold,
+                    ),
+                  ),
+                  Spacer(),
+                  Container(
+                    padding: .symmetric(horizontal: 6.w, vertical: 2.w),
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: .circular(4.r),
+                    ),
+                    child: Text(
+                      '[$count条聊天记录]',
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: _isSelf ? Colors.white : Colors.grey,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8.w),
+              Divider(
+                height: 1,
+                color: _isSelf
+                    ? const Color.fromRGBO(255, 255, 255, 77)
+                    : const Color.fromRGBO(220, 220, 220, 1),
+              ),
+              SizedBox(height: 8.w),
+              Text(
+                preview,
+                maxLines: 2,
+                overflow: .ellipsis,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: _isSelf
+                      ? const Color.fromRGBO(255, 255, 255, 217)
+                      : Colors.black54,
+                ),
+              ),
+            ],
+          ),
+        ),
+        color: _isSelf
+            ? const Color.fromRGBO(20, 134, 237, 1)
+            : Colors.white,
       ),
     );
   }
@@ -581,11 +776,12 @@ class _ChatMessageState extends State<ChatMessage> {
   // 显示上下文菜单
   void _showContextMenu() {
     final message = widget.message;
-    if ([
-      MessageTypeEnum.videoCall.type,
-      MessageTypeEnum.voiceCall.type,
-      MessageTypeEnum.systemNotice.type,
-    ].contains(message.messageType)) {
+    // 详情页/多选模式不弹菜单
+    if (!widget.showMenu || widget.multiSelectMode) {
+      return;
+    }
+    // 系统通知不弹菜单
+    if (message.messageType == MessageTypeEnum.systemNotice.type) {
       return;
     }
     // 防止重复弹出
@@ -613,12 +809,13 @@ class _ChatMessageState extends State<ChatMessage> {
             _hideContextMenu();
           },
         ),
-      // 只有文本，媒体文件，个人卡片，语音可以转发
+      // 只有文本，媒体文件，个人卡片，语音，聊天记录可以转发
       if ([
         MessageTypeEnum.text.type,
         MessageTypeEnum.file.type,
         MessageTypeEnum.personCard.type,
         MessageTypeEnum.voice.type,
+        MessageTypeEnum.chatRecord.type,
       ].contains(message.messageType))
         ContextMenuItem(
           icon: Icons.share,
@@ -651,16 +848,33 @@ class _ChatMessageState extends State<ChatMessage> {
             );
           },
         ),
-      // 发送后五分钟之内才可以撤回
+      // 多选(合并转发)
+      if (widget.onMultiSelect != null)
+        ContextMenuItem(
+          icon: Icons.checklist_rounded,
+          text: '多选',
+          onTap: () {
+            _hideContextMenu();
+            widget.onMultiSelect?.call();
+          },
+        ),
+      // 发送后五分钟之内才可以撤回(通话消息不可撤回，与后端白名单一致)
       if (_isSelf &&
           DateTime.now().millisecondsSinceEpoch - message.sendTime <
-              GlobalConstants.recallLimit)
+              GlobalConstants.recallLimit &&
+          message.messageType != MessageTypeEnum.videoCall.type &&
+          message.messageType != MessageTypeEnum.voiceCall.type)
         ContextMenuItem(icon: Icons.delete, text: '撤回', onTap: _recallMessage),
     ];
     // 上下文菜单水平偏移量: 消息内容宽度的一半-菜单宽度的一半
     final menuWidth = 30.w + 28.sp * items.length + 15.w * (items.length - 1);
     final menuHeight = 32.sp + 35.w;
     final leftOffset = (width / 2) - (menuWidth / 2);
+    // 钳制到屏幕范围内, 防止4项菜单在屏幕边缘溢出
+    // 菜单宽度超过屏幕时直接贴左, 否则钳制在屏幕范围内
+    final menuLeft = menuWidth > 1.sw - 10.w
+        ? 5.w
+        : (offset.dx + leftOffset).clamp(5.w, 1.sw - menuWidth - 5.w);
     // 是否顶部可见
     final topVisible = isTopVisible(offset.dy);
     final topOffset = menuHeight + 12.w;
@@ -684,7 +898,7 @@ class _ChatMessageState extends State<ChatMessage> {
             ),
             // 菜单定位
             Positioned(
-              left: offset.dx + leftOffset,
+              left: menuLeft,
               top: top,
               child: _buildContextMenu(items, topVisible),
             ),
@@ -708,19 +922,24 @@ class _ChatMessageState extends State<ChatMessage> {
       // data为空（通话尚未结束），显示默认文案
       content = type.messageContent;
     } else {
-      final data = jsonDecode(msgData);
-      final status = data['status'];
-      final duration = data['duration'];
-      if (status == CallStatusEnum.reject.status) {
-        // 拒绝接听
-        content = '未接听';
-      } else if (status == CallStatusEnum.abnormal.status) {
-        // 异常挂断
-        content = '通话中断';
-      } else if (duration != null) {
-        // 正常接听（兼容旧数据：无status但有duration）
-        content = '通话时长 ${formatDuration(duration)}';
-      } else {
+      try {
+        final data = jsonDecode(msgData);
+        final status = data['status'];
+        final duration = data['duration'];
+        if (status == CallStatusEnum.reject.status) {
+          // 拒绝接听
+          content = '未接听';
+        } else if (status == CallStatusEnum.abnormal.status) {
+          // 异常挂断
+          content = '通话中断';
+        } else if (duration != null) {
+          // 正常接听（兼容旧数据：无status但有duration）
+          content = '通话时长 ${formatDuration(duration)}';
+        } else {
+          content = type.messageContent;
+        }
+      } catch (_) {
+        // 数据损坏时显示默认文案
         content = type.messageContent;
       }
     }
@@ -791,12 +1010,23 @@ class _ChatMessageState extends State<ChatMessage> {
     } else if (messageType == MessageTypeEnum.voice.type) {
       // 语音消息
       return _buildVoiceMsg();
+    } else if (messageType == MessageTypeEnum.chatRecord.type) {
+      // 聊天记录
+      return _buildChatRecordMsg();
     }
     return _buildTextMsg('未知消息类型');
   }
 
   // 构建消息内容
   Widget _buildMsgContent() {
+    // 多选模式: 点击气泡勾选/取消(IgnorePointer屏蔽内部手势, opaque保证外层命中)
+    if (widget.multiSelectMode) {
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.onSelectTap,
+        child: IgnorePointer(child: _getContent()),
+      );
+    }
     return GestureDetector(
       onTap: _hideContextMenu,
       onLongPress: _showContextMenu,
@@ -818,8 +1048,38 @@ class _ChatMessageState extends State<ChatMessage> {
     );
   }
 
+  // 构建多选勾选框
+  Widget _buildSelectCheckbox() {
+    final selectable = widget.onSelectTap != null;
+    return GestureDetector(
+      onTap: selectable ? widget.onSelectTap : null,
+      child: Container(
+        width: 20.w,
+        height: 20.w,
+        margin: EdgeInsets.only(top: 12.w),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: widget.selected
+              ? const Color.fromRGBO(20, 134, 237, 1)
+              : Colors.white,
+          border: Border.all(
+            color: widget.selected
+                ? const Color.fromRGBO(20, 134, 237, 1)
+                : const Color.fromRGBO(170, 170, 170, 1),
+            width: 1.5,
+          ),
+        ),
+        child: widget.selected
+            ? Icon(Icons.check, size: 14.w, color: Colors.white)
+            : null,
+      ),
+    );
+  }
+
   // 构建消息
   Widget _buildMsg() {
+    // 多选模式勾选框(只有可勾选的消息才显示)
+    final showCheckbox = widget.multiSelectMode && widget.onSelectTap != null;
     return Row(
       mainAxisAlignment: _isSelf
           ? MainAxisAlignment.end
@@ -832,12 +1092,22 @@ class _ChatMessageState extends State<ChatMessage> {
                 constraints: BoxConstraints(maxWidth: 240.w),
                 child: _buildMsgContent(),
               ),
-              // 头像
-              _buildAvatar(),
+              // 头像(多选模式屏蔽点击)
+              IgnorePointer(
+                ignoring: widget.multiSelectMode,
+                child: _buildAvatar(),
+              ),
+              // 多选勾选框(最外侧)
+              if (showCheckbox) _buildSelectCheckbox(),
             ]
           : [
-              // 头像
-              _buildAvatar(),
+              // 多选勾选框(最外侧)
+              if (showCheckbox) _buildSelectCheckbox(),
+              // 头像(多选模式屏蔽点击)
+              IgnorePointer(
+                ignoring: widget.multiSelectMode,
+                child: _buildAvatar(),
+              ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 5.w,

@@ -183,12 +183,13 @@ class UserContactRes {
   int permission;
   int createTime;
   int updateTime;
-  String originName;
+  // 机器人等无用户记录的联系人原始名称为空
+  String? originName;
 
   // 获取contactName: 优先使用备注，备注为空再使用原始名称
   String get contactName {
     if (remark == null || remark!.isEmpty) {
-      return originName;
+      return originName ?? '';
     }
     return remark!;
   }

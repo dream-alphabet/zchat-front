@@ -15,7 +15,9 @@ enum MessageTypeEnum {
   // 名片(用户/群聊)
   personCard(type: 6, messageContent: '[名片]'),
   // 语音消息
-  voice(type: 7, messageContent: '[语音]');
+  voice(type: 7, messageContent: '[语音]'),
+  // 聊天记录(合并转发)
+  chatRecord(type: 8, messageContent: '[聊天记录]');
 
   const MessageTypeEnum({required this.type, required this.messageContent});
 

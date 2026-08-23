@@ -163,6 +163,15 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   // 手指是否还按在按钮上(用于取消异步启动中的录音)
   bool _pressActive = false;
 
+  // 是否多选模式
+  bool _multiSelect = false;
+
+  // 已选消息id集合
+  final Set<int> _selectedIds = {};
+
+  // 是否正在转发(防重复发送)
+  bool _isForwarding = false;
+
   // 根据文件后缀获取文件类型
   FileTypeEnum _getFileType(String filePath) {
     final index = filePath.lastIndexOf('.');
@@ -423,7 +432,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
             final contactData = PersonCardData(
               contactId: contact.contactId,
               contactType: contact.contactType,
-              contactName: contact.originName,
+              // 机器人等无原始名称的联系人回退到contactName(备注)
+              contactName: contact.originName ?? contact.contactName,
             );
             final result = await showSendConfirmModal(
               context,
@@ -904,6 +914,215 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     ToastUtils.showGlobalToast(msg: '发送成功');
   }
 
+  // 进入多选模式(并选中当前消息)
+  void _enterMultiSelect(int messageId) {
+    // 录音中先取消(多指操作进入多选的兜底)
+    if (_isRecording) {
+      unawaited(_finishRecord(canceled: true));
+    }
+    setState(() {
+      _multiSelect = true;
+      _selectedIds.add(messageId);
+      // 复位输入面板
+      _showEmotion = false;
+      _showMore = false;
+      _showVoice = false;
+    });
+  }
+
+  // 退出多选模式
+  void _exitMultiSelect() {
+    setState(() {
+      _multiSelect = false;
+      _selectedIds.clear();
+      // 复位输入面板
+      _showEmotion = false;
+      _showMore = false;
+      _showVoice = false;
+    });
+  }
+
+  // 勾选/取消勾选消息
+  void _toggleSelect(int messageId) {
+    if (!_multiSelect) {
+      return;
+    }
+    if (_selectedIds.contains(messageId)) {
+      setState(() {
+        _selectedIds.remove(messageId);
+      });
+      return;
+    }
+    if (_selectedIds.length >= 100) {
+      ToastUtils.showGlobalToast(msg: '最多只能选择100条消息');
+      return;
+    }
+    setState(() {
+      _selectedIds.add(messageId);
+    });
+  }
+
+  // 构建聊天记录快照(按时间升序)
+  List<Map<String, dynamic>> _buildSnapshot() {
+    final selected = _msgList
+        .where((m) =>
+            _selectedIds.contains(m.messageId) &&
+            m.status == MessageStatusEnum.sent.status)
+        .toList()
+      ..sort((a, b) {
+        // 时间相同按消息id稳定排序
+        final timeCmp = a.sendTime.compareTo(b.sendTime);
+        return timeCmp != 0 ? timeCmp : a.messageId.compareTo(b.messageId);
+      });
+    return List.generate(selected.length, (index) {
+      final m = selected[index];
+      return {
+        'messageType': m.messageType,
+        'messageContent': m.messageContent,
+        'sendUserId': m.sendUserId,
+        'sendUserNickname': m.sendUserNickname,
+        'sendTime': m.sendTime,
+        'fileId': m.fileId,
+        'fileName': m.fileName,
+        'fileType': m.fileType,
+        'fileSize': m.fileSize,
+        'data': m.data,
+      };
+    });
+  }
+
+  // 合并转发聊天记录
+  void _mergeForward() async {
+    if (_selectedIds.isEmpty) {
+      ToastUtils.showGlobalToast(msg: '请选择要转发的消息');
+      return;
+    }
+    // 上一次转发尚未结束(防重复)
+    if (_isForwarding) {
+      return;
+    }
+    // 构建快照(过滤已撤回, 按时间升序)
+    final messages = _buildSnapshot();
+    final count = messages.length;
+    final snapshot = jsonEncode({'messages': messages});
+    // 选择页打开期间也视为转发中, 防止重复push
+    _isForwarding = true;
+    try {
+      await Navigator.push(
+        context,
+        RouteUtils.slideUp(
+          (ctx) => ContactSelectPage(
+            onSelect: (contact) async {
+              final res = await showPromptDialog(
+                context,
+                '是否确定向${contact.contactName}转发$count条聊天记录?',
+                showCancel: true,
+              );
+              // 用户取消转发
+              if (res == null || !res) {
+                return false;
+              }
+              try {
+                final msg = await sendMessageApi(
+                  SendMsgReq(
+                    contactId: contact.contactId,
+                    contactType: contact.contactType,
+                    messageType: MessageTypeEnum.chatRecord.type,
+                    messageContent: '[$count条聊天记录]',
+                    data: snapshot,
+                  ),
+                );
+                if (!mounted) {
+                  return false;
+                }
+                // 如果是当前会话的消息，插入列表并滚动到底部
+                if (msg.sessionId == _sessionId) {
+                  setState(() {
+                    _msgList.insert(0, msg);
+                  });
+                  _scrollToBottom();
+                }
+                // 更新会话的lastMessage和lastReceiveTime
+                _sessionStore.updateLastMessage(
+                  msg.sessionId,
+                  msg.messageContent,
+                  msg.sendTime,
+                );
+                ToastUtils.showGlobalToast(msg: '发送成功');
+                _exitMultiSelect();
+                return true;
+              } catch (_) {
+                ToastUtils.showGlobalToast(msg: '发送失败');
+                return false;
+              }
+            },
+          ),
+          settings: RouteSettings(arguments: {'searchAll': true}),
+        ),
+      );
+    } finally {
+      _isForwarding = false;
+    }
+  }
+
+  // 多选模式顶部栏(取消+已选数量)
+  Widget _buildMultiSelectHeader() {
+    return Container(
+      height: 50.w,
+      decoration: const BoxDecoration(color: Color.fromRGBO(237, 237, 237, 1)),
+      child: Row(
+        children: [
+          SizedBox(width: 12.w),
+          GestureDetector(
+            onTap: _exitMultiSelect,
+            child: Text(
+              '取消',
+              style: TextStyle(color: Colors.black, fontSize: 16.sp),
+            ),
+          ),
+          SizedBox(width: 15.w),
+          Text(
+            '已选 ${_selectedIds.length} 项',
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 17.sp,
+              fontWeight: .bold,
+            ),
+          ),
+          Spacer(),
+        ],
+      ),
+    );
+  }
+
+  // 多选模式底部工具栏(合并转发)
+  Widget _buildMergeForwardBar() {
+    final count = _selectedIds.length;
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: 10.w),
+      color: const Color.fromRGBO(247, 247, 247, 1),
+      child: Center(
+        child: GestureDetector(
+          onTap: count == 0 ? null : _mergeForward,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.w),
+            decoration: BoxDecoration(
+              color: count == 0
+                  ? const Color.fromRGBO(170, 170, 170, 1)
+                  : const Color.fromRGBO(20, 134, 237, 1),
+              borderRadius: .circular(6.r),
+            ),
+            child: Text(
+              '合并转发($count)',
+              style: TextStyle(color: Colors.white, fontSize: 16.sp),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   // 消息列表
   Widget _buildMessageList() {
     return ListView.builder(
@@ -915,11 +1134,22 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         // 构建单条消息（带定位key，定位后高亮显示）
         Widget buildMsg() {
           final message = _msgList[index];
+          // 多选模式下该消息是否可勾选
+          final selectable =
+              message.status == MessageStatusEnum.sent.status &&
+              message.messageType != MessageTypeEnum.systemNotice.type &&
+              message.messageType != MessageTypeEnum.rtcSignal.type;
           Widget msg = ChatMessage(
             message: message,
             scrollController: _msgListController,
             onShareMessage: _shareMessage,
             onVideoOrVoiceCall: _onVideoOrVoiceCall,
+            multiSelectMode: _multiSelect,
+            selected: _selectedIds.contains(message.messageId),
+            onSelectTap: selectable
+                ? () => _toggleSelect(message.messageId)
+                : null,
+            onMultiSelect: () => _enterMultiSelect(message.messageId),
           );
           // 定位后高亮目标消息
           if (message.messageId == _highlightMessageId) {
@@ -1421,7 +1651,9 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
           _sendMediaFromCamera('video');
         },
       ),
-      if (_contactType == UserContactTypeEnum.user)
+      // 机器人不能通话，隐藏通话入口
+      if (_contactType == UserContactTypeEnum.user &&
+          _contactId != GlobalConstants.robotContactId)
         MoreItem(name: '视频通话', icon: MyIcon.video, onTap: _videoCall),
       MoreItem(name: '个人名片', icon: MyIcon.personCard, onTap: _selectContact),
       MoreItem(name: '文件', icon: MyIcon.file, onTap: _sendFile),
@@ -1568,6 +1800,11 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         if (didPop) {
           return;
         }
+        // 多选模式优先退出多选
+        if (_multiSelect) {
+          _exitMultiSelect();
+          return;
+        }
         // 如果当前输入框还持有焦点，失去焦点，如果没有，返回上一页
         if (_messageFocusNode.hasFocus) {
           FocusScope.of(context).unfocus();
@@ -1593,64 +1830,70 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         body: SafeArea(
           child: Column(
             children: [
-              // 导航栏
-              PageHeader(
-                title: _contactType == UserContactTypeEnum.user
-                    ? _contactName
-                    : '$_contactName(${_contactInfo?.memberCount})',
-                showLeftBackIcon: true,
-                backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
-                rightIconList: [
-                  GestureDetector(
-                    onTap: () async {
-                      // 如果双方是好友关系，跳转到联系人信息
-                      if (_contactType == UserContactTypeEnum.user) {
-                        Navigator.pushNamed(
-                          context,
-                          RoutePath.contactInfo,
-                          arguments: {'contactId': _contactId},
-                        );
-                      } else if (_contactType == UserContactTypeEnum.group) {
-                        // 如果是群聊，跳转到群聊设置页面
-                        // 群聊已解散，询问是否要删除该群聊
-                        if (_contactInfo?.groupStatus ==
-                            GroupStatusEnum.dissolve) {
-                          showPromptDialog(
+              // 多选模式: 显示取消+已选数量, 否则显示导航栏
+              if (_multiSelect)
+                _buildMultiSelectHeader()
+              else
+                PageHeader(
+                  title: _contactType == UserContactTypeEnum.user
+                      ? _contactName
+                      : '$_contactName(${_contactInfo?.memberCount})',
+                  showLeftBackIcon: true,
+                  backgroundColor: const Color.fromRGBO(237, 237, 237, 1),
+                  rightIconList: [
+                    GestureDetector(
+                      onTap: () async {
+                        // 如果双方是好友关系，跳转到联系人信息
+                        if (_contactType == UserContactTypeEnum.user) {
+                          Navigator.pushNamed(
                             context,
-                            showCancel: true,
-                            '是否要删除该群聊',
-                            onConfirm: _delContact,
+                            RoutePath.contactInfo,
+                            arguments: {'contactId': _contactId},
                           );
-                          return;
+                        } else if (_contactType == UserContactTypeEnum.group) {
+                          // 如果是群聊，跳转到群聊设置页面
+                          // 群聊已解散，询问是否要删除该群聊
+                          if (_contactInfo?.groupStatus ==
+                              GroupStatusEnum.dissolve) {
+                            showPromptDialog(
+                              context,
+                              showCancel: true,
+                              '是否要删除该群聊',
+                              onConfirm: _delContact,
+                            );
+                            return;
+                          }
+                          final contactStatus = await Navigator.pushNamed(
+                            context,
+                            RoutePath.groupSetting,
+                            arguments: {'groupId': _contactInfo?.contactId},
+                          );
+                          // 群聊已解散/已退出群聊
+                          if (UserContactStatusEnum.delete == contactStatus) {
+                            Navigator.pop(context);
+                          }
                         }
-                        final contactStatus = await Navigator.pushNamed(
-                          context,
-                          RoutePath.groupSetting,
-                          arguments: {'groupId': _contactInfo?.contactId},
-                        );
-                        // 群聊已解散/已退出群聊
-                        if (UserContactStatusEnum.delete == contactStatus) {
-                          Navigator.pop(context);
-                        }
-                      }
-                    },
-                    child: Icon(
-                      Icons.more_horiz_rounded,
-                      size: 25.w,
-                      color: Colors.black,
+                      },
+                      child: Icon(
+                        Icons.more_horiz_rounded,
+                        size: 25.w,
+                        color: Colors.black,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
               Expanded(
                 child: Stack(
                   // 非定位子项强制填充，否则Stack宽度会被收缩为0
                   fit: StackFit.expand,
-                  children: [_buildMessageList(), _buildBackToLatest()],
+                  children: [
+                    _buildMessageList(),
+                    if (!_multiSelect) _buildBackToLatest(),
+                  ],
                 ),
               ),
               if (_contactInfo?.groupStatus != GroupStatusEnum.dissolve)
-                _buildBottom(),
+                _multiSelect ? _buildMergeForwardBar() : _buildBottom(),
             ],
           ),
         ),
