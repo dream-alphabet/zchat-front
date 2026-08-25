@@ -658,7 +658,9 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         // 收到回复, 隐藏输入中气泡
         if (_showTyping) {
           _typingTimer?.cancel();
-          _showTyping = false;
+          setState(() {
+            _showTyping = false;
+          });
         }
         setState(() {
           _msgList.insert(0, msg);
