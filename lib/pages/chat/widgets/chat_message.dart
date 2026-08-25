@@ -218,7 +218,7 @@ class _ChatMessageState extends State<ChatMessage> {
 
   // 是否看起来像markdown
   bool _looksLikeMarkdown(String msg) {
-    return msg.contains('#') ||
+    return RegExp(r'(^|\n)\s*#{1,6}\s').hasMatch(msg) ||
         msg.contains('**') ||
         msg.contains('`') ||
         RegExp(r'^\s*(\d+\.\s|[-*]\s)').hasMatch(msg);
@@ -228,7 +228,7 @@ class _ChatMessageState extends State<ChatMessage> {
   Widget _buildMarkdownMsg(String msg) {
     const maxLen = 500;
     final collapsed = msg.length > maxLen && !_markdownExpanded;
-    final shown = collapsed ? '${msg.substring(0, maxLen)}...' : msg;
+    final shown = collapsed ? '${msg.characters.take(maxLen)}...' : msg;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
