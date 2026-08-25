@@ -98,6 +98,11 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   // 文本消息
   String _msg = '';
 
+  // 是否显示机器人输入中气泡
+  bool _showTyping = false;
+  // 输入中气泡超时定时器
+  Timer? _typingTimer;
+
   // 页码
   final _page = 1;
 
@@ -618,6 +623,25 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         }
         return;
       }
+      // 机器人输入中状态
+      if (event.type == ServerMsgType.aiTyping) {
+        final typingSessionId = (event.msg as Map<String, dynamic>)['sessionId'];
+        if (typingSessionId != _sessionId) {
+          return;
+        }
+        setState(() {
+          _showTyping = true;
+        });
+        // 30秒超时自动隐藏(防御AI卡死)
+        _typingTimer?.cancel();
+        _typingTimer = Timer(const Duration(seconds: 30), () {
+          if (!mounted) return;
+          setState(() {
+            _showTyping = false;
+          });
+        });
+        return;
+      }
       // 消息类型不是聊天消息，直接返回
       if (event.type != ServerMsgType.chat) {
         return;
@@ -631,6 +655,11 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       }
       // 如果是当前用户发送的，也不处理
       if (msg.sendUserId != _userController.userInfo.value?.userId) {
+        // 收到回复, 隐藏输入中气泡
+        if (_showTyping) {
+          _typingTimer?.cancel();
+          _showTyping = false;
+        }
         setState(() {
           _msgList.insert(0, msg);
         });
@@ -1127,13 +1156,19 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   Widget _buildMessageList() {
     return ListView.builder(
       controller: _msgListController,
-      itemCount: _msgList.length,
+      itemCount: _msgList.length + (_showTyping ? 1 : 0),
       padding: EdgeInsets.only(top: 10.w),
       reverse: true,
       itemBuilder: (ctx, index) {
+        // 机器人输入中气泡(列表最底部)
+        if (_showTyping && index == 0) {
+          return _buildTypingBubble();
+        }
+        // 有输入中气泡时, 真实消息下标偏移1
+        final realIndex = index - (_showTyping ? 1 : 0);
         // 构建单条消息（带定位key，定位后高亮显示）
         Widget buildMsg() {
-          final message = _msgList[index];
+          final message = _msgList[realIndex];
           // 多选模式下该消息是否可勾选
           final selectable =
               message.status == MessageStatusEnum.sent.status &&
@@ -1163,14 +1198,14 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
 
         // 第一条消息显示发送时间，因为顺序翻转，所以_msgList.length-1是第一条消息
         // 两条消息发送时间间隔超过5分钟就显示时间
-        if (index == _msgList.length - 1 ||
-            (_msgList[index].sendTime - _msgList[index + 1].sendTime) >
+        if (realIndex == _msgList.length - 1 ||
+            (_msgList[realIndex].sendTime - _msgList[realIndex + 1].sendTime) >
                 5 * 60 * 1000) {
           return Column(
             spacing: 10.w,
             children: [
               Text(
-                formatTimestamp(_msgList[index].sendTime),
+                formatTimestamp(_msgList[realIndex].sendTime),
                 textAlign: .center,
                 style: TextStyle(
                   color: const Color.fromRGBO(123, 123, 128, 1),
@@ -1183,6 +1218,27 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
         }
         return buildMsg();
       },
+    );
+  }
+
+  // 机器人输入中气泡
+  Widget _buildTypingBubble() {
+    return Padding(
+      padding: EdgeInsets.only(left: 15.w, bottom: 10.w),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: Text(
+            '对方正在输入…',
+            style: TextStyle(color: Colors.black54, fontSize: 14.sp),
+          ),
+        ),
+      ),
     );
   }
 
@@ -1907,6 +1963,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     removeActiveSession();
     // 取消监听
     _streamSubscription.cancel();
+    // 取消输入中气泡定时器
+    _typingTimer?.cancel();
     _messageController.dispose();
     _messageFocusNode.dispose();
     // 销毁ScrollController
