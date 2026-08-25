@@ -513,6 +513,11 @@ void _handleServerMsg(dynamic msg) {
   } else if (serverMsg.type == ServerMsgType.updateGroup) {
     // 更新群聊信息
     _handleUpdateGroup(serverMsg.msg);
+  } else if (serverMsg.type == ServerMsgType.aiTyping) {
+    // 机器人输入中状态
+    eventBus.fire(
+      ServerMsgEvent(type: ServerMsgType.aiTyping, msg: serverMsg.msg),
+    );
   }
 }
 

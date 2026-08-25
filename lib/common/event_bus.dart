@@ -37,6 +37,8 @@ class ServerMsgType {
   static const dissolveGroup = 'dissolveGroup';
   // 更新群聊信息
   static const updateGroup = 'updateGroup';
+  // 机器人输入中
+  static const aiTyping = 'aiTyping';
 }
 
 // 全局事件总线
