@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gal/gal.dart';
 import 'package:get/get.dart' hide Response;
@@ -185,6 +186,97 @@ class _ChatMessageState extends State<ChatMessage> {
     );
   }
 
+  // 长文本折叠展开状态(仅机器人markdown消息)
+  bool _markdownExpanded = false;
+
+  // 文本内容(机器人消息带markdown时用markdown渲染)
+  Widget _buildTextContent(String msg) {
+    final isRobot = !_isSelf &&
+        widget.message.sendUserId == GlobalConstants.robotContactId;
+    // 看起来是markdown的机器人消息才用markdown渲染, 纯文本保留长按菜单
+    if (isRobot && _looksLikeMarkdown(msg)) {
+      return _buildMarkdownMsg(msg);
+    }
+    return SelectableText(
+      msg,
+      // 不显示系统上下文带单，改为自己的上下文菜单
+      contextMenuBuilder: (context, editableTextState) => SizedBox(),
+      focusNode: _textFocusNode,
+      onSelectionChanged: (selection, cause) {
+        // 如果是长按选中
+        if (cause == SelectionChangedCause.longPress) {
+          _showContextMenu();
+        }
+        _selectedText = msg.substring(selection.start, selection.end);
+      },
+      style: TextStyle(
+        color: _isSelf ? Colors.white : Colors.black,
+        fontSize: 16.sp,
+      ),
+    );
+  }
+
+  // 是否看起来像markdown
+  bool _looksLikeMarkdown(String msg) {
+    return msg.contains('#') ||
+        msg.contains('**') ||
+        msg.contains('`') ||
+        RegExp(r'^\s*(\d+\.\s|[-*]\s)').hasMatch(msg);
+  }
+
+  // markdown渲染(超500字折叠)
+  Widget _buildMarkdownMsg(String msg) {
+    const maxLen = 500;
+    final collapsed = msg.length > maxLen && !_markdownExpanded;
+    final shown = collapsed ? '${msg.substring(0, maxLen)}...' : msg;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        MarkdownBody(
+          data: shown,
+          selectable: true,
+          onTapLink: (text, href, title) {
+            // 链接不直接跳转, 提供复制操作(防恶意链接)
+            showMyBottomSheet(context, [
+              SheetItem('复制链接', () {
+                Clipboard.setData(ClipboardData(text: href ?? ''));
+              }),
+            ]);
+          },
+          styleSheet: MarkdownStyleSheet(
+            p: TextStyle(color: Colors.black, fontSize: 16.sp),
+            code: TextStyle(
+              backgroundColor: const Color.fromRGBO(240, 240, 240, 1),
+              fontSize: 14.sp,
+            ),
+            codeblockDecoration: const BoxDecoration(
+              color: Color.fromRGBO(240, 240, 240, 1),
+            ),
+          ),
+        ),
+        if (msg.length > maxLen)
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _markdownExpanded = !_markdownExpanded;
+              });
+            },
+            child: Padding(
+              padding: EdgeInsets.only(top: 4.w),
+              child: Text(
+                _markdownExpanded ? '收起' : '展开',
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: const Color.fromRGBO(20, 134, 237, 1),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   // 构建文本消息
   Widget _buildTextMsg(String msg) {
     return _buildMsgLayout(
@@ -195,23 +287,7 @@ class _ChatMessageState extends State<ChatMessage> {
           color: _isSelf ? const Color.fromRGBO(20, 134, 237, 1) : Colors.white,
           borderRadius: .circular(8.r),
         ),
-        child: SelectableText(
-          msg,
-          // 不显示系统上下文带单，改为自己的上下文菜单
-          contextMenuBuilder: (context, editableTextState) => SizedBox(),
-          focusNode: _textFocusNode,
-          onSelectionChanged: (selection, cause) {
-            // 如果是长按选中
-            if (cause == SelectionChangedCause.longPress) {
-              _showContextMenu();
-            }
-            _selectedText = msg.substring(selection.start, selection.end);
-          },
-          style: TextStyle(
-            color: _isSelf ? Colors.white : Colors.black,
-            fontSize: 16.sp,
-          ),
-        ),
+        child: _buildTextContent(msg),
       ),
       color: _isSelf ? const Color.fromRGBO(20, 134, 237, 1) : Colors.white,
     );
