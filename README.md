@@ -1,6 +1,6 @@
 # zchat 前端（Flutter）
 
-微信风格的即时通讯 App 前端，配合 [zchat 后端](../backend) 使用。
+微信风格的即时通讯 App 前端，配合 [zchat 后端](https://github.com/dream-alphabet/zchat-backend) 使用。
 
 ## 项目简介
 
@@ -30,7 +30,7 @@
 - Flutter 3.44+（Dart 3.12+）
 - Android：minSdk 24（Flutter 默认），targetSdk 跟随 Flutter 版本
 - iOS：部署目标 13.0
-- 需要先启动后端服务（见 [后端 README](../backend/README.md)）
+- 需要先启动后端服务（见 [zchat-backend](https://github.com/your-username/zchat-backend) 仓库说明）
 
 ## Quick Start
 
