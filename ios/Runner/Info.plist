@@ -84,8 +84,5 @@
 	<!-- 相册读取权限 -->
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>需要访问相册选择图片或视频</string>
-	<!-- 通知栏权限 -->
-	<key>UNNotificationUsageDescription</key>
-	<string>我们需要向您发送消息通知</string>
 </dict>
 </plist>

@@ -7,10 +7,10 @@
 
     <!-- 相机权限 -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera" android:required="true" />
+    <!-- 相机非必需: 无摄像头设备(平板/TV)也能安装使用 -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <!-- 通知栏权限 -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
@@ -30,8 +30,6 @@
     <!-- 用于采集麦克风音频数据，实现语音通话 -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    <!-- 蓝牙 -->
-    <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-feature android:name="android.hardware.camera.autofocus"
         android:required="false" />
 
