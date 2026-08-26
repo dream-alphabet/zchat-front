@@ -26,7 +26,6 @@ import 'package:zchat/pages/contact/group/group_remark.dart';
 import 'package:zchat/pages/contact/group_chat.dart';
 import 'package:zchat/pages/contact/group_setting.dart';
 import 'package:zchat/pages/contact/new_friend.dart';
-import 'package:zchat/pages/contact/only_chat_friend.dart';
 import 'package:zchat/pages/contact/search_contact.dart';
 import 'package:zchat/pages/contact/contact_info.dart';
 import 'package:zchat/pages/contact/moments_user.dart';
@@ -47,7 +46,6 @@ final Map<String, WidgetBuilder> routes = {
   RoutePath.login: (ctx) => LoginPage(),
   RoutePath.register: (ctx) => RegisterPage(),
   RoutePath.newFriend: (ctx) => NewFriendPage(),
-  RoutePath.onlyChatFriend: (ctx) => OnlyChatFriendPage(),
   RoutePath.groupChat: (ctx) => GroupChatPage(),
   RoutePath.contactInfo: (ctx) => ContactInfoPage(),
   RoutePath.moments: (ctx) => MomentsPage(),

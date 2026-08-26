@@ -39,11 +39,6 @@ class _ContactPageState extends State<ContactPage> with AutomaticKeepAliveClient
       path: RoutePath.newFriend,
     ),
     ListItemData(
-      leftIcon: MyIcon.message,
-      rightName: '仅聊天的朋友',
-      path: RoutePath.onlyChatFriend,
-    ),
-    ListItemData(
       leftIcon: MyIcon.groupChat,
       rightName: '群聊',
       path: RoutePath.groupChat,

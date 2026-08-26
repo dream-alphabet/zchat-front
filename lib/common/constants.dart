@@ -90,8 +90,6 @@ class RoutePath {
   static const register = 'register';
   // 新的朋友(查看好友申请)
   static const newFriend = 'newFriend';
-  // 仅聊天的朋友
-  static const onlyChatFriend = 'onlyChatFriend';
   // 群聊(查看加入的群聊)
   static const groupChat = 'groupChat';
   // 联系人信息(用户/群聊)
