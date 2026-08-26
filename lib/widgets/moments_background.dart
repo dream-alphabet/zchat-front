@@ -81,6 +81,10 @@ class _MomentsBackgroundState extends State<MomentsBackground> {
           child: Image.network(
             url,
             fit: BoxFit.cover,
+            // 按屏幕宽度限制解码尺寸, 避免背景图全分辨率解码
+            cacheWidth: (MediaQuery.sizeOf(context).width *
+                    MediaQuery.devicePixelRatioOf(context))
+                .round(),
             frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
               final success = wasSynchronouslyLoaded || frame != null;
               if (success != _loaded) {

@@ -216,45 +216,59 @@ class _ChatMessageState extends State<ChatMessage> {
     );
   }
 
+  // markdown检测正则(static final避免每次build重新编译正则)
+  static final _mdHeadingRegExp = RegExp(r'(^|\n)\s*#{1,6}\s');
+  static final _mdListRegExp = RegExp(r'^\s*(\d+\.\s|[-*]\s)');
+
   // 是否看起来像markdown
   bool _looksLikeMarkdown(String msg) {
-    return RegExp(r'(^|\n)\s*#{1,6}\s').hasMatch(msg) ||
+    return _mdHeadingRegExp.hasMatch(msg) ||
         msg.contains('**') ||
         msg.contains('`') ||
-        RegExp(r'^\s*(\d+\.\s|[-*]\s)').hasMatch(msg);
+        _mdListRegExp.hasMatch(msg);
   }
+
+  // markdown解析结果缓存(相同数据复用同一widget实例, 避免重新解析markdown)
+  String? _markdownData;
+  Widget? _markdownBody;
 
   // markdown渲染(超500字折叠)
   Widget _buildMarkdownMsg(String msg) {
     const maxLen = 500;
     final collapsed = msg.length > maxLen && !_markdownExpanded;
     final shown = collapsed ? '${msg.characters.take(maxLen)}...' : msg;
+    // 数据未变化时复用缓存的MarkdownBody, 相同widget实例不会触发子树重建
+    if (_markdownData != shown) {
+      _markdownData = shown;
+      _markdownBody = MarkdownBody(
+        data: shown,
+        selectable: true,
+        onTapLink: (text, href, title) {
+          // 链接不直接跳转, 提供复制操作(防恶意链接)
+          showMyBottomSheet(context, [
+            SheetItem('复制链接', () {
+              Clipboard.setData(ClipboardData(text: href ?? ''));
+            }),
+          ]);
+        },
+        styleSheet: MarkdownStyleSheet(
+          p: TextStyle(color: Colors.black, fontSize: 16.sp),
+          code: TextStyle(
+            backgroundColor: const Color.fromRGBO(240, 240, 240, 1),
+            fontSize: 14.sp,
+          ),
+          codeblockDecoration: const BoxDecoration(
+            color: Color.fromRGBO(240, 240, 240, 1),
+          ),
+        ),
+      );
+    }
+    final markdownBody = _markdownBody!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        MarkdownBody(
-          data: shown,
-          selectable: true,
-          onTapLink: (text, href, title) {
-            // 链接不直接跳转, 提供复制操作(防恶意链接)
-            showMyBottomSheet(context, [
-              SheetItem('复制链接', () {
-                Clipboard.setData(ClipboardData(text: href ?? ''));
-              }),
-            ]);
-          },
-          styleSheet: MarkdownStyleSheet(
-            p: TextStyle(color: Colors.black, fontSize: 16.sp),
-            code: TextStyle(
-              backgroundColor: const Color.fromRGBO(240, 240, 240, 1),
-              fontSize: 14.sp,
-            ),
-            codeblockDecoration: const BoxDecoration(
-              color: Color.fromRGBO(240, 240, 240, 1),
-            ),
-          ),
-        ),
+        markdownBody,
         if (msg.length > maxLen)
           GestureDetector(
             onTap: () {
@@ -474,6 +488,10 @@ class _ChatMessageState extends State<ChatMessage> {
     );
   }
 
+  // 消息图片/视频封面最大显示宽度对应的物理像素(限制解码缓存尺寸, 避免全分辨率解码)
+  int get _imageCacheWidth =>
+      (200.w * MediaQuery.devicePixelRatioOf(context)).round();
+
   // 构建视频消息
   Widget _buildVideoMsg(int fileId, String fileName) {
     // 视频url
@@ -506,6 +524,7 @@ class _ChatMessageState extends State<ChatMessage> {
                   child: Image.network(
                     coverUrl,
                     fit: BoxFit.fitWidth,
+                    cacheWidth: _imageCacheWidth,
                     errorBuilder: (ctx, _, _) => Container(
                       width: 200.w,
                       height: 200.w,
@@ -560,7 +579,11 @@ class _ChatMessageState extends State<ChatMessage> {
             },
             child: ClipRRect(
               borderRadius: .circular(8.r),
-              child: Image.network(imageUrl, fit: BoxFit.fitWidth),
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.fitWidth,
+                cacheWidth: _imageCacheWidth,
+              ),
             ),
           ),
         ),
@@ -667,9 +690,17 @@ class _ChatMessageState extends State<ChatMessage> {
     );
   }
 
+  // 聊天记录快照解析缓存(相同数据复用, 避免每次build重复jsonDecode)
+  String? _chatRecordData;
+  List<ChatMessageRes>? _chatRecordMessages;
+
   // 构建聊天记录消息(合并转发)
   Widget _buildChatRecordMsg() {
-    final messages = parseChatRecordSnapshot(widget.message.data);
+    if (_chatRecordData != widget.message.data) {
+      _chatRecordData = widget.message.data;
+      _chatRecordMessages = parseChatRecordSnapshot(widget.message.data);
+    }
+    final messages = _chatRecordMessages;
     final count = messages?.length ?? 0;
     // 第一条消息预览
     String preview = '';

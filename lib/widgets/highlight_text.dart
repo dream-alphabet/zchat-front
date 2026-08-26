@@ -85,6 +85,9 @@ class HighlightText extends StatelessWidget {
 
 // 高亮计算工具类
 class HighlightHelper {
+  // 空白分隔正则(static final避免每次调用重新编译)
+  static final _whitespaceRegExp = RegExp(r'\s+');
+
   // 计算高亮区间
   // [text] 原始文本
   // [keyword] 搜索关键词（支持空格分隔多个词）
@@ -113,7 +116,7 @@ class HighlightHelper {
   // 精确匹配：用空格分割关键词，分别在文本中查找
   static List<HighlightRange> _findExactMatches(String text, String keyword) {
     final ranges = <HighlightRange>[];
-    final keywords = keyword.split(RegExp(r'\s+')).where((k) => k.isNotEmpty).toList();
+    final keywords = keyword.split(_whitespaceRegExp).where((k) => k.isNotEmpty).toList();
     for (final kw in keywords) {
       int start = 0;
       while (true) {

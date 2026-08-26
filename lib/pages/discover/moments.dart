@@ -392,7 +392,10 @@ class _MomentsPageState extends State<MomentsPage> {
           }
           final postIndex = index - 1;
           if (postIndex < _posts.length) {
-            return MomentsPostCard(post: _posts[postIndex]);
+            // 独立图层: 点赞/评论等单卡片刷新时不重绘整个列表
+            return RepaintBoundary(
+              child: MomentsPostCard(post: _posts[postIndex]),
+            );
           }
           if (postIndex == _posts.length && !hasEmpty) {
             return _buildLoadMoreIndicator();

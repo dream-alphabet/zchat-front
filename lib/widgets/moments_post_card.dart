@@ -297,6 +297,8 @@ class _MomentsPostCardState extends State<MomentsPostCard> {
       crossAxisCount = 3;
       imgSize = 80.w;
     }
+    // 限制解码尺寸(显示尺寸对应的物理像素), 避免朋友圈图片全分辨率解码
+    final cacheSize = (imgSize * MediaQuery.devicePixelRatioOf(context)).round();
 
     return SizedBox(
       width: crossAxisCount == 1
@@ -318,6 +320,8 @@ class _MomentsPostCardState extends State<MomentsPostCard> {
                   width: imgSize,
                   height: imgSize,
                   fit: BoxFit.cover,
+                  cacheWidth: cacheSize,
+                  cacheHeight: cacheSize,
                   errorBuilder: (_, _, _) => Container(
                     width: imgSize,
                     height: imgSize,

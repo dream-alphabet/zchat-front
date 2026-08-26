@@ -95,8 +95,10 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
   // 消息输入框焦点控制器
   final _messageFocusNode = FocusNode();
 
-  // 文本消息
-  String _msg = '';
+  // 文本消息(ValueNotifier配合ValueListenableBuilder让输入行局部重建, 避免每次按键setState重建整个页面)
+  final _msgNotifier = ValueNotifier<String>('');
+  String get _msg => _msgNotifier.value;
+  set _msg(String value) => _msgNotifier.value = value;
 
   // 是否显示机器人输入中气泡
   bool _showTyping = false;
@@ -904,10 +906,10 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     setState(() {
       // 添加到发送后的消息到列表
       _msgList.insert(0, msg);
-      // 清空输入框
-      _messageController.clear();
-      _msg = '';
     });
+    // 清空输入框(controller与notifier各自触发局部刷新, 无需重建整个页面)
+    _messageController.clear();
+    _msg = '';
     // 滚动到底部
     _scrollToBottom();
     // 更新会话的lastMessage和lastReceiveTime
@@ -1162,9 +1164,9 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       padding: EdgeInsets.only(top: 10.w),
       reverse: true,
       itemBuilder: (ctx, index) {
-        // 机器人输入中气泡(列表最底部)
+        // 机器人输入中气泡(列表最底部, 独立图层避免动画重绘整个消息列表)
         if (_showTyping && index == 0) {
-          return _buildTypingBubble();
+          return RepaintBoundary(child: _buildTypingBubble());
         }
         // 有输入中气泡时, 真实消息下标偏移1
         final realIndex = index - (_showTyping ? 1 : 0);
@@ -1195,7 +1197,12 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
               child: msg,
             );
           }
-          return Container(key: _messageKey(message.messageId), child: msg);
+          // RepaintBoundary缓存消息图层: 键盘动画/滚动/输入中气泡动画时
+          // 未变化的消息直接复用图层, 避免整列表重新光栅化
+          return RepaintBoundary(
+            key: _messageKey(message.messageId),
+            child: msg,
+          );
         }
 
         // 第一条消息显示发送时间，因为顺序翻转，所以_msgList.length-1是第一条消息
@@ -1520,9 +1527,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       controller: _messageController,
       focusNode: _messageFocusNode,
       onChanged: (value) {
-        setState(() {
-          _msg = value;
-        });
+        // 只更新ValueNotifier触发输入行局部重建, 不重建整个页面
+        _msg = value;
       },
       onSubmitted: (value) {
         _sendText();
@@ -1587,6 +1593,8 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
           width: double.infinity,
           height: 200.w,
           child: GridView.builder(
+            // 面板切换后保留滚动位置
+            key: const PageStorageKey('emoji_grid'),
             itemCount: unicodeEmojis.length,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 8,
@@ -1595,10 +1603,9 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
             ),
             itemBuilder: (context, index) => GestureDetector(
               onTap: () {
-                setState(() {
-                  _messageController.text += unicodeEmojis[index];
-                  _msg += unicodeEmojis[index];
-                });
+                _messageController.text += unicodeEmojis[index];
+                // 程序修改controller不会触发onChanged, 需手动同步notifier
+                _msg = _messageController.text;
               },
               child: Text(
                 unicodeEmojis[index],
@@ -1625,12 +1632,10 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
                   return;
                 }
                 // 删除最后一个字符
-                setState(() {
-                  _messageController.text = _messageController.text.characters
-                      .skipLast(1)
-                      .toString();
-                  _msg = _msg.characters.skipLast(1).toString();
-                });
+                _messageController.text = _messageController.text.characters
+                    .skipLast(1)
+                    .toString();
+                _msg = _messageController.text;
               },
               child: Icon(
                 MyIcon.backspace,
@@ -1765,82 +1770,92 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          Column(
-            children: [
-              Row(
-                spacing: 6.w,
-                crossAxisAlignment: CrossAxisAlignment.center,
+          ValueListenableBuilder<String>(
+            valueListenable: _msgNotifier,
+            // 输入框作为child缓存: 每次按键只重建按钮行, 输入框由controller自行驱动刷新
+            child: _showVoice ? _buildVoice() : _buildInput(),
+            builder: (context, msg, child) {
+              return Column(
                 children: [
-                  // 录音时屏蔽语音切换按钮(不影响按住说话手势)
-                  AbsorbPointer(
-                    absorbing: _isRecording,
-                    child: _showVoice
-                        ? _buildKeyboardIcon()
-                        : GestureDetector(
-                            onTap: () {
-                              // 使得输入框失去焦点
-                              FocusScope.of(context).unfocus();
-                              SystemChannels.textInput.invokeMethod(
-                                'TextInput.hide',
-                              );
-                              setState(() {
-                                _showVoice = true;
-                                _showMore = false;
-                                _showEmotion = false;
-                              });
-                            },
-                            child: Icon(MyIcon.voice, size: 30.w),
-                          ),
+                  Row(
+                    spacing: 6.w,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // 录音时屏蔽语音切换按钮(不影响按住说话手势)
+                      AbsorbPointer(
+                        absorbing: _isRecording,
+                        child: _showVoice
+                            ? _buildKeyboardIcon()
+                            : GestureDetector(
+                                onTap: () {
+                                  // 使得输入框失去焦点
+                                  FocusScope.of(context).unfocus();
+                                  SystemChannels.textInput.invokeMethod(
+                                    'TextInput.hide',
+                                  );
+                                  setState(() {
+                                    _showVoice = true;
+                                    _showMore = false;
+                                    _showEmotion = false;
+                                  });
+                                },
+                                child: Icon(MyIcon.voice, size: 30.w),
+                              ),
+                      ),
+                      Expanded(child: child!),
+                      // 录音时屏蔽表情按钮
+                      AbsorbPointer(
+                        absorbing: _isRecording,
+                        child: _showEmotion
+                            ? _buildKeyboardIcon()
+                            : GestureDetector(
+                                onTap: () {
+                                  // 隐藏软键盘
+                                  SystemChannels.textInput.invokeMethod(
+                                    'TextInput.hide',
+                                  );
+                                  setState(() {
+                                    _showVoice = false;
+                                    _showMore = false;
+                                    _showEmotion = true;
+                                  });
+                                },
+                                child: Icon(MyIcon.emotion, size: 30.w),
+                              ),
+                      ),
+                      // 录音时屏蔽加号/发送按钮
+                      AbsorbPointer(
+                        absorbing: _isRecording,
+                        child: msg.isEmpty
+                            ? (_showMore
+                                  ? _buildKeyboardIcon()
+                                  : GestureDetector(
+                                      onTap: () {
+                                        // 输入框失去焦点
+                                        FocusScope.of(context).unfocus();
+                                        setState(() {
+                                          _showVoice = false;
+                                          _showMore = true;
+                                          _showEmotion = false;
+                                        });
+                                      },
+                                      child: Icon(
+                                        MyIcon.messageAdd,
+                                        size: 30.w,
+                                      ),
+                                    ))
+                            : _buildSendBtn(),
+                      ),
+                    ],
                   ),
-                  Expanded(child: _showVoice ? _buildVoice() : _buildInput()),
-                  // 录音时屏蔽表情按钮
-                  AbsorbPointer(
-                    absorbing: _isRecording,
-                    child: _showEmotion
-                        ? _buildKeyboardIcon()
-                        : GestureDetector(
-                            onTap: () {
-                              // 隐藏软键盘
-                              SystemChannels.textInput.invokeMethod(
-                                'TextInput.hide',
-                              );
-                              setState(() {
-                                _showVoice = false;
-                                _showMore = false;
-                                _showEmotion = true;
-                              });
-                            },
-                            child: Icon(MyIcon.emotion, size: 30.w),
-                          ),
-                  ),
-                  // 录音时屏蔽加号/发送按钮
-                  AbsorbPointer(
-                    absorbing: _isRecording,
-                    child: _msg.isEmpty
-                        ? (_showMore
-                              ? _buildKeyboardIcon()
-                              : GestureDetector(
-                                  onTap: () {
-                                    // 输入框失去焦点
-                                    FocusScope.of(context).unfocus();
-                                    setState(() {
-                                      _showVoice = false;
-                                      _showMore = true;
-                                      _showEmotion = false;
-                                    });
-                                  },
-                                  child: Icon(MyIcon.messageAdd, size: 30.w),
-                                ))
-                        : _buildSendBtn(),
-                  ),
+                  if (_showEmotion || _showMore) SizedBox(height: 10.w),
+                  // emoji
+                  if (_showEmotion) _buildEmoji(),
+                  // 更多
+                  if (_showMore) _buildMore(),
                 ],
-              ),
-              if (_showEmotion || _showMore) SizedBox(height: 10.w),
-              // emoji
-              Offstage(offstage: !_showEmotion, child: _buildEmoji()),
-              // 更多
-              Offstage(offstage: !_showMore, child: _buildMore()),
-            ],
+              );
+            },
           ),
           // 录音面板
           if (_isRecording) _buildRecordPanel(),
@@ -1969,6 +1984,7 @@ class _ChatMessagePageState extends State<ChatMessagePage> {
     _typingTimer?.cancel();
     _messageController.dispose();
     _messageFocusNode.dispose();
+    _msgNotifier.dispose();
     // 销毁ScrollController
     _msgListController.dispose();
     _scrollDebouncer.dispose();
