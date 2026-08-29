@@ -269,6 +269,7 @@ class _MyPageState extends State<MyPage> {
               : null,
         ),
         child: Row(
+          mainAxisAlignment: .spaceBetween,
           children: [
             if (leading != null) ...[leading, SizedBox(width: 20.w)],
             Expanded(
@@ -277,9 +278,14 @@ class _MyPageState extends State<MyPage> {
             if (trailing != null) ...[
               SizedBox(width: 10.w),
               // Flexible防止长文本(如个性签名)撑爆行布局
-              Flexible(child: trailing),
+              Expanded(
+                child: Align(
+                  alignment: .centerEnd,
+                  child: trailing,
+                )
+              ),
             ],
-            SizedBox(width: 5.w),
+            SizedBox(width: 10.w),
             Icon(
               MyIcon.arrowRight,
               color: const Color.fromRGBO(179, 179, 179, 1),
